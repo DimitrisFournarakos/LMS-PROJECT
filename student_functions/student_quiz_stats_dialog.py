@@ -1,30 +1,32 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QListWidget, QMessageBox
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget,QWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from db import get_enrolled_courses, get_student_scores_by_course
 
-class StudentQuizStatsDialog(QDialog):
-    def __init__(self, student_id, parent=None):
-        super().__init__(parent)
+class StudentQuizStatsPage(QWidget):
+    def __init__(self, student_id, parent_window = 'CourseManagementWindow' ):
+        super().__init__()
         self.student_id = student_id
-        self.setWindowTitle("📊 Προσωπικά Στατιστικά Quiz")
-        self.setGeometry(400, 400, 800, 700)
+        self.parent_window = parent_window #Κρατάμε αναφορά για να γυρνάμε πίσω
 
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.layout = QVBoxLayout(self)
 
-        self.label = QLabel("Επέλεξε μάθημα για να δεις τα quiz σου:")
+        self.label = QLabel("Τα στατιστικά μου")
+        self.label.setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50;")
         self.layout.addWidget(self.label)
 
         self.course_list = QListWidget()
+        self.course_list.setFixedHeight(150) #Περιορίζω το ύψος για να χωράει το γράφημα
         self.course_list.itemClicked.connect(self.load_stats_for_course)
         self.layout.addWidget(self.course_list)
 
-        self.canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        #Matplotlib Γράφημα
+        self.canvas = FigureCanvas(Figure(figsize=(5, 4)))
         self.ax = self.canvas.figure.subplots()
         self.layout.addWidget(self.canvas)
 
         self.load_courses()
+
 
     def load_courses(self):
         courses = get_enrolled_courses(self.student_id)
@@ -39,7 +41,6 @@ class StudentQuizStatsDialog(QDialog):
 
         self.ax.clear()
         if not results:
-            QMessageBox.information(self, "Χωρίς δεδομένα", "Δεν έχεις κάνει ακόμα quiz σε αυτό το μάθημα.")
             self.canvas.draw()
             return
 
@@ -51,9 +52,9 @@ class StudentQuizStatsDialog(QDialog):
         self.ax.bar(x, scores, color="mediumpurple")
         self.ax.set_title("Βαθμολογίες Quiz")
         self.ax.set_ylabel("Βαθμός (%)")
-        self.ax.set_ylim(0, 50)
+        self.ax.set_ylim(0, 100) #Προσαρμογή στο 100%
         self.ax.set_xticks(x)
-        self.canvas.figure.subplots_adjust(bottom=0.35)
+        self.canvas.figure.subplots_adjust(bottom=0.3)
 
         #Εμφάνιση μέσου όρου δεξιά στο γράφημα
         self.ax.text(0.95, 0.95,
@@ -61,7 +62,7 @@ class StudentQuizStatsDialog(QDialog):
                     horizontalalignment='right',
                     verticalalignment='top',
                     transform=self.ax.transAxes,
-                    fontsize=12,
+                    fontsize=10,
                     bbox=dict(facecolor='lightyellow', edgecolor='gray', alpha=0.8))
         self.canvas.draw()
 

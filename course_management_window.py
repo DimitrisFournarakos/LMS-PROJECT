@@ -3,9 +3,11 @@ from styles_css import styles
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,QMessageBox, QFileDialog, QLabel, QDialog,QMessageBox, QFileDialog, QLabel, QDialog,QListWidget,QHeaderView,QStackedWidget)
 from PyQt5.QtCore import Qt,QSize,QPropertyAnimation,QEasingCurve,QEvent
 from PyQt5.QtGui import QPixmap, QPainter,QIcon,QCursor
-from db import (get_enrolled_courses, get_available_courses_for_user, enroll_user_in_course,add_question_to_quiz,create_course, update_course, get_all_courses, delete_course)
+from db import (get_enrolled_courses,add_question_to_quiz,create_course, update_course, get_all_courses, delete_course)
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
+from student_functions.student_quiz_stats_dialog import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
+from subjects_interface.subjects_available_interface import EnrollPage
 
 class TableWithBackground(QTableWidget):
     def __init__(self, *args, **kwargs):
@@ -130,6 +132,9 @@ class CourseManagementWindow(QWidget):
         else:# Αν είναι admin, βάζω πάλι ένα κενό widget για να μην μπερδευτούν τα index αν προστεθεί κάτι μετά
             self.content_stack.addWidget(QWidget())
 
+        self.stats_page = StudentQuizStatsPage(self.user_id,self)#Σελίδα 3: Στατιστικά (Για όλους ή μονο για student)
+        self.content_stack.addWidget(self.stats_page)
+
         # Σύνθεση κύριου layout
         self.main_content_layout.addWidget(self.sidebar_container)
         self.main_content_layout.addWidget(self.content_stack, 1)
@@ -236,7 +241,7 @@ class CourseManagementWindow(QWidget):
         self.btn_stats.setIconSize(QSize(15,15))
         self.btn_stats.setFixedSize(40,40)
         self.btn_stats.setFixedWidth(250)
-        self.btn_stats.clicked.connect(self.open_student_stats if not self.admin else self.open_quiz_stats_dialog)
+        self.btn_stats.clicked.connect(lambda: self.content_stack.setCurrentIndex(3))
         self.sidebar_body_layout.addWidget(self.btn_stats)
         
         self.sidebar_body_layout.addStretch(1)# Αυτό το stretch σπρώχνει ό,τι ακολουθεί στο κάτω μέρος του sidebar
@@ -480,53 +485,7 @@ class CourseManagementWindow(QWidget):
         self.main_window.show()
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
-class EnrollPage(QWidget):
-    def __init__(self, user_id, parent_window: 'CourseManagementWindow'):
-        super().__init__()
-        self.user_id = user_id
-        self.parent_window = parent_window #Κρατάμε αναφορά για να γυρνάμε πίσω
 
-        layout = QVBoxLayout(self)
-
-        title = QLabel("Εγγραφή σε Νέο Μάθημα")
-        title.setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50;")
-        layout.addWidget(title)
-
-        self.course_list = QListWidget()
-        self.load_courses()
-        layout.addWidget(self.course_list)
-
-        btn_layout = QHBoxLayout()
-        btn_enroll = QPushButton("Επιβεβαίωση Εγγραφής")
-        btn_enroll.clicked.connect(self.enroll)
-
-        btn_back = QPushButton("Ακύρωση")
-        btn_back.clicked.connect(lambda: self.parent_window.content_stack.setCurrentIndex(0))
-        
-        btn_layout.addWidget(btn_enroll)
-        btn_layout.addWidget(btn_back)
-        layout.addLayout(btn_layout)
-
-    def load_courses(self):
-        self.course_list.clear()
-        available = get_available_courses_for_user(self.user_id)
-        for c in available:
-            self.course_list.addItem(f"{c[0]} - {c[1]}")
-
-    def enroll(self):
-        selected = self.course_list.currentItem()
-        if selected:
-            course_id = int(selected.text().split(" - ")[0])#Εξαγωγή του ID
-            enroll_user_in_course(self.user_id, course_id)#Εγγραφή στη βάση δεδομένων
-
-            self.parent_window.update_course_list()# Ενημέρωση του κεντρικού πίνακα (Index 0)
-
-            self.load_courses() #Ανανέωση της ίδιας της λίστας εγγραφής ώστε να εξαφανιστεί το μάθημα που μόλις γράφτηκες
-            self.parent_window.content_stack.setCurrentIndex(0)#Επιστροφή στην αρχική σελίδα
-            
-            QMessageBox.information(self, "Επιτυχία", "Η εγγραφή ολοκληρώθηκε!")
-        else:
-            QMessageBox.warning(self, "Προσοχή", "Παρακαλώ επιλέξτε ένα μάθημα από τη λίστα.")
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # --- Παράθυρο Διαλέξεων ---
 class LecturesWindow(QWidget):
