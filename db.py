@@ -294,7 +294,6 @@ def get_statistics_for_quiz(quiz_id):
         "count": result[3]
     }
 
-
 def get_student_scores_by_course(student_id, course_id):
     conn = connect_db()
     cursor = conn.cursor()
@@ -307,3 +306,21 @@ def get_student_scores_by_course(student_id, course_id):
     rows = cursor.fetchall()
     conn.close()
     return [{'title': row[0], 'score': row[1]} for row in rows]
+
+def get_courses_with_stats(student_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    # Φέρνουμε μαθήματα που έχουν τουλάχιστον μία εγγραφή στον πίνακα scores για τον συγκεκριμένο μαθητή
+    #ΕΞΤΡΑ ΠΑΡΑΜΕΤΡΟΣ,ΝΑ ΕΧΕΙ ΚΑΝΕΙ ΤΟΥΛΑΧΙΣΤΟΝ ΕΝΑ QUIZ
+    #Φερνω πίσω τον student που πλήρεί αυτή την προυπόθεση
+    query = """
+            SELECT DISTINCT c.course_id, c.name
+            FROM courses c
+            JOIN quizzes q ON c.course_id = q.course_id
+            JOIN quiz_results r ON q.quiz_id = r.quiz_id 
+            WHERE r.student_id = ?      
+            """
+    cursor.execute(query,(student_id,))
+    courses = cursor.fetchall()
+    conn.close()
+    return courses

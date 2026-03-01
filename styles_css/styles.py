@@ -351,3 +351,43 @@ def sidebar_style():
             border: none;
         }
     """
+
+def students_stats_rounded_container():
+    return """   
+            QFrame {
+                background-color: white;
+                border-radius: 20px;               
+            }       
+    """
+
+def students_stats_rounded_sub_list():
+    return"""
+            QListWidget {
+                background: transparent;
+                font-size: 14px;
+                border: None;
+                padding: 5px;
+            }
+            /* Το κυρίως σώμα του Scrollbar */
+            QScrollBar:vertical {
+                border: none;
+                background: #f1f2f6; /* Πολύ απαλό γκρι/μπλε φόντο */
+                width: 10px;         /* Πιο λεπτό και κομψό */
+                margin: 0px 0px 0px 0px;
+                border-radius: 5px;
+            }
+            /* Η "λαβή" (το μέρος που σέρνει ο χρήστης) */
+            QScrollBar::handle:vertical {
+                background: #dcdde1; /* απαλό γκρι  */
+                min-height: 20px;
+                border-radius: 5px;
+            }
+            /* Χρώμα όταν ο χρήστης περνάει το ποντίκι από πάνω (hover) */
+            QScrollBar::handle:vertical:hover {
+                background: #ced6e0; /* Ένα λιγο ανοιχτό μπλε/γκρι για feedback */
+            }
+            /* Αφαιρούμε τα κλασικά βελάκια πάνω και κάτω για πιο clean look */
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """

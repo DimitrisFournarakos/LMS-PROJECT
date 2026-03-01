@@ -23,7 +23,7 @@ class MainWindow(QWidget):
     #Συνάρτηση για να ζωγραφίζει το background image στο παράθυρο και να τεντώνει την εικόνα σε όλο το παράθυρο
     def paintEvent(self, event):
         painter = QPainter(self)       
-        # 2. Σχεδίαση της ήδη φορτωμένης εικόνας
+        # Σχεδίαση της ήδη φορτωμένης εικόνας
         if not self.background_image.isNull():
             # Χρησιμοποιούμε το self.background_image αντί να το φορτώνουμε από το δίσκο
             painter.drawPixmap(self.rect(), self.background_image)
