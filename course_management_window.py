@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt,QSize,QPropertyAnimation,QEasingCurve,QEvent
 from PyQt5.QtGui import QPixmap, QPainter,QIcon,QCursor
 from db import (get_enrolled_courses,add_question_to_quiz,create_course, update_course, get_all_courses, delete_course)
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
-from student_functions.student_quiz_stats_dialog import StudentQuizStatsPage
+from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
 from subjects_interface.subjects_available_interface import EnrollPage
 
@@ -384,7 +384,7 @@ class CourseManagementWindow(QWidget):
         dialog.exec_()
 
     def open_student_stats(self):
-        from student_functions.student_quiz_stats_dialog import StudentQuizStatsDialog
+        from student_functions.student_quiz_stats_page import StudentQuizStatsDialog
         dialog = StudentQuizStatsDialog(self.user_id, self)
         dialog.exec_()
 
