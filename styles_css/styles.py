@@ -361,7 +361,7 @@ def students_stats_rounded_container():
     """
 
 def students_stats_rounded_sub_list():
-    return"""
+    return """
             QListWidget {
                 background: transparent;
                 font-size: 14px;
@@ -391,3 +391,76 @@ def students_stats_rounded_sub_list():
                 height: 0px;
             }
         """
+
+def available_courses_list_style():
+    return """          
+    QListWidget {
+        background-color: #ffffff;
+        border: 2px solid #dcdde1;
+        border-radius: 10px;
+        padding: 10px;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 16px;
+        color: #2f3640;
+    }
+    
+    QListWidget::item {
+        padding: 12px;
+        border-bottom: 1px solid #f1f2f6;
+        font-weight: 500;
+    }
+
+    QListWidget::item:selected {
+        background-color: #E0E0E0;
+        color: black;
+        border-radius: 5px;
+    }
+        """
+
+def subjects_available_course_list_style():
+    """
+    QListWidget {
+        background-color: #ffffff;
+        border: 2px solid #dcdde1;
+        border-radius: 12px;
+        outline: none; /* Βγάζει τις τελείες/κύκλους εστίασης */
+        padding: 5px;
+    }
+    
+    QListWidget::item {
+        background-color: transparent;
+        border-bottom: 1px solid #f1f2f6;
+        margin-bottom: 2px;
+        border-radius: 8px; /* Για να φαίνεται ωραία το hover */
+    }
+
+    /* Hover effect σε όλη τη σειρά */
+    QListWidget::item:hover {
+        background-color: #f8f9fa; /* Πολύ απαλό γκρι */
+        border-bottom: 1px solid #dcdde1;
+    }
+
+    /* Απενεργοποίηση του κλασικού μπλε/γκρι selection */
+    QListWidget::item:selected {
+        background-color: #f1f2f6; 
+        color: #2f3640;
+        border: none;
+        outline: none;
+    }
+"""
+
+def subjects_available_back_btn_style():
+    return """
+                QPushButton { 
+                    background-color: #dddec8; 
+                    border-radius: 12px; /*Στρογγύλεμμα περιγράμματος κουμπιού*/
+                    border: none;
+                }
+                QPushButton:hover { 
+                    background-color: #ecece2; /* Γίνεται γκριζο-μπεζ στο hover */
+                    border: 1px solid #959595; /* Μικρή σκιά για βάθος */
+                }
+                QPushButton:pressed {
+                    padding-top: 2px; /* Εφέ πίεσης */
+                }
+            """

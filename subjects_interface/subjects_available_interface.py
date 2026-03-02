@@ -1,6 +1,8 @@
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QMessageBox,QWidget,QPushButton,QHBoxLayout,QFrame
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QMessageBox,QWidget,QPushButton,QHBoxLayout,QFrame,QListWidgetItem
+from PyQt5.QtCore import Qt,QSize
+from PyQt5.QtGui import QIcon
 from db import get_available_courses_for_user,enroll_user_in_course
-from styles_css.styles import students_stats_rounded_container,students_stats_rounded_sub_list
+from styles_css.styles import students_stats_rounded_container,subjects_available_course_list_style,subjects_available_back_btn_style
 
 class EnrollPage(QWidget):
     def __init__(self, user_id, parent_window = 'CourseManagementWindow' ):
@@ -29,7 +31,7 @@ class EnrollPage(QWidget):
 
         # Δημιουργία και στυλ της λίστας
         self.course_list = QListWidget()
-        self.course_list.setStyleSheet(students_stats_rounded_sub_list())#Χρησιμοποιώ το ίδιο QFrame στυλ όπως έκανα και στα στατιστικα του student
+        self.course_list.setStyleSheet(subjects_available_course_list_style())#Χρησιμοποιώ το ίδιο QFrame στυλ όπως έκανα και στα στατιστικα του student
         self.load_courses()
 
         #Προσθήκη της λίστας μέσα στο layout του container
@@ -38,30 +40,51 @@ class EnrollPage(QWidget):
         #Προσθήκη του container στο κύριο layout της Σελίδας
         self.main_layout.addWidget(self.list_container)
 
-        btn_layout = QHBoxLayout()
-        btn_enroll = QPushButton("Επιβεβαίωση Εγγραφής")
-        btn_enroll.clicked.connect(self.enroll)
-        
-        btn_layout.addWidget(btn_enroll)
-        self.main_layout.addLayout(btn_layout)
-
     def load_courses(self):
         self.course_list.clear()
         available = get_available_courses_for_user(self.user_id)
+        
         for c in available:
-            self.course_list.addItem(f"{c[0]} - {c[1]}")
+            course_id = c[0]
+            course_name = c[1]
 
-    def enroll(self):
-        selected = self.course_list.currentItem()
-        if selected:
-            course_id = int(selected.text().split(" - ")[0])#Εξαγωγή του ID
-            enroll_user_in_course(self.user_id, course_id)#Εγγραφή στη βάση δεδομένων
+            #Δημιουργούμε το item της λίστας
+            item = QListWidgetItem(self.course_list)
+            item.setSizeHint(QSize(0, 60)) #Ύψος κάθε σειράς
 
-            self.parent_window.update_course_list()# Ενημέρωση του κεντρικού πίνακα (Index 0)
+            #Δημιουργούμε ένα απλό QWidget που θα κρατάει το όνομα και το κουμπί
+            row_widget = QWidget()
+            row_layout = QHBoxLayout(row_widget)
+            row_layout.setContentsMargins(15, 0 ,15, 0)
 
-            self.load_courses() #Ανανέωση της ίδιας της λίστας εγγραφής ώστε να εξαφανιστεί το μάθημα που μόλις γράφτηκες
-            self.parent_window.content_stack.setCurrentIndex(0)#Επιστροφή στην αρχική σελίδα
+            label = QLabel(course_name)
+            label.setStyleSheet("font-size: 16px; color: #2f3640; font-weight: 500; background: transparent; border: none;")
+
+            # Κουμπί με Icon
+            btn_enroll = QPushButton()
+            btn_enroll.setIcon(QIcon("icons/register-subject.png"))
+            btn_enroll.setIconSize(QSize(30,30))#Μέγεθος icon κουμπιού
+            btn_enroll.setFixedSize(35, 35)#Μέγεθος background κουμπιού
+            btn_enroll.setCursor(Qt.PointingHandCursor)
+            btn_enroll.setStyleSheet(subjects_available_back_btn_style())
             
-            QMessageBox.information(self, "Επιτυχία", "Η εγγραφή ολοκληρώθηκε!")
-        else:
-            QMessageBox.warning(self, "Προσοχή", "Παρακαλώ επιλέξτε ένα μάθημα από τη λίστα.")
+            btn_enroll.clicked.connect(lambda _, cid = course_id: self.enroll(cid))
+
+            row_layout.addWidget(label)
+            row_layout.addStretch()
+            row_layout.addWidget(btn_enroll)
+
+            #Προσθέτουμε το widget στο item
+            self.course_list.addItem(item)
+            self.course_list.setItemWidget(item,row_widget)
+
+
+    def enroll(self,course_id):      
+        enroll_user_in_course(self.user_id, course_id)#Εγγραφή στη βάση δεδομένων
+        self.parent_window.update_course_list()# Ενημέρωση του κεντρικού πίνακα (Index 0)
+
+        self.load_courses() #Ανανέωση της ίδιας της λίστας εγγραφής ώστε να εξαφανιστεί το μάθημα που μόλις γράφτηκες
+        self.parent_window.content_stack.setCurrentIndex(0)#Επιστροφή στην αρχική σελίδα
+        
+        QMessageBox.information(self, "Επιτυχία", "Η εγγραφή ολοκληρώθηκε!")
+       

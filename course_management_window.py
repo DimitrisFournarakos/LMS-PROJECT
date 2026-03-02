@@ -1,7 +1,7 @@
 import sqlite3,os,subprocess
 from styles_css import styles
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,QMessageBox, QFileDialog, QLabel, QDialog,QMessageBox, QFileDialog, QLabel, QDialog,QListWidget,QHeaderView,QStackedWidget)
-from PyQt5.QtCore import Qt,QSize,QPropertyAnimation,QEasingCurve,QEvent
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,QMessageBox, QFileDialog, QLabel, QDialog,QMessageBox, QFileDialog, QLabel, QDialog,QHeaderView,QStackedWidget)
+from PyQt5.QtCore import Qt,QSize,QPropertyAnimation,QEvent
 from PyQt5.QtGui import QPixmap, QPainter,QIcon,QCursor
 from db import (get_enrolled_courses,add_question_to_quiz,create_course, update_course, get_all_courses, delete_course)
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
@@ -12,7 +12,7 @@ from subjects_interface.subjects_available_interface import EnrollPage
 class TableWithBackground(QTableWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.bg_pixmap = QPixmap('icons/background_subjects_interface.jpg')     
+        self.bg_pixmap = QPixmap('icons/background_subjects_interface.jpg')            
         self.horizontalHeader().setStretchLastSection(True)#Εμφανίζουμε τους τίτλους των στηλών(ID,Περιγραφή,κλπ.)
         self.verticalHeader().setVisible(False) # Κρύβουμε τους αριθμούς αριστερά
 
@@ -274,8 +274,8 @@ class CourseManagementWindow(QWidget):
         layout.addWidget(title)
 
         self.table = TableWithBackground()
-        self.table.setColumnCount(8)
-        self.table.setHorizontalHeaderLabels(["ID", "Όνομα", "Περιγραφή", "Κατηγορία", "Εκπαιδευτής", "Έναρξη", "Λήξη", "Διαλέξεις"])
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels(["Όνομα", "Περιγραφή", "Κατηγορία", "Εκπαιδευτής", "Έναρξη", "Λήξη", "Διαλέξεις"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) #Οι στήλες του πίνακα θα προσαρμόζονται αυτόματα στο διαθέσιμο πλάτος του πίνακα, ώστε να καλύπτουν όλο το πλάτος χωρίς να αφήνουν κενά ή να δημιουργούν οριζόντιο scrollbar
         self.table.cellClicked.connect(self.on_table_item_clicked)#Όταν ο χρήστης κάνει κλικ σε ένα κελί του πίνακα, καλείται η μέθοδος on_table_item_clicked που θα χειρίζεται την εμφάνιση των πληροφοριών του μαθήματος στα πεδία κειμένου για τον Admin ή θα ανοίγει τις διαλέξεις για τον Student
         layout.addWidget(self.table)
@@ -338,18 +338,23 @@ class CourseManagementWindow(QWidget):
         if self.admin:
             self.content_stack.setCurrentIndex(1)
 
-            course_id = self.table.item(row, 0).text()
-            self.name_input.setText(self.table.item(row, 1).text())
-            self.description_input.setText(self.table.item(row, 2).text())
-            self.category_input.setText(self.table.item(row, 3).text())
-            self.instructor_input.setText(self.table.item(row, 4).text())
-            self.start_date_input.setText(self.table.item(row, 5).text())
-            self.end_date_input.setText(self.table.item(row, 6).text())
+            item_name = self.table.item(row, 0)# Στήλη 0: Περιέχει το Όνομα και το Κρυφό ID (UserRole)
+            course_id = item_name.data(Qt.UserRole)# Παίρνουμε το σωστό ID για το update
+
+            self.name_input.setText(item_name.text())
+            self.description_input.setText(self.table.item(row, 1).text())
+            self.category_input.setText(self.table.item(row, 2).text())
+            self.instructor_input.setText(self.table.item(row, 3).text())
+            self.start_date_input.setText(self.table.item(row, 4).text())
+            self.end_date_input.setText(self.table.item(row, 5).text())
 
             self.add_course_btn.setText("📝 Ενημέρωση Μαθήματος")
 
-            try: self.add_course_btn.clicked.disconnect()#Αποεπιλεγουμε το μαθημα που ειχαμε επιλεξει να αλλαξουμε-ενημέρωση
-            except: pass #"Αν δεν έχουμε τίποτα να αποσυνδέσουμε, εντάξει, απλά προχωράμε"
+            try: 
+                self.add_course_btn.clicked.disconnect()#Αποεπιλεγουμε το μαθημα που ειχαμε επιλεξει να αλλαξουμε-ενημέρωση
+            except: 
+                pass #"Αν δεν έχουμε τίποτα να αποσυνδέσουμε, εντάξει, απλά προχωράμε"
+
             self.add_course_btn.clicked.connect(lambda: self.update_course(course_id))#lambda = "Όταν σε πατήσουν, κάλεσε τη συνάρτηση update_course για το συγκεκριμένο ID μαθήματος που μόλις κάναμε κλικ στον πίνακα"
 
     def update_course_list(self):
@@ -361,17 +366,21 @@ class CourseManagementWindow(QWidget):
         self.table.setRowCount(len(courses))#ο πίνακας δημιουργεί ακριβώς τόσες γραμμές όσες είναι και τα μαθήματα που βρέθηκαν,αναλογα την ιδιότητα μας
 
         for row_idx, course in enumerate(courses):
-            data_to_show = [course[0], course[1], course[2], course[3], course[4], course[6], course[7]] #Παραλείπουμε το course[5] που είναι το instructor_id και δεν θέλουμε να εμφανίζεται στον πίνακα,ετσι εχω φτιάξει την δομή του πίνακα courses στο db.py
+            data_to_show = [course[1], course[2], course[3], course[4], course[6], course[7]] #Παραλείπουμε το course[5] που είναι το instructor_id και δεν θέλουμε να εμφανίζεται στον πίνακα,ετσι εχω φτιάξει την δομή του πίνακα courses στο db.py
             for col_idx, data in enumerate(data_to_show):                                                #Τα courses[],είναι οι στήλες ID,Όνομα,Πειγραφή κλπ.
-                #Το διπλό for-loop rows,,cols μετατρέπει κάθε πληροφορία σε QTableWidgetItem    
+                #Το διπλό for-loop rows,,cols μετατρέπει κάθε πληροφορία σε QTableWidgetItem  
                 item = QTableWidgetItem(str(data))
+
+                if col_idx == 0:
+                    item.setData(Qt.UserRole, course[0]) #Αν είμαστε στην πρώτη στήλη,αποθηκεύω κρυφά το course[0],που ειναι το id που θέλω
+                
                 item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable) #κάνει τα κελιά "μόνο για ανάγνωση" μέσα στον πίνακα,ο χρήστης μπορεί μόνο να τα επιλέξει αλλά όχι να γράψει μέσα τους
                 self.table.setItem(row_idx, col_idx, item)
 
             lecture_btn = QPushButton("📂")
             lecture_btn.setToolTip("Διαλέξεις") #Όταν ο χρήστης περνάει το ποντίκι πάνω από το κουμπί, εμφανίζεται ένα μικρό κείμενο που λέει "Διαλέξεις" για να καταλαβαίνει ο χρήστης τι κάνει αυτό το κουμπί
             lecture_btn.clicked.connect(lambda _, cid=course[0]: self.open_lectures(cid)) #Βάζουμε την lambda η οποία λέει στο κουμπί "όταν πατηθείς, άνοιξε τις διαλέξεις ειδικά για το ID αυτού του μαθήματος course[0]"
-            self.table.setCellWidget(row_idx, 7, lecture_btn)
+            self.table.setCellWidget(row_idx, 6, lecture_btn)
 
         # Εφαρμογή στυλ κεφαλίδας και ρύθμιση για να πιάνουν όλο το πλάτος
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -410,8 +419,8 @@ class CourseManagementWindow(QWidget):
             QMessageBox.warning(self, "Προειδοποίηση", "Παρακαλώ επιλέξτε ένα μάθημα για διαγραφή.")
             return
 
-        item = self.table.item(row, 0)
-        course_id = item.text()
+        item = self.table.item(row, 0)# Παίρνουμε το αντικείμενο της πρώτης στήλης
+        course_id = item.data(Qt.UserRole)# Ανακτούμε το κρυφό ID που αποθηκεύσαμε με το UserRole
 
         reply = QMessageBox.question(self, 'Επιβεβαίωση', f'Είστε βέβαιοι ότι θέλετε να διαγράψετε το μάθημα με ID {course_id};',
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No) #Την δεύτερη φορά που βάζουμε την επιλογή No(QMessageBox.No) την εχουμε ουσιαστικά προεπιλέξει και με ενα enter επιλεγουμε το Οχι
