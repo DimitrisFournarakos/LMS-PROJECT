@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QMessageBox,QWidget,QPushButton,QHBoxLayout,QFrame,QListWidgetItem
-from PyQt5.QtCore import Qt,QSize
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QMessageBox,QWidget,QPushButton,QHBoxLayout,QFrame,QListWidgetItem,QGraphicsOpacityEffect
+from PyQt5.QtCore import Qt,QSize,QTimer,QPropertyAnimation
+from PyQt5.QtGui import QIcon,QPixmap
 from db import get_available_courses_for_user,enroll_user_in_course
 from styles_css.styles import students_stats_rounded_container,subjects_available_course_list_style,subjects_available_back_btn_style
 
@@ -68,7 +68,7 @@ class EnrollPage(QWidget):
             btn_enroll.setCursor(Qt.PointingHandCursor)
             btn_enroll.setStyleSheet(subjects_available_back_btn_style())
             
-            btn_enroll.clicked.connect(lambda _, cid = course_id: self.enroll(cid))
+            btn_enroll.clicked.connect(lambda _, course_id = course_id, item = item : self.enroll(course_id,item))
 
             row_layout.addWidget(label)
             row_layout.addStretch()
@@ -79,12 +79,45 @@ class EnrollPage(QWidget):
             self.course_list.setItemWidget(item,row_widget)
 
 
-    def enroll(self,course_id):      
+    def enroll(self,course_id,item):      
         enroll_user_in_course(self.user_id, course_id)#Εγγραφή στη βάση δεδομένων
+
+        # Παίρνω το row_widget που περιέχει το label και το button
+        row_widget = self.course_list.itemWidget(item)
+        row_layout = row_widget.layout()
+        
+        #Δημιουργία του checkmark
+        checkmark_label = QLabel()
+        pixmap = QPixmap("icons/checkmark.png")
+        scaled_pixmap = pixmap.scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        checkmark_label.setPixmap(scaled_pixmap)
+        checkmark_label.setStyleSheet("background: transparent; border: none;")
+        checkmark_label.setFixedWidth(40)
+
+        #Προσθήκη Εφέ Διαφάνειας για το animation
+        opacity_effect = QGraphicsOpacityEffect(checkmark_label)
+        checkmark_label.setGraphicsEffect(opacity_effect)
+        row_layout.insertWidget(1,checkmark_label)# Τοποθέτηση δίπλα στο κείμενο (position 1)
+
+        # Animation εμφάνισης (Fade In)
+        self.anim = QPropertyAnimation(opacity_effect, b"opacity")
+        self.anim.setDuration(900) # 0.9 Δευτερόλεπτα
+        self.anim.setStartValue(0)
+        self.anim.setEndValue(1)
+        self.anim.start()
+
+        #Μικρό "πήδημα": θα κουνηθεί λίγο προς τα δεξιά
+        checkmark_label.setContentsMargins(10,0,0,0) # Ξεκινάει με margin
+
         self.parent_window.update_course_list()# Ενημέρωση του κεντρικού πίνακα (Index 0)
 
-        self.load_courses() #Ανανέωση της ίδιας της λίστας εγγραφής ώστε να εξαφανιστεί το μάθημα που μόλις γράφτηκες
-        self.parent_window.content_stack.setCurrentIndex(0)#Επιστροφή στην αρχική σελίδα
+        # Περίμενε 1.5 δευτερόλεπτα και μετά ανανέωσε τη λίστα
+        QTimer.singleShot(1400, lambda:(
+            self.load_courses(), #Ανανέωση της ίδιας της λίστας εγγραφής ώστε να εξαφανιστεί το μάθημα που μόλις γράφτηκες
+            self.parent_window.content_stack.setCurrentIndex(0)#Επιστροφή στην αρχική σελίδα
+        ))
+       
         
-        QMessageBox.information(self, "Επιτυχία", "Η εγγραφή ολοκληρώθηκε!")
+        
        

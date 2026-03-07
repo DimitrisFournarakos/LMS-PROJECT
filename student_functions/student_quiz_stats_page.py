@@ -58,6 +58,12 @@ class StudentQuizStatsPage(QWidget):
             item = QListWidgetItem(course[1])
             item.setData(Qt.UserRole, course[0])#Αποθηκεύω το ID του course "παρασκήνιο",Πρέπει να έχω το course_id για να βρώ το μαθημα αλλά χρησιμοποιώ setData για να κρατήσω μόνο τον τίτλο του
             self.course_list.addItem(item)
+        
+        # Επιλέγουμε αυτόματα το πρώτο μάθημα και φορτώνουμε τα στατιστικά του
+        if self.course_list.count() > 0:
+            first_item = self.course_list.item(0)
+            self.course_list.setCurrentItem(first_item)
+            self.load_stats_for_course(first_item)
 
     #ΕΜΦΑΝΙΖΩ ΤΟΝ ΜΕΣΟ ΟΡΟ ΤΩΝ STUDENT ΔΙΠΛΑ ΣΤΟ ΓΡΑΦΗΜΑ ΜΕ ΤΑ ΣΤΑΤΙΣΤΙΚΑ ΤΩΝ ΒΑΘΜΩΝ
     def load_stats_for_course(self, item):
