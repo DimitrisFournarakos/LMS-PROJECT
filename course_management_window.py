@@ -3,7 +3,7 @@ from styles_css import styles
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,QMessageBox, QFileDialog, QLabel, QDialog,QMessageBox, QFileDialog, QLabel, QDialog,QHeaderView,QStackedWidget)
 from PyQt5.QtCore import Qt,QSize,QPropertyAnimation,QEvent
 from PyQt5.QtGui import QPixmap, QPainter,QIcon,QCursor
-from db import (get_enrolled_courses,add_question_to_quiz,create_course, update_course, get_all_courses, delete_course)
+from db import (get_enrolled_courses,add_question_to_quiz,create_course, update_course, get_all_courses, delete_course,unenroll_user_from_course)
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
 from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
@@ -275,7 +275,7 @@ class CourseManagementWindow(QWidget):
 
         self.table = TableWithBackground()
         self.table.setColumnCount(7)
-        self.table.setHorizontalHeaderLabels(["Όνομα", "Περιγραφή", "Κατηγορία", "Εκπαιδευτής", "Έναρξη", "Λήξη", "Διαλέξεις"])
+        self.table.setHorizontalHeaderLabels(["Όνομα", "Περιγραφή", "Κατηγορία", "Εκπαιδευτής", "Έναρξη", "Λήξη", "Ενέργειες"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) #Οι στήλες του πίνακα θα προσαρμόζονται αυτόματα στο διαθέσιμο πλάτος του πίνακα, ώστε να καλύπτουν όλο το πλάτος χωρίς να αφήνουν κενά ή να δημιουργούν οριζόντιο scrollbar
         self.table.cellClicked.connect(self.on_table_item_clicked)#Όταν ο χρήστης κάνει κλικ σε ένα κελί του πίνακα, καλείται η μέθοδος on_table_item_clicked που θα χειρίζεται την εμφάνιση των πληροφοριών του μαθήματος στα πεδία κειμένου για τον Admin ή θα ανοίγει τις διαλέξεις για τον Student
         layout.addWidget(self.table)
@@ -365,7 +365,7 @@ class CourseManagementWindow(QWidget):
     
         self.table.setRowCount(len(courses))#ο πίνακας δημιουργεί ακριβώς τόσες γραμμές όσες είναι και τα μαθήματα που βρέθηκαν,αναλογα την ιδιότητα μας
 
-        for row_idx, course in enumerate(courses):
+        for row_index, course in enumerate(courses):
             data_to_show = [course[1], course[2], course[3], course[4], course[6], course[7]] #Παραλείπουμε το course[5] που είναι το instructor_id και δεν θέλουμε να εμφανίζεται στον πίνακα,ετσι εχω φτιάξει την δομή του πίνακα courses στο db.py
             for col_idx, data in enumerate(data_to_show):                                                #Τα courses[],είναι οι στήλες ID,Όνομα,Πειγραφή κλπ.
                 #Το διπλό for-loop rows,,cols μετατρέπει κάθε πληροφορία σε QTableWidgetItem  
@@ -375,16 +375,53 @@ class CourseManagementWindow(QWidget):
                     item.setData(Qt.UserRole, course[0]) #Αν είμαστε στην πρώτη στήλη,αποθηκεύω κρυφά το course[0],που ειναι το id που θέλω
                 
                 item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable) #κάνει τα κελιά "μόνο για ανάγνωση" μέσα στον πίνακα,ο χρήστης μπορεί μόνο να τα επιλέξει αλλά όχι να γράψει μέσα τους
-                self.table.setItem(row_idx, col_idx, item)
+                self.table.setItem(row_index, col_idx, item)
 
+            # Container για δύο κουμπιά
+            actions_widget = QWidget()
+            actions_layout = QHBoxLayout(actions_widget)
+            actions_layout.setContentsMargins(35, 0, 35, 0) #setContentsMargins(left, top, right, bottom)
+            actions_layout.setSpacing(120) #Απόσταση μεταξύ των κουμπιών
+
+            #Κουμπί Διαλέξεων
             lecture_btn = QPushButton("📂")
-            lecture_btn.setToolTip("Διαλέξεις") #Όταν ο χρήστης περνάει το ποντίκι πάνω από το κουμπί, εμφανίζεται ένα μικρό κείμενο που λέει "Διαλέξεις" για να καταλαβαίνει ο χρήστης τι κάνει αυτό το κουμπί
-            lecture_btn.clicked.connect(lambda _, cid=course[0]: self.open_lectures(cid)) #Βάζουμε την lambda η οποία λέει στο κουμπί "όταν πατηθείς, άνοιξε τις διαλέξεις ειδικά για το ID αυτού του μαθήματος course[0]"
-            self.table.setCellWidget(row_idx, 6, lecture_btn)
+            lecture_btn.setToolTip("Διαλέξεις")
+            lecture_btn.setFixedSize(32,32)
+            lecture_btn.clicked.connect(lambda _, course_id = course[0]: self.open_lectures(course_id))
+
+            #Κουμπί Απεγγραφής (μόνο για students)
+            if not self.admin:
+                unenroll_btn = QPushButton("✖️")
+                unenroll_btn.setToolTip("Απεγγραφή")
+                unenroll_btn.setFixedSize(32,32)
+                unenroll_btn.setStyleSheet("background: #e74c3c; color: white; border: none; border-radius: 3px;")
+                unenroll_btn.clicked.connect(lambda _, course_id=course[0]: self.unenroll_from_course(course_id))
+                actions_layout.addWidget(lecture_btn)
+                actions_layout.addWidget(unenroll_btn)
+            else:
+                actions_layout.addWidget(lecture_btn)
+
+            actions_layout.addStretch()
+            self.table.setCellWidget(row_index,6,actions_widget)
+
 
         # Εφαρμογή στυλ κεφαλίδας και ρύθμιση για να πιάνουν όλο το πλάτος
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.horizontalHeader().setStyleSheet(styles.get_table_header_style())
+
+    
+    def enroll_in_course(self):
+        dialog = EnrollPage(self.user_id, self)
+        dialog.exec_()
+        self.update_course_list()
+
+    def unenroll_from_course(self, course_id):
+        success = unenroll_user_from_course(self.user_id, course_id)
+
+        if success:
+            self.update_course_list()  # Ανανέωση enrolled courses
+            if hasattr(self, 'enroll_page'):  # Αν υπάρχει η σελίδα εγγραφής, ανανεώνουμε και εκείνη
+                self.enroll_page.load_courses()
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def open_quiz_stats_dialog(self):
@@ -428,11 +465,6 @@ class CourseManagementWindow(QWidget):
         if reply == QMessageBox.Yes:
             delete_course(course_id)
             self.update_course_list()
-
-    def enroll_in_course(self):
-        dialog = EnrollPage(self.user_id, self)
-        dialog.exec_()
-        self.update_course_list()
 
     def update_course(self, course_id):
         name = self.name_input.text().strip()#.strip()Αφαιρεί όλους τους κενούς χαρακτήρες (whitespace) από την αρχή και το τέλος ενός string

@@ -196,6 +196,19 @@ def enroll_user_in_course(user_id, course_id):
         pass  # Ήδη εγγεγραμμένος
     conn.close()
 
+def unenroll_user_from_course(user_id, course_id):
+    """Κάνει Απεγγραφή έναν φοιτητή από ενα μάθημα"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM enrollments WHERE user_id = ? AND course_id = ?", (user_id,course_id))
+        conn.commit()
+        return True   
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
 def create_quiz_in_db(title, description, course_id):
     conn = connect_db()
     cursor = conn.cursor()
