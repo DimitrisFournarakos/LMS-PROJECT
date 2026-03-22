@@ -1,4 +1,6 @@
 import sqlite3,os,subprocess
+
+import fitz
 from styles_css import styles
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,QMessageBox, QFileDialog, QLabel, QDialog,QMessageBox, QFileDialog, QLabel, QDialog,QHeaderView,QStackedWidget,QListWidget,QTextEdit)
 from PyQt5.QtCore import Qt,QSize,QPropertyAnimation,QEvent
@@ -9,6 +11,7 @@ from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
 from subjects_interface.subjects_available_interface import EnrollPage
 import qtawesome as qta
+
 
 class TableWithBackground(QTableWidget):
     def __init__(self, *args, **kwargs):
@@ -589,14 +592,20 @@ class LecturesPage(QWidget):
         back_btn = QPushButton("⬅️ Πίσω στις Διαλέξεις")
         back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
         viewer_layout.addWidget(back_btn)
+        viewer_layout.setSpacing(10)
         
         # Label για τον τίτλο της διάλεξης
         self.lecture_title = QLabel()
-        self.lecture_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #2c3e50;")
+        self.lecture_title.setStyleSheet("font-size: 17px; font-weight: bold; color: #2c3e50;")
         viewer_layout.addWidget(self.lecture_title)
+        viewer_layout.setSpacing(10)
+
+        # Text area για εμφάνιση του περιεχομένου της διάλεξης
+        self.lecture_content = QTextEdit()
+        self.lecture_content.setReadOnly(True)
+        viewer_layout.addWidget(self.lecture_content)
 
         self.stack.addWidget(viewer_container)  # Index 1
-        viewer_layout.addStretch()#Βάζω addStretch για να δείχνει πάνω πάνω το όνομα του αρχείου της Διάλεξης
 
         main_layout.addWidget(self.stack)
 
@@ -630,11 +639,45 @@ class LecturesPage(QWidget):
         file_path = os.path.join(self.lectures_folder, lecture_file)
         self.current_lecture_path = file_path
         self.lecture_title.setText(f"📄 {lecture_file}")
-               
-        # Εναλλαγή σε viewer
+         
+        # Διαβάζω και εμφανίζω το περιεχόμενο του αρχείου
+        ext = os.path.splitext(lecture_file)[1].lower()
+   
+        if ext == ".pdf":
+          
+            # Ανοίγουμε το PDF
+            pdf = fitz.open(file_path)
+            
+            if len(pdf) > 0:
+                # Δημιουργούμε HTML με όλες τις σελίδες
+                html_content = """<html><body style='background-color: #f0f0f0; margin: 0px; padding: 0px;'>"""
+                
+                for page_num in range(len(pdf)):
+                    page = pdf[page_num]
+                    
+                    # Μετατρέπουμε τη σελίδα σε εικόνα, Ουσιαστικά μετατρέπουμε το PDF σε εικόνες με PyMuPDF
+                    pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))  # 1.5x zoom
+                    
+                    # Αποθηκεύουμε προσωρινά
+                    temp_path = f"temp_page_{page_num + 1}.png"
+                    pix.save(temp_path)
+                    
+                    # Προσθέτουμε στο HTML
+                    # Styling για PDF pages - πλήρες πλάτος
+                    html_content += f"""
+                    <h3 style='text-align: center; color: white; background-color: #34405e; margin: 0px; padding: 15px; font-size: 12px;'>Σελίδα {page_num + 1}</h3>
+                    <div style='text-align: center; background-color: #f8f9fa; padding: 15px; margin: 0px;'>
+                        <img src='{temp_path}' style='max-width: 100%; height: auto; border: 1px solid #ddd;'/>
+                    </div>
+                    """
+                
+                html_content += "</body></html>"
+                self.lecture_content.setHtml(html_content)
+                pdf.close()
+          
+        #Εναλλαγή σε viewer
         self.stack.setCurrentIndex(1)
     
-
     def add_lecture(self):
         """Προσθέτει νέα διάλεξη (για admin)"""
         file_path, _ = QFileDialog.getOpenFileName(self, "Επιλέξτε αρχείο")
@@ -649,7 +692,8 @@ class LecturesPage(QWidget):
             except Exception as e:
                 QMessageBox.warning(self, "Σφάλμα", f"Αποτυχία: {e}")
 
-
+    
+#-----------------------------------------------------------------------------------------------------------------------------
 
 # --- Διάλογοι Quiz & Εγγραφής ---
 class QuizDialog(QDialog):
