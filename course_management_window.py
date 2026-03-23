@@ -1,11 +1,9 @@
 import sqlite3
 import os
-import subprocess
-
+import base64
 import fitz
 from styles_css import styles
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox,
-                             QFileDialog, QLabel, QDialog, QMessageBox, QFileDialog, QLabel, QDialog, QHeaderView, QStackedWidget, QListWidget, QTextEdit)
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox,QFileDialog, QLabel, QDialog, QMessageBox, QFileDialog, QLabel, QDialog, QHeaderView, QStackedWidget, QListWidget)
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor
 from db import (get_enrolled_courses, add_question_to_quiz, create_course,
@@ -15,6 +13,7 @@ from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
 from subjects_interface.subjects_available_interface import EnrollPage
 import qtawesome as qta
+from lectures_functions.lectures_functions import LecturesPage
 
 
 class TableWithBackground(QTableWidget):
@@ -51,7 +50,7 @@ class CourseManagementWindow(QWidget):
         self.user_id = user_id
         self.admin = admin
         self.setWindowTitle("Διαχείριση Μαθημάτων")
-        self.setGeometry(100, 100, 1100, 650)
+        self.setGeometry(100, 100, 1200, 820)
         self.setStyleSheet(styles.get_main_window_style())
 
         self.init_ui()
@@ -609,166 +608,6 @@ class CourseManagementWindow(QWidget):
         self.close()
         self.main_window = MainWindow(role)
         self.main_window.show()
-
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# --- Παράθυρο Διαλέξεων ---
-
-
-class LecturesPage(QWidget):
-    def __init__(self, course_id, admin=False, parent_window=None):
-        super().__init__()
-        self.course_id = course_id
-        self.admin = admin
-        self.parent_window = parent_window
-        self.lectures_folder = os.path.join(
-            "lectures", f"course_{self.course_id}")
-
-        # Κύριο layout
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(30, 20, 30, 30)
-        main_layout.setSpacing(20)
-
-        # Τίτλος
-        title = QLabel(f"Διαλέξεις Μαθήματος")
-        title.setStyleSheet(
-            "font-size: 25px; font-weight: bold; color: #2c3e50;")
-        main_layout.addWidget(title)
-
-        # Stacked widget για να εναλλάσσουμε μεταξύ λίστας και viewer
-        self.stack = QStackedWidget()
-
-        # --- ΣΕΛΙΔΑ 0: Λίστα Διαλέξεων ---
-        lectures_container = QFrame()
-        # βάζω το ίδιο στυλ με στρογγυλεμένο container από τα στατιστικά βαθμών μαθητών
-        lectures_container.setStyleSheet(
-            styles.students_stats_rounded_container())
-        container_layout = QVBoxLayout(lectures_container)
-        container_layout.setContentsMargins(15, 15, 15, 15)
-
-        self.lectures_list = QListWidget()
-        self.lectures_list.itemClicked.connect(self.on_lecture_clicked)
-        self.load_lectures()
-        container_layout.addWidget(self.lectures_list)
-
-        self.stack.addWidget(lectures_container)  # Index 0
-
-        # --- ΣΕΛΙΔΑ 1: Viewer Διάλεξης ---
-        viewer_container = QFrame()
-        viewer_container.setStyleSheet(
-            styles.students_stats_rounded_container())
-        viewer_layout = QVBoxLayout(viewer_container)
-        viewer_layout.setContentsMargins(15, 15, 15, 15)
-
-        # Back button
-        back_btn = QPushButton("⬅️ Πίσω στις Διαλέξεις")
-        back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
-        viewer_layout.addWidget(back_btn)
-        viewer_layout.setSpacing(10)
-
-        # Label για τον τίτλο της διάλεξης
-        self.lecture_title = QLabel()
-        self.lecture_title.setStyleSheet(
-            "font-size: 17px; font-weight: bold; color: #2c3e50;")
-        viewer_layout.addWidget(self.lecture_title)
-        viewer_layout.setSpacing(10)
-
-        # Text area για εμφάνιση του περιεχομένου της διάλεξης
-        self.lecture_content = QTextEdit()
-        self.lecture_content.setReadOnly(True)
-        viewer_layout.addWidget(self.lecture_content)
-
-        self.stack.addWidget(viewer_container)  # Index 1
-
-        main_layout.addWidget(self.stack)
-
-        # Κουμπί προσθήκης (μόνο για admin)
-        if self.admin:
-            add_btn = QPushButton("➕ Προσθήκη Διάλεξης")
-            add_btn.clicked.connect(self.add_lecture)
-            main_layout.addWidget(add_btn)
-
-    def load_lectures(self):
-        """Φορτώνει τις διαλέξεις από τον φάκελο"""
-        self.lectures_list.clear()
-
-        if os.path.exists(self.lectures_folder):
-            files = os.listdir(self.lectures_folder)
-            if files:
-                for file in files:
-                    self.lectures_list.addItem(file)
-            else:
-                self.lectures_list.addItem("Δεν υπάρχουν διαλέξεις")
-        else:
-            self.lectures_list.addItem("Δεν υπάρχουν διαλέξεις")
-
-    def on_lecture_clicked(self, item):
-        """Ανοίγει τη διάλεξη που επιλέχθηκε"""
-        lecture_file = item.text()
-
-        if lecture_file == "Δεν υπάρχουν διαλέξεις":
-            return
-
-        file_path = os.path.join(self.lectures_folder, lecture_file)
-        self.current_lecture_path = file_path
-        self.lecture_title.setText(f"📄 {lecture_file}")
-
-        # Διαβάζω και εμφανίζω το περιεχόμενο του αρχείου
-        ext = os.path.splitext(lecture_file)[1].lower()
-
-        if ext == ".pdf":
-
-            # Ανοίγουμε το PDF
-            pdf = fitz.open(file_path)
-
-            if len(pdf) > 0:
-                # Δημιουργούμε HTML με όλες τις σελίδες
-                html_content = """<html><body style='background-color: #f0f0f0; margin: 0px; padding: 0px;'>"""
-
-                for page_num in range(len(pdf)):
-                    page = pdf[page_num]
-
-                    # Μετατρέπουμε τη σελίδα σε εικόνα, Ουσιαστικά μετατρέπουμε το PDF σε εικόνες με PyMuPDF
-                    pix = page.get_pixmap(
-                        matrix=fitz.Matrix(1.5, 1.5))  # 1.5x zoom
-
-                    # Αποθηκεύουμε προσωρινά
-                    temp_path = f"temp_page_{page_num + 1}.png"
-                    pix.save(temp_path)
-
-                    # Προσθέτουμε στο HTML
-                    # Styling για PDF pages - πλήρες πλάτος
-                    html_content += f"""
-                    <h3 style='text-align: center; color: white; background-color: #34405e; margin: 0px; padding: 15px; font-size: 12px;'>Σελίδα {page_num + 1}</h3>
-                    <div style='text-align: center; background-color: #f8f9fa; padding: 15px; margin: 0px;'>
-                        <img src='{temp_path}' style='max-width: 100%; height: auto; border: 1px solid #ddd;'/>
-                    </div>
-                    """
-
-                html_content += "</body></html>"
-                self.lecture_content.setHtml(html_content)
-                pdf.close()
-
-        # Εναλλαγή σε viewer
-        self.stack.setCurrentIndex(1)
-
-    def add_lecture(self):
-        """Προσθέτει νέα διάλεξη (για admin)"""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Επιλέξτε αρχείο")
-        if file_path:
-            os.makedirs(self.lectures_folder, exist_ok=True)
-            target_path = os.path.join(
-                self.lectures_folder, os.path.basename(file_path))
-            try:
-                import shutil
-                shutil.copy(file_path, target_path)
-                QMessageBox.information(
-                    self, "Επιτυχία", "Η διάλεξη προστέθηκε.")
-                self.load_lectures()
-            except Exception as e:
-                QMessageBox.warning(self, "Σφάλμα", f"Αποτυχία: {e}")
-
-
-# -----------------------------------------------------------------------------------------------------------------------------
 
 # --- Διάλογοι Quiz & Εγγραφής ---
 class QuizDialog(QDialog):
