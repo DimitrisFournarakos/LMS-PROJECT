@@ -59,12 +59,6 @@ class LecturesPage(QWidget):
         viewer_layout.addWidget(back_btn)
         viewer_layout.setSpacing(10)
 
-        # # Label για τον τίτλο της διάλεξης
-        # self.lecture_title = QLabel()
-        # self.lecture_title.setStyleSheet("font-size: 17px; font-weight: bold; color: #2c3e50;")
-        # viewer_layout.addWidget(self.lecture_title)
-        # viewer_layout.setSpacing(10)
-
         # Controls πλοήγησης σελίδων για μεγάλα PDF.
         nav_layout = QHBoxLayout()
         self.prev_page_btn = QPushButton("⬅ Προηγούμενη")
@@ -119,7 +113,6 @@ class LecturesPage(QWidget):
 
         file_path = os.path.join(self.lectures_folder, lecture_file)#Φτιάχνω το πλήρες μονοπάτι του αρχείου που επιλέχθηκε, π.χ. "lectures/course_123/lecture1.pdf"
         self.current_lecture_path = file_path
-        #self.lecture_title.setText(f"📄 {lecture_file}")
 
         ext = os.path.splitext(lecture_file)[1].lower()
 
