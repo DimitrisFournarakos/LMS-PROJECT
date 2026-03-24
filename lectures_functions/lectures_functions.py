@@ -150,12 +150,13 @@ class LecturesPage(QWidget):
         pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False) #Μετατρέπει τη σελίδα σε εικόνα (raster) με get_pixmap(matrix=fitz.Matrix(2.2, 2.2)), 2x οριζόντια και 2x κάθετα,άρα η εικόνα βγαίνει πιο μεγάλη και πιο καθαρή από το default 1.0, αλλά με μεγαλύτερο κόστος σε μνήμη/χρόνο.
         img_data = pix.tobytes("png") #Παίρνει bytes PNG από το pixmap.
         img_base64 = base64.b64encode(img_data).decode("utf-8") #Κωδικοποιεί τα bytes σε base64 string για να μπορέσει να ενσωματωθεί σε HTML.
+        image_width_percent = max(40, min(100, int(0.7 * 100)))
 
         #-----Φτιάχνω HTML που έχει img src=data:image/png;base64,... ------
         html = f"""  
         <html>
         <body style='background-color: #ffffff; margin: 0; padding: 0;'>
-            <img src='data:image/png;base64,{img_base64}' style='display: block; width: 100%; height: auto; border: none;' />
+            <img src='data:image/png;base64,{img_base64}' style='display: block; width: 70%; height: auto; border: none; margin: 0 auto;' />
         </body>
         </html>
         """
