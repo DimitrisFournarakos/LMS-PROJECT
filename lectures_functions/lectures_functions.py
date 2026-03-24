@@ -147,7 +147,7 @@ class LecturesPage(QWidget):
             return
 
         page = self.current_pdf_doc[self.current_page_index] #Για να γίνει η εμφάνιση,παίρνω τη σελίδα με Index.
-        pix = page.get_pixmap(matrix=fitz.Matrix(2.2, 2.2), alpha=False) #Μετατρέπει τη σελίδα σε εικόνα (raster) με get_pixmap(matrix=fitz.Matrix(2.2, 2.2))
+        pix = page.get_pixmap(matrix=fitz.Matrix(2.5, 2.5), alpha=False) #Μετατρέπει τη σελίδα σε εικόνα (raster) με get_pixmap(matrix=fitz.Matrix(2.2, 2.2))
         img_data = pix.tobytes("png") #Παίρνει bytes PNG από το pixmap.
         img_base64 = base64.b64encode(img_data).decode("utf-8") #Κωδικοποιεί τα bytes σε base64 string για να μπορέσει να ενσωματωθεί σε HTML.
 
