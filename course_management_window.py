@@ -300,7 +300,7 @@ class CourseManagementWindow(QWidget):
         layout = QVBoxLayout(page)
 
         title = QLabel(
-            "Τα μαθήματά μου" if not self.admin else "Πίνακας Ελέγχου Μαθημάτων")
+            "Τα μαθήματα μου" if not self.admin else "Πίνακας Ελέγχου Μαθημάτων")
         title.setStyleSheet(
             "font-size: 24px; font-weight: bold; margin: 10px; color: #2c3e50;")
         layout.addWidget(title)

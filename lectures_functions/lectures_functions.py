@@ -4,7 +4,8 @@ import fitz
 import shutil 
 from styles_css import styles
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QMessageBox,QFileDialog, QLabel, QMessageBox, QFileDialog, QLabel, QStackedWidget, QListWidget)
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt,QSize
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 class LecturesPage(QWidget):
@@ -22,7 +23,7 @@ class LecturesPage(QWidget):
 
         # Κύριο layout
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(15, 10, 15, 15)
+        main_layout.setContentsMargins(15, 20, 15, 15)
         main_layout.setSpacing(20)
 
         # Τίτλος
@@ -54,10 +55,16 @@ class LecturesPage(QWidget):
         viewer_layout.setContentsMargins(8, 8, 8, 8)
 
         # Back button
-        back_btn = QPushButton("⬅️ Πίσω στις Διαλέξεις")
+        back_btn = QPushButton("")
+        back_btn_icon = QIcon("icons/close-window.png")
+        back_btn.setIcon(back_btn_icon)
+        back_btn.setIconSize(QSize(32, 32))
+        back_btn.setStyleSheet("border: none; background: transparent;") #Κάνει το κουμπί να μην έχει περίγραμμα & background, ώστε να φαίνεται μόνο το εικονίδιο.
+        back_btn.setCursor(Qt.PointingHandCursor)
+        back_btn.setFixedSize(52, 52) #Δίνω λίγο μεγαλύτερο μέγεθος στο κουμπί από το εικονίδιο για να είναι πιο εύκολο στο κλικ, αλλά το εικονίδιο παραμένει 44x44.
         back_btn.clicked.connect(self.back_to_lectures)
-        viewer_layout.addWidget(back_btn)
-        viewer_layout.setSpacing(10)
+        
+        viewer_layout.addWidget(back_btn, 0, Qt.AlignRight | Qt.AlignTop)#Τοποθετώ το κουμπί στην πάνω δεξιά γωνία του viewer, το 0 σημαίνει ότι δεν παίρνει επιπλέον χώρο στο layout, και το Qt.AlignRight | Qt.AlignTop ευθυγραμμίζει το κουμπί δεξιά και πάνω.
 
         # Controls πλοήγησης σελίδων για μεγάλα PDF.
         nav_layout = QHBoxLayout()
