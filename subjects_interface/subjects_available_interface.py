@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget, QMessageBox,QWidget,QPushButton,QHBoxLayout,QFrame,QListWidgetItem,QGraphicsOpacityEffect
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget,QWidget,QPushButton,QHBoxLayout,QFrame,QListWidgetItem,QGraphicsOpacityEffect
 from PyQt5.QtCore import Qt,QSize,QTimer,QPropertyAnimation
 from PyQt5.QtGui import QIcon,QPixmap
 from db import get_available_courses_for_user,enroll_user_in_course

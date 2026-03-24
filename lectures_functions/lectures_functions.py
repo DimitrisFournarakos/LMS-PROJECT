@@ -3,7 +3,7 @@ import base64
 import fitz
 from styles_css import styles
 from db import add_lecture_to_course, get_lectures_by_course, get_lecture_pdf_by_id
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QMessageBox,QFileDialog, QLabel, QMessageBox, QFileDialog, QLabel, QStackedWidget, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QPushButton, QMessageBox,QFileDialog, QLabel, QMessageBox, QFileDialog, QLabel, QStackedWidget, QListWidget, QListWidgetItem
 from PyQt5.QtCore import Qt,QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView
