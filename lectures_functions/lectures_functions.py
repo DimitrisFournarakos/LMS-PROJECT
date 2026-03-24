@@ -59,7 +59,7 @@ class LecturesPage(QWidget):
         back_btn_icon = QIcon("icons/close-window.png")
         back_btn.setIcon(back_btn_icon)
         back_btn.setIconSize(QSize(32, 32))
-        back_btn.setStyleSheet("border: none; background: transparent;") #Κάνει το κουμπί να μην έχει περίγραμμα & background, ώστε να φαίνεται μόνο το εικονίδιο.
+        back_btn.setStyleSheet(styles.lectures_back_btn_style())
         back_btn.setCursor(Qt.PointingHandCursor)
         back_btn.setFixedSize(52, 52) #Δίνω λίγο μεγαλύτερο μέγεθος στο κουμπί από το εικονίδιο για να είναι πιο εύκολο στο κλικ, αλλά το εικονίδιο παραμένει 44x44.
         back_btn.clicked.connect(self.back_to_lectures)
@@ -73,20 +73,20 @@ class LecturesPage(QWidget):
         self.prev_page_btn_icon = QIcon("icons/previous-page.png")
         self.prev_page_btn.setIcon(self.prev_page_btn_icon)
         self.prev_page_btn.setIconSize(QSize(30, 30))
-        self.prev_page_btn.setStyleSheet("border: none; background: transparent;")
+        self.prev_page_btn.setStyleSheet(styles.lectures_prev_page_btn_style())
         self.prev_page_btn.clicked.connect(self.show_prev_page)
         self.prev_page_btn.setCursor(Qt.PointingHandCursor)
-        self.prev_page_btn.setFixedSize(40, 40) #Δίνω λίγο μεγαλύτερο μέγεθος στο κουμπί από το εικονίδιο για να είναι πιο εύκολο στο κλικ, αλλά το εικονίδιο παραμένει 44x44.
+        self.prev_page_btn.setFixedSize(44, 44)
 
 
         self.next_page_btn = QPushButton("")
         self.next_page_btn_icon = QIcon("icons/next-page.png")
         self.next_page_btn.setIcon(self.next_page_btn_icon)
         self.next_page_btn.setIconSize(QSize(30, 30))
-        self.next_page_btn.setStyleSheet("border: none; background: transparent;")
+        self.next_page_btn.setStyleSheet(styles.lectures_next_page_btn_style())
         self.next_page_btn.clicked.connect(self.show_next_page)
         self.next_page_btn.setCursor(Qt.PointingHandCursor)
-        self.next_page_btn.setFixedSize(40, 40) #Δίνω λίγο μεγαλύτερο μέγεθος στο κουμπί από το εικονίδιο για να είναι πιο εύκολο στο κλικ, αλλά το εικονίδιο παραμένει 44x44.
+        self.next_page_btn.setFixedSize(44, 44)
 
         self.page_indicator = QLabel("")
         self.page_indicator.setAlignment(Qt.AlignCenter)

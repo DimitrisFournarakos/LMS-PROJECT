@@ -496,3 +496,54 @@ def unenroll_btn_style():
         border-radius: 4px;
     }
            """
+
+def lectures_back_btn_style():
+    return """
+            QPushButton {
+                border: none;
+                background: transparent;
+            }
+            QPushButton:hover {
+                background-color: rgba(220, 53, 69, 0.15);
+                border-radius: 4px;
+            }
+            QPushButton:pressed {
+                background-color: rgba(220, 53, 69, 0.3);
+            }
+        """
+
+def lectures_prev_page_btn_style():
+    return """
+            QPushButton {
+                border: none;
+                background: transparent;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(52, 152, 219, 0.15);
+            }
+            QPushButton:pressed {
+                background-color: rgba(52, 152, 219, 0.3);
+            }
+            QPushButton:disabled {
+                opacity: 0.5;
+            }
+        """
+
+def lectures_next_page_btn_style():
+    return """
+            QPushButton {
+                border: none;
+                background: transparent;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(52, 152, 219, 0.15);
+            }
+            QPushButton:pressed {
+                background-color: rgba(52, 152, 219, 0.3);
+            }
+            QPushButton:disabled {
+                opacity: 0.5;
+            }
+        """
