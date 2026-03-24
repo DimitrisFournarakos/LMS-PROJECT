@@ -63,20 +63,41 @@ class LecturesPage(QWidget):
         back_btn.setCursor(Qt.PointingHandCursor)
         back_btn.setFixedSize(52, 52) #Δίνω λίγο μεγαλύτερο μέγεθος στο κουμπί από το εικονίδιο για να είναι πιο εύκολο στο κλικ, αλλά το εικονίδιο παραμένει 44x44.
         back_btn.clicked.connect(self.back_to_lectures)
-        
-        viewer_layout.addWidget(back_btn, 0, Qt.AlignRight | Qt.AlignTop)#Τοποθετώ το κουμπί στην πάνω δεξιά γωνία του viewer, το 0 σημαίνει ότι δεν παίρνει επιπλέον χώρο στο layout, και το Qt.AlignRight | Qt.AlignTop ευθυγραμμίζει το κουμπί δεξιά και πάνω.
 
         # Controls πλοήγησης σελίδων για μεγάλα PDF.
         nav_layout = QHBoxLayout()
-        self.prev_page_btn = QPushButton("⬅ Προηγούμενη")
+        nav_layout.setContentsMargins(0, 0, 0, 0)
+        nav_layout.setSpacing(8)
+        
+        self.prev_page_btn = QPushButton("")
+        self.prev_page_btn_icon = QIcon("icons/previous-page.png")
+        self.prev_page_btn.setIcon(self.prev_page_btn_icon)
+        self.prev_page_btn.setIconSize(QSize(30, 30))
+        self.prev_page_btn.setStyleSheet("border: none; background: transparent;")
         self.prev_page_btn.clicked.connect(self.show_prev_page)
-        self.next_page_btn = QPushButton("Επόμενη ➡")
+        self.prev_page_btn.setCursor(Qt.PointingHandCursor)
+        self.prev_page_btn.setFixedSize(40, 40) #Δίνω λίγο μεγαλύτερο μέγεθος στο κουμπί από το εικονίδιο για να είναι πιο εύκολο στο κλικ, αλλά το εικονίδιο παραμένει 44x44.
+
+
+        self.next_page_btn = QPushButton("")
+        self.next_page_btn_icon = QIcon("icons/next-page.png")
+        self.next_page_btn.setIcon(self.next_page_btn_icon)
+        self.next_page_btn.setIconSize(QSize(30, 30))
+        self.next_page_btn.setStyleSheet("border: none; background: transparent;")
         self.next_page_btn.clicked.connect(self.show_next_page)
+        self.next_page_btn.setCursor(Qt.PointingHandCursor)
+        self.next_page_btn.setFixedSize(40, 40) #Δίνω λίγο μεγαλύτερο μέγεθος στο κουμπί από το εικονίδιο για να είναι πιο εύκολο στο κλικ, αλλά το εικονίδιο παραμένει 44x44.
+
         self.page_indicator = QLabel("")
         self.page_indicator.setAlignment(Qt.AlignCenter)
+        nav_layout.addStretch(1)
         nav_layout.addWidget(self.prev_page_btn)
-        nav_layout.addWidget(self.page_indicator, 1) #Μεγεθος των κουμπιών 
+        nav_layout.addSpacing(100)  # Κενό μεταξύ prev και page_indicator
+        nav_layout.addWidget(self.page_indicator)
+        nav_layout.addSpacing(100)  # Κενό μεταξύ page_indicator και next
         nav_layout.addWidget(self.next_page_btn)
+        nav_layout.addStretch(1)
+        nav_layout.addWidget(back_btn, 0, Qt.AlignRight | Qt.AlignVCenter)
 
         viewer_layout.addLayout(nav_layout)
         self.prev_page_btn.setEnabled(False)
@@ -169,6 +190,7 @@ class LecturesPage(QWidget):
         """
         self.lecture_content.setHtml(html) #Εμφανίζει το HTML με την εικόνα της σελίδας στο QWebEngineView. Η QWebEngineView χρησιμοποιείται σαν HTML render,ουσιαστικά του δίνω ήδη έτοιμη εικόνα σελίδας (μέσω base64 μέσα σε HTML)
         self.page_indicator.setText(f"Σελίδα {self.current_page_index + 1} / {self.total_pages}")
+        self.page_indicator.setStyleSheet("font-size: 23px; color: black; font-weight: 455; background: transparent; border: none;")
         self.prev_page_btn.setEnabled(self.current_page_index > 0)
         self.next_page_btn.setEnabled(self.current_page_index < self.total_pages - 1)
 
