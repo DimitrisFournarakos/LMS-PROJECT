@@ -6,8 +6,4 @@ __pycache__/
 example.py
 lms.db
 /Εκφώνηση Ασκησης.txt
-lectures/course_3/*.pdf
-!lectures/course_3/.gitkeep
-lectures/course_4/*.pdf
-!lectures/course_4/.gitkeep
-!lectures/.gitkeep
+lectures/
