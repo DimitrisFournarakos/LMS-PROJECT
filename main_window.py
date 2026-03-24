@@ -184,7 +184,7 @@ class MainWindow(QWidget):
         
 
 if __name__ == "__main__":
-    initialize_database()  # Δημιουργεί πίνακες και φάκελο lectures
+    initialize_database()  # Δημιουργεί/ενημερώνει πίνακες στη βάση
     app = QApplication(sys.argv)
     win = MainWindow()  #Η επιλογή ρόλου γίνεται μέσα στο MainWindow
     win.show()

@@ -1,9 +1,9 @@
 import os
 import base64
 import fitz
-import shutil 
 from styles_css import styles
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QMessageBox,QFileDialog, QLabel, QMessageBox, QFileDialog, QLabel, QStackedWidget, QListWidget)
+from db import add_lecture_to_course, get_lectures_by_course, get_lecture_pdf_by_id
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QMessageBox,QFileDialog, QLabel, QMessageBox, QFileDialog, QLabel, QStackedWidget, QListWidget, QListWidgetItem
 from PyQt5.QtCore import Qt,QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -16,7 +16,6 @@ class LecturesPage(QWidget):
         self.admin = admin
         self.parent_window = parent_window
 
-        self.lectures_folder = os.path.join("lectures", f"course_{self.course_id}") #Φάκελος όπου θα αποθηκεύονται οι διαλέξεις για το συγκεκριμένο μάθημα. Π.χ. "lectures/course_123"
         self.current_pdf_doc = None #Μεταβλητή που θα κρατάει το ανοιχτό PDF object (PyMuPDF document).Ξεκινάει None γιατί στην αρχή δεν έχει ανοιχτεί κανένα PDF
         self.current_page_index = 0
         self.total_pages = 0
@@ -119,49 +118,67 @@ class LecturesPage(QWidget):
             main_layout.addWidget(add_btn)
 
     def load_lectures(self):
-        """Φορτώνει τις διαλέξεις από τον φάκελο"""
+        """Φορτώνει τις διαλέξεις του μαθήματος από τη βάση."""
         self.lectures_list.clear()
 
-        if os.path.exists(self.lectures_folder):
-            files = os.listdir(self.lectures_folder)
-            if files:
-                for file in files:
-                    self.lectures_list.addItem(file)
-            else:
-                self.lectures_list.addItem("Δεν υπάρχουν διαλέξεις")
-        else:
+        rows = get_lectures_by_course(self.course_id)#Επιστρέφει μια λίστα με tuples (lecture_id, display_name) για τις διαλέξεις του μαθήματος
+        if not rows:
             self.lectures_list.addItem("Δεν υπάρχουν διαλέξεις")
-
-    def on_lecture_clicked(self, item):
-        """Ανοίγει τη διάλεξη που επιλέχθηκε"""
-        lecture_file = item.text()
-
-        if lecture_file == "Δεν υπάρχουν διαλέξεις":
             return
 
-        file_path = os.path.join(self.lectures_folder, lecture_file)#Φτιάχνω το πλήρες μονοπάτι του αρχείου που επιλέχθηκε, π.χ. "lectures/course_123/lecture1.pdf"
-        self.current_lecture_path = file_path
+        for lecture_id, display_name in rows:
+            item = QListWidgetItem(display_name)# όπου display_name είναι το file_name αν υπάρχει, αλλιώς το title, και αν και αυτό είναι NULL τότε 'lecture.pdf' λόγω του COALESCE στο SQL query. Έτσι εξασφαλίζουμε ότι πάντα θα έχουμε ένα όνομα για να εμφανίσουμε στη λίστα, ακόμα και αν δεν έχει ανέβει PDF ή δεν έχει οριστεί τίτλος.
+            item.setData(Qt.UserRole, lecture_id)#Αποθηκεύω το lecture_id στο item χρησιμοποιώντας setData με ρόλο Qt.UserRole, έτσι όταν κάνω κλικ σε αυτό το item, μπορώ να ανακτήσω το lecture_id για να φορτώσω το σωστό PDF από την βάση.
+            self.lectures_list.addItem(item)
 
-        ext = os.path.splitext(lecture_file)[1].lower()
-
-        if ext == ".pdf":
-                      
-                print(f"[DEBUG] Φόρτωση PDF από: {file_path}")
-                self.close_current_pdf()
-
-                self.current_pdf_doc = fitz.open(file_path) #Ανοίγω το PDF με το fitz.open(PyMuPDF) και κρατάω το document object στην μεταβλητή self.current_pdf_doc για να μπορώ να το χρησιμοποιήσω αργότερα για να κάνω render τις σελίδες.
-                self.total_pages = len(self.current_pdf_doc) #Υπολογίζω τον συνολικό αριθμό σελιδών του pdf
-                self.current_page_index = 0
-
-                if self.total_pages == 0:
-                    self.close_current_pdf()
-                    QMessageBox.warning(self, "Σφάλμα", "Το PDF είναι κενό")
+    def add_lecture(self):
+        """Προσθέτει νέα διάλεξη (για admin) αποθηκεύοντας το PDF στη βάση."""
+        file_path, _ = QFileDialog.getOpenFileName(self, "Επιλέξτε αρχείο", "", "PDF Files (*.pdf)") #Ανοίγει file dialog για επιλογή αρχείου.
+        if file_path:
+            try:
+                if os.path.splitext(file_path)[1].lower() != ".pdf":#Παίρνω το extension από το όνομα αρχείου,το κάνω lowercase για ασφάλεια,(.PDF-->.pdf)
+                    QMessageBox.warning(self, "Μη υποστηριζόμενο αρχείο", "Υποστηρίζονται μόνο PDF.")
                     return
 
-                self.render_current_page() #Καλώ την rendr_current_page για να εμφανίσω την πρώτη σελίδα του PDF στο viewer.
-            
-        else:
-            QMessageBox.warning(self, "Μη υποστηριζόμενο αρχείο", "Υποστηρίζονται μόνο PDF.")
+                with open(file_path, "rb") as f: #Ανοίγει το αρχείο σε binary read mode,rb=read binary & Το with φροντίζει να κλείσει αυτόματα το αρχείο μετά την ανάγνωση.
+                    pdf_data = f.read() #Διαβάζει όλο το PDF σε bytes (pdf_data), για αποθήκευση σε BLOB
+
+                if not pdf_data:
+                    QMessageBox.warning(self, "Σφάλμα", "Το επιλεγμένο PDF είναι κενό.")
+                    return
+
+                add_lecture_to_course(self.course_id, os.path.basename(file_path), pdf_data) #Insert στην βάση, os.path.basename(file_path) για να πάρω μόνο το όνομα αρχείου χωρίς το path, pdf_data τα δυαδικά δεδομένα του PDF για αποθήκευση στη βάση.
+                QMessageBox.information(
+                    self, "Επιτυχία", "Η διάλεξη προστέθηκε.")
+                self.load_lectures()
+            except Exception as e:
+                QMessageBox.warning(self, "Σφάλμα", f"Αποτυχία Φόρτωσης Διάλεξης: {e}")
+
+    def on_lecture_clicked(self, item):
+        """Ανοίγει τη διάλεξη που επιλέχθηκε από τη βάση."""
+        lecture_id = item.data(Qt.UserRole)
+        if lecture_id is None:
+            return
+
+        try:
+            pdf_data = get_lecture_pdf_by_id(lecture_id)
+            if not pdf_data:
+                QMessageBox.warning(self, "Σφάλμα", "Δεν βρέθηκαν δεδομένα PDF για τη διάλεξη.")
+                return
+
+            self.close_current_pdf()
+            self.current_pdf_doc = fitz.open(stream=pdf_data, filetype="pdf")
+            self.total_pages = len(self.current_pdf_doc)
+            self.current_page_index = 0
+
+            if self.total_pages == 0:
+                self.close_current_pdf()
+                QMessageBox.warning(self, "Σφάλμα", "Το PDF είναι κενό")
+                return
+
+            self.render_current_page()
+        except Exception as e:
+            QMessageBox.warning(self, "Σφάλμα", f"Αποτυχία φόρτωσης διάλεξης: {e}")
             return
 
         # Εναλλαγή σε viewer
@@ -225,18 +242,4 @@ class LecturesPage(QWidget):
         self.close_current_pdf()
         self.stack.setCurrentIndex(0)
 
-    def add_lecture(self):
-        """Προσθέτει νέα διάλεξη (για admin)"""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Επιλέξτε αρχείο")#Επιστρέφει το μονοπάτι του αρχείου που επέλεξε ο χρήστης μέσω του file dialog. Αν ο χρήστης ακυρώσει, το file_path θα είναι κενό string<--(_ , είναι “δεν με ενδιαφέρει αυτή η τιμή”).
-        if file_path:
-            os.makedirs(self.lectures_folder, exist_ok=True)                             #target_path είναι ο προορισμός όπου θα αντιγραφεί το αρχείο
-            target_path = os.path.join(self.lectures_folder, os.path.basename(file_path))#os.path.basename(file_path): κρατάει μόνο το όνομα αρχείου, χωρίς τους φακέλους
-                                                                                         #os.path.join(self.lectures_folder, ...): ενώνει τον φάκελο διαλέξεων του μαθήματος με αυτό το όνομα.
-            try:
-                shutil.copy(file_path, target_path) #εδώ αντιγράφει το αρχείο από την αρχική θέση (file_path) στον φάκελο μαθήματος (target_path).
-                QMessageBox.information(
-                    self, "Επιτυχία", "Η διάλεξη προστέθηκε.")
-                self.load_lectures()
-            except Exception as e:
-                QMessageBox.warning(self, "Σφάλμα", f"Αποτυχία Φόρτωσης Διάλεξης: {e}")
 

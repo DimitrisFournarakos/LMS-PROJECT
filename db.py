@@ -56,6 +56,16 @@ def create_tables():
         )
     """)
 
+    # Έλεγχος και προσθήκη στηλών για αποθήκευση PDF απευθείας στη βάση -Schema Migration για τον πίνακα lectures- Αναβαθμίζει αυτόματα το schema χωρίς να χρειάζεται να ξαναφτιάξεις τη βάση από την αρχή
+    cursor.execute("PRAGMA table_info(lectures)") #Ρωτά τη SQLite ποιες στήλες έχει ήδη ο πίνακας lectures.
+    lecture_columns = [info[1] for info in cursor.fetchall()]#Παίρνει τα αποτελέσματα και κρατά μόνο τα ονόματα των στηλών
+    if 'file_name' not in lecture_columns: #Αν δεν υπάρχει η στήλη file_name, τη δημιουργεί
+        cursor.execute("ALTER TABLE lectures ADD COLUMN file_name TEXT")
+    if 'mime_type' not in lecture_columns: #Αν δεν υπάρχει η mime_type, τη δημιουργεί με default τιμή 'application/pdf',που είναι ο τύπος αρχείου(pdf)
+        cursor.execute("ALTER TABLE lectures ADD COLUMN mime_type TEXT DEFAULT 'application/pdf'")
+    if 'pdf_data' not in lecture_columns: #Αν δεν υπάρχει η pdf_data, τη δημιουργεί ως BLOB(bytes του PDF)
+        cursor.execute("ALTER TABLE lectures ADD COLUMN pdf_data BLOB")
+
     # Πίνακας εγγραφών φοιτητών enrollments,όταν πάει να κάνει εγγραφή σε κάποιο μαθημα από την λίστα
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS enrollments (
@@ -134,8 +144,46 @@ def create_tables():
 
 def initialize_database():
     create_tables()
-    if not os.path.exists("lectures"):
-        os.makedirs("lectures")
+
+def add_lecture_to_course(course_id, file_name, pdf_data, mime_type="application/pdf"): #mime_type για να ξέρω τι είδους αρχείο είναι,σε αυτή την περίπτωση pdf,αλλά μπορεί να επεκταθεί και σε άλλους τύπους αρχείων στο μέλλον
+    """Αποθηκεύει PDF διάλεξης ως Binary Large Object-BLOB(σαν raw δυαδικά δεδομένα(raw bytes-PDF) μέσα σε στήλη της βάσης)"""
+    #Παίρνω το PDF ως bytes,Τα bytes μπαίνουν στη στήλη pdf_data του πίνακα lectures,
+    #Όταν θέλω να το ανοίξω, διαβάζω τη στήλη και παίρνω πάλι bytes.Αυτά τα bytes τα δίνω στον viewer (fitz) για render.
+    conn = connect_db()
+    cursor = conn.cursor()
+    title = os.path.splitext(file_name)[0] #χωρίζει το όνομα αρχείου σε δύο μέρη,το όνομα και την καταληξη,εγω παίρνω μόνο το όνομα [0]
+    cursor.execute("""
+        INSERT INTO lectures (course_id, title, file_name, mime_type, pdf_data)
+        VALUES (?, ?, ?, ?, ?)
+    """, (course_id, title, file_name, mime_type, pdf_data))
+    conn.commit()
+    conn.close()
+
+def get_lectures_by_course(course_id):
+    """Επιστρέφει lecture_id και όνομα αρχείου για το μάθημα."""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT lecture_id, COALESCE(file_name, title, 'lecture.pdf')
+        FROM lectures
+        WHERE course_id = ?
+        ORDER BY lecture_id DESC
+    """, (course_id,))
+    #SELECT lecture_id, COALESCE(file_name, title, 'lecture.pdf') = Επιστρέφει το lecture_id και Coalesce το όνομα αρχείου,COALESCE(a, b, c) σημαίνει: πάρε την πρώτη τιμή που δεν είναι NULL
+    #Παίρνει το  file_name αν υπάρχει,αν όχι παίρνει το title,αν και αυτό είναι NULL τότε επιστρέφει 'lecture.pdf' ως default όνομα αρχείου.Έτσι εξασφαλίζουμε ότι πάντα θα έχουμε ένα όνομα αρχείου για κάθε διάλεξη,ακόμα και αν δεν έχει ανέβει PDF ή δεν έχει οριστεί τίτλος.
+    #Order by lecture_id DESC για να εμφανίζονται οι πιο πρόσφατες διαλέξεις πρώτες στη λίστα.(Ταξινομεί από το μεγαλύτερο id στο μικρότερο.)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def get_lecture_pdf_by_id(lecture_id):
+    """Επιστρέφει τα bytes του PDF για συγκεκριμένη διάλεξη."""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT pdf_data FROM lectures WHERE lecture_id = ?", (lecture_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
 
 #  Συναρτήσεις για εγγραφές 
 def create_course(name, description, category, instructor, start_date, end_date):
