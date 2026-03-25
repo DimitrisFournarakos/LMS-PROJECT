@@ -1,13 +1,9 @@
 import sqlite3
-import os
-import base64
-import fitz
 from styles_css import styles
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox,QFileDialog, QLabel, QDialog, QMessageBox, QFileDialog, QLabel, QDialog, QHeaderView, QStackedWidget, QListWidget)
-from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent
-from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor
-from db import (get_enrolled_courses, add_question_to_quiz, create_course,
-                update_course, get_all_courses, delete_course, unenroll_user_from_course)
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF
+from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor
+from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
 from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
@@ -19,8 +15,32 @@ from lectures_functions.lectures_functions import LecturesPage
 class TableWithBackground(QTableWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.bg_pixmap = QPixmap('icons/background_subjects_interface.jpg')
+        self.bg_pixmap = QPixmap('icons/e-learning.png')
+        self.scaled_pixmap = QPixmap()
+        self.blur_radius = 8 #Βαθμός του blur, όσο μεγαλύτερος είναι ο αριθμός, τόσο πιο θολή θα είναι η εικόνα.
         self.verticalHeader().setVisible(False)  # Κρύβουμε τους αριθμούς αριστερά
+
+    def _blur_pixmap(self, pixmap):
+        """Χρησιμοποιώ το pipeline της Qt (QGraphicsScene + QGraphicsBlurEffect) για να πάρει ένα pixmap
+           και να μου γυρίσει τη θολωμένη version του, που μετά τη χρησιμοποιώ ως background """
+        if pixmap.isNull() or self.blur_radius <= 0:
+            return pixmap
+
+        scene = QGraphicsScene()
+        item = QGraphicsPixmapItem(pixmap)
+        blur_effect = QGraphicsBlurEffect()
+        blur_effect.setBlurRadius(self.blur_radius)#Ορίζει πόσο έντονο θα είναι το blur (όσο μεγαλύτερο, τόσο πιο θολό)
+        item.setGraphicsEffect(blur_effect)
+        scene.addItem(item)
+
+        result = QImage(pixmap.size(), QImage.Format_ARGB32_Premultiplied)#Δημιουργεί “καμβά” εξόδου (QImage) ίδιου μεγέθους με alpha κανάλι (διαφάνεια)
+        result.fill(Qt.transparent) #Το result είναι μια νέα εικόνα (QImage) που τη φτιάχνω για να ζωγραφίσω μέσα της το blur αποτέλεσμα.
+                                     #Μετά το scene.render ζωγραφίζει πάνω σε αυτήν την καθαρή διαφανή βάση μόνο το θολωμένο pixmap.
+        painter = QPainter(result)
+        scene.render(painter, QRectF(result.rect()), QRectF(0, 0, pixmap.width(), pixmap.height()))#Κάνει render τη σκηνή (άρα την εικόνα με blur) πάνω στο result
+        painter.end()
+
+        return QPixmap.fromImage(result)#Μετατρέπει το τελικό QImage πίσω σε QPixmap και το επιστρέφει για να το χρησιμοποιήσουμε ως background.
 
     # Όταν αλλάζει το μέγεθος του πίνακα, ανανεώνουμε την κλίμακα της εικόνας background για να καλύπτει όλο το πίνακα
     def resizeEvent(self, event):
@@ -28,8 +48,8 @@ class TableWithBackground(QTableWidget):
         if not self.bg_pixmap.isNull():
             w = self.viewport().width()
             h = self.viewport().height()
-            self.scaled_pixmap = self.bg_pixmap.scaled(
-                w, h, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            scaled = self.bg_pixmap.scaled(w, h, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            self.scaled_pixmap = self._blur_pixmap(scaled)
         self.viewport().update()
 
     def paintEvent(self, event):  # Τοποθετώ την εικόνα background πίσω από τα δεδομένα του πίνακα
@@ -307,6 +327,9 @@ class CourseManagementWindow(QWidget):
 
         self.table = TableWithBackground()
         self.table.setColumnCount(7)
+        self.table_title_color = "#FFFFFF" if not self.admin else "#2c3e50"
+        self.table.setStyleSheet(
+            f"QTableWidget {{ color: {self.table_title_color}; font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif; font-size: 17px; font-weight: 600; }}")
         self.table.setHorizontalHeaderLabels(
             ["Όνομα", "Περιγραφή", "Κατηγορία", "Εκπαιδευτής", "Έναρξη", "Λήξη", "Ενέργειες"])
 
@@ -413,6 +436,16 @@ class CourseManagementWindow(QWidget):
         else:
             courses = get_enrolled_courses(self.user_id)
 
+        # Σταθερά χρώματα ανά κελί ώστε να διαβάζονται πάντα τα γράμματα πάνω στο background.
+        if self.admin:#Στον admin έχω βάλει μπεζ αποχρώσεις σαν background στα κελιά,ανοιχτό μπεζ και πιο σκουρο μπεζ-εναλλάξ
+            cell_bg_even = QColor(255, 248, 232, 235)
+            cell_bg_odd = QColor(246, 236, 214, 235)
+            cell_text_color = QColor("#2c3e50")#2c3e50 για να ξεχωρίζουν τα γράμματα πάνω στο ανοιχτό background
+        else: #Στον student έχω βάλει σκούρες αποχρώσεις σαν background στα κελιά,σκούρο μπλε-γκρι και πιο σκούρο μπλε-γκρι-εναλλάξ
+            cell_bg_even = QColor(12, 10, 18, 205)
+            cell_bg_odd = QColor(30, 22, 24, 205)
+            cell_text_color = QColor("#ffffff")#FFFFFF για να ξεχωρίζουν τα γράμματα πάνω στο σκούρο background
+
         # ο πίνακας δημιουργεί ακριβώς τόσες γραμμές όσες είναι και τα μαθήματα που βρέθηκαν,αναλογα την ιδιότητα μας
         self.table.setRowCount(len(courses))
 
@@ -423,7 +456,16 @@ class CourseManagementWindow(QWidget):
             # Τα courses[],είναι οι στήλες ID,Όνομα,Πειγραφή κλπ.
             for col_idx, data in enumerate(data_to_show):
                 # Το διπλό for-loop rows,,cols μετατρέπει κάθε πληροφορία σε QTableWidgetItem
-                item = QTableWidgetItem(str(data))
+                #Δημιουργώ κελί, του βάζω χρώμα φόντου ανά γραμμή (ζυγή/μονή) και μετά χρώμα γραμμάτων για ευανάγνωστο αποτέλεσμα
+                item = QTableWidgetItem(str(data)) #Το data (που μπορεί να είναι αριθμός, ημερομηνία κτλ.) μετατρέπεται σε κείμενο με str(data),
+                                                   #ώστε να εμφανιστεί σωστά στο κελί.
+
+                #Βάζω διαφορετικό background στις ζυγές και μονές γραμμές
+                if row_index % 2 == 0:
+                    item.setBackground(cell_bg_even)
+                else:
+                    item.setBackground(cell_bg_odd)
+                item.setForeground(cell_text_color)
 
                 if col_idx == 0:
                     # Αν είμαστε στην πρώτη στήλη,αποθηκεύω κρυφά το course[0],που ειναι το id που θέλω

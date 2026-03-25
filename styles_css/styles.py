@@ -5,8 +5,8 @@ def get_main_window_style():
     """Επιστρέφει το γενικό στυλ για τα παράθυρα της εφαρμογής."""
     return """
         QWidget {
-            font-family: 'Segoe UI';
-            font-size: 18px;
+            font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
+            font-size: 17px;
         }
         QPushButton {
             padding: 10px;
@@ -14,7 +14,8 @@ def get_main_window_style():
             color: #5d4037;            /* Σκούρο καφέ για αντίθεση */
             border: 1px solid #d2b48c;
             border-radius: 8px;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 17px;
         }
         QPushButton:hover {
             background-color: #c2b280; /* Το μπεζ του header */
@@ -25,6 +26,8 @@ def get_main_window_style():
             border: 1px solid #aaa;
             border-radius: 6px;
             background-color: #fff8e7; /* Cosmic Latte (πολύ ανοιχτό μπεζ) */
+            font-size: 17px;
+            font-weight: 500;
         }
     """
 
@@ -40,7 +43,9 @@ def get_table_header_style():
             color: white;
             padding: 6px;
             border: 1px solid #a8996b;
-            font-weight: bold;
+            font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 700;
         }
     """
 
@@ -48,6 +53,9 @@ def get_table_widget_style():
     """Στυλ πίνακα που δένει με το μπεζ θέμα."""
     return """
         QTableWidget {
+            font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 600;
             background-color: rgba(255, 250, 240, 0.5); /* Floral White ημιδιαφάνεια */
             alternate-background-color: rgba(245, 222, 179, 0.3); /* Ελαφρύ Wheat στα rows */
             border: 1px solid #c2b280;
@@ -78,6 +86,10 @@ def get_table_widget_style():
         QTableWidget::item:hover {
             background-color: rgba(255, 253, 208, 0.8); /* Cream χρώμα */
             color: #5d4037;
+        }
+
+        QTableWidget::item {
+            padding: 4px;
         }
         
     """
