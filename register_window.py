@@ -342,7 +342,7 @@ class RegisterWindow(QWidget):
                 cursor.execute("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
                             (name, email, password, selected_role))
                 conn.commit()
-                QMessageBox.information(self, "Εγγραφή", "Επιτυχής εγγραφή! Συνδέσου τώρα.")
+                
                 self.role = selected_role  # Θέσε τον ρόλο ώστε να γίνει login με τον σωστό ρόλο
                 self.host.load_login_fields(prefill_email=email, prefill_password=password)  # Προ-γέμισε τα πεδία σύνδεσης με τα στοιχεία που μόλις εγγράφηκαν
             except Exception as e:
