@@ -323,6 +323,17 @@ def delete_course(course_id):
     conn.commit()
     conn.close()
 
+def get_user_by_id(user_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT user_id, username, email, role FROM users WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    return row
+
 
 #Συνάρτηση για αποθήκευση βαθμολογίας
 def save_quiz_result(student_id, quiz_id, score):

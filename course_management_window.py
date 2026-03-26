@@ -3,7 +3,7 @@ from styles_css import styles
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor
-from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course
+from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course, get_user_by_id
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
 from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
@@ -121,8 +121,7 @@ class CourseManagementWindow(QWidget):
         # 1. ΣΤΑΘΕΡΟ HEADER (Icon + Title) - Αυτό δεν κλείνει ποτέ - Κεντραρισμένο
         self.sidebar_header = QFrame()
         self.sidebar_header.setFixedHeight(70)
-        self.sidebar_header.setStyleSheet(
-            "background-color: #1a252f; border-bottom: 1px solid #34495e;")
+        self.sidebar_header.setStyleSheet("background-color: #1a252f; border-bottom: 1px solid #34495e;")
 
         # Χρησιμοποιούμε κάθετο layout για να μπει ο τίτλος ΚΑΤΩ από το κουμπί
         header_layout = QVBoxLayout(self.sidebar_header)
@@ -134,8 +133,7 @@ class CourseManagementWindow(QWidget):
         # Ο Τίτλος
         self.sidebar_title_label = QLabel("MENU")
         self.sidebar_title_label.setAlignment(Qt.AlignCenter)
-        self.sidebar_title_label.setStyleSheet(
-            "color: white; font-size: 18px; font-weight: bold;")
+        self.sidebar_title_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
 
         header_layout.addLayout(btn_container)
         header_layout.addWidget(self.sidebar_title_label)
@@ -155,23 +153,24 @@ class CourseManagementWindow(QWidget):
 
         # --- CONTENT AREA (Δεξί Panel) ---
         self.content_stack = QStackedWidget()
-        self.create_course_list_page()  # Σελίδα 0: Λίστα Μαθημάτων
+        self.create_profile_page()      # Σελίδα 0: Προφίλ
+        self.create_course_list_page()  # Σελίδα 1: Λίστα Μαθημάτων
 
-        # Index 1: Admin Tools (Αν είναι student, βάζουμε ένα κενό widget για να κρατήσουμε τη θέση)
+        # Index 2: Admin Tools (Αν είναι student, βάζουμε ένα κενό widget για να κρατήσουμε τη θέση)
         if self.admin:
             self.create_admin_tools_page()
         else:
             empty_widget = QWidget()
-            self.content_stack.addWidget(empty_widget)  # Κρατάει το Index 1
+            self.content_stack.addWidget(empty_widget)  # Κρατάει το Index 2
 
-        if not self.admin:  # Σελίδα 2: Εγγραφή (για Student)
+        if not self.admin:  # Σελίδα 3: Εγγραφή (για Student)
             self.enroll_page = EnrollPage(self.user_id, self)
-            # Αυτό θα είναι τώρα το Index 2
+            # Αυτό θα είναι τώρα το Index 3
             self.content_stack.addWidget(self.enroll_page)
         else:  # Αν είναι admin, βάζω πάλι ένα κενό widget για να μην μπερδευτούν τα index αν προστεθεί κάτι μετά
             self.content_stack.addWidget(QWidget())
 
-        # Σελίδα 3: Στατιστικά (Για όλους ή μονο για student)
+        # Σελίδα 4: Στατιστικά (Για όλους ή μονο για student)
         self.stats_page = StudentQuizStatsPage(self.user_id, self)
         self.content_stack.addWidget(self.stats_page)
 
@@ -256,13 +255,22 @@ class CourseManagementWindow(QWidget):
 
     def setup_sidebar_buttons_to_layout(self, sidebar_body_layout):
         """Βοηθητική συνάρτηση για να τοποθετήσουμε τα κουμπιά στο νέο layout"""
+        self.btn_profile = QPushButton(" Προφίλ")
+        self.btn_profile.setIcon(QIcon("icons/name-icon.png"))
+        self.btn_profile.setIconSize(QSize(15, 15))
+        self.btn_profile.setFixedSize(40, 40)
+        self.btn_profile.setFixedWidth(250)
+        self.btn_profile.clicked.connect(
+            lambda: self.content_stack.setCurrentIndex(0))
+        sidebar_body_layout.addWidget(self.btn_profile)
+
         self.btn_courses = QPushButton(" Μαθήματα")
         self.btn_courses.setIcon(QIcon("icons/education.png"))
         self.btn_courses.setIconSize(QSize(15, 15))
         self.btn_courses.setFixedSize(40, 40)
         self.btn_courses.setFixedWidth(250)
         self.btn_courses.clicked.connect(
-            lambda: self.content_stack.setCurrentIndex(0))
+            lambda: self.content_stack.setCurrentIndex(1))
         sidebar_body_layout.addWidget(self.btn_courses)
 
         if self.admin:
@@ -272,7 +280,7 @@ class CourseManagementWindow(QWidget):
             self.btn_admin.setFixedSize(40, 40)
             self.btn_admin.setFixedWidth(250)
             self.btn_admin.clicked.connect(
-                lambda: self.content_stack.setCurrentIndex(1))
+                lambda: self.content_stack.setCurrentIndex(2))
             self.sidebar_body_layout.addWidget(self.btn_admin)
         else:
             self.btn_enroll = QPushButton(" Εγγραφή")
@@ -281,7 +289,7 @@ class CourseManagementWindow(QWidget):
             self.btn_enroll.setFixedSize(40, 40)
             self.btn_enroll.setFixedWidth(250)
             self.btn_enroll.clicked.connect(
-                lambda: self.content_stack.setCurrentIndex(2))
+                lambda: self.content_stack.setCurrentIndex(3))
             self.sidebar_body_layout.addWidget(self.btn_enroll)
 
         self.btn_stats = QPushButton(" Στατιστικά")
@@ -290,7 +298,7 @@ class CourseManagementWindow(QWidget):
         self.btn_stats.setFixedSize(40, 40)
         self.btn_stats.setFixedWidth(250)
         self.btn_stats.clicked.connect(
-            lambda: self.content_stack.setCurrentIndex(3))
+            lambda: self.content_stack.setCurrentIndex(4))
         self.sidebar_body_layout.addWidget(self.btn_stats)
 
         # Αυτό το stretch σπρώχνει ό,τι ακολουθεί στο κάτω μέρος του sidebar
@@ -314,8 +322,53 @@ class CourseManagementWindow(QWidget):
 
         self.sidebar_body_layout.addLayout(back_btn_layout)
 
+    def create_profile_page(self):
+        """Σελίδα 0: Προφίλ Χρήστη (Κοινή για Admin και Student)"""
+        page = QWidget()
+        layout = QVBoxLayout(page)
+
+        card = QFrame()
+        card.setStyleSheet("background: white; border-radius: 10px; padding: 20px;")
+        card_layout = QVBoxLayout(card)
+
+        user = get_user_by_id(self.user_id)#Καλώ αυτη την συνάρτηση από το db.py για να πάρω τα στοιχεία του χρήστη που είναι αποθηκευμένα στη βάση δεδομένων
+
+        if user:#Αν ο χρήστης βρέθηκε στη βάση δεδομένων.
+            _, username, email, role = user # κάνει unpack του tuple,αγνοεί το πρώτο πεδίο με _,βάζει τα επόμενα σε username, email, role
+        else:
+            username = "-"
+            email = "-"
+            role = "admin" if self.admin else "student"
+
+        welcome_row = QHBoxLayout()
+        welcome_icon = QLabel()
+        custom_welcome_pixmap = QPixmap("icons/welcome_icon.png")
+        welcome_icon.setPixmap(custom_welcome_pixmap.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        welcome_icon.setFixedSize(30, 30)
+        welcome_icon.setAlignment(Qt.AlignVCenter)
+        title = QLabel(f"Καλώς Ήρθες, {username}!")
+        title.setStyleSheet("font-size: 24px; font-weight: bold; margin: 10px; color: #2c3e50;")
+        welcome_row.addSpacing(11)#Προσθέτω κενό πριν το welcome_icon
+        welcome_row.addWidget(welcome_icon)
+        welcome_row.addWidget(title)
+        welcome_row.addStretch()
+        layout.addLayout(welcome_row)
+
+        username_label = QLabel(f"Όνομα χρήστη: {username}")
+        email_label = QLabel(f"Email: {email}")
+        role_label = QLabel(f"Ρόλος: {role}")
+        id_label = QLabel(f"ID χρήστη: {self.user_id}")
+
+        for lbl in [username_label, email_label, role_label, id_label]:
+            lbl.setStyleSheet("font-size: 17px; color: #2c3e50; margin: 6px 0;")
+            card_layout.addWidget(lbl)
+
+        layout.addWidget(card)
+        layout.addStretch()
+        self.content_stack.addWidget(page)
+
     def create_course_list_page(self):
-        """Σελίδα 0: Λίστα Μαθημάτων (Κοινή για Admin και Student)"""
+        """Σελίδα 1: Λίστα Μαθημάτων (Κοινή για Admin και Student)"""
         page = QWidget()
         layout = QVBoxLayout(page)
 
@@ -350,7 +403,7 @@ class CourseManagementWindow(QWidget):
         self.update_course_list()  # Φορτώνουμε τα μαθήματα από τη βάση δεδομένων και τα εμφανίζουμε στον πίνακα κάθε φορά που δημιουργείται αυτή η σελίδα, ώστε να είναι πάντα ενημερωμένη με τις τελευταίες αλλαγές (π.χ. νέες εγγραφές, προσθήκη/διαγραφή μαθημάτων από τον Admin)
 
     def create_admin_tools_page(self):
-        """Σελίδα 1: Φόρμα Διαχείρισης μόνο για Admin"""
+        """Σελίδα 2: Φόρμα Διαχείρισης μόνο για Admin"""
         page = QWidget()
         layout = QVBoxLayout(page)
 
@@ -402,9 +455,9 @@ class CourseManagementWindow(QWidget):
         self.content_stack.addWidget(page)
 
     def on_table_item_clicked(self, row, col):
-        # Όταν ο Admin κάνει κλικ στον πίνακα, τον μεταφέρουμε αυτόματα στη σελίδα επεξεργασίας(CurrentIndex(1))
+        # Όταν ο Admin κάνει κλικ στον πίνακα, τον μεταφέρουμε αυτόματα στη σελίδα επεξεργασίας(CurrentIndex(2))
         if self.admin:
-            self.content_stack.setCurrentIndex(1)
+            self.content_stack.setCurrentIndex(2)
 
             # Στήλη 0: Περιέχει το Όνομα και το Κρυφό ID (UserRole)
             item_name = self.table.item(row, 0)
