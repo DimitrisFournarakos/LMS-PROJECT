@@ -342,10 +342,12 @@ class CourseManagementWindow(QWidget):
 
         welcome_row = QHBoxLayout()
         welcome_icon = QLabel()
+
         custom_welcome_pixmap = QPixmap("icons/welcome_icon.png")
         welcome_icon.setPixmap(custom_welcome_pixmap.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         welcome_icon.setFixedSize(30, 30)
         welcome_icon.setAlignment(Qt.AlignVCenter)
+        
         title = QLabel(f"Καλώς Ήρθες, {username}!")
         title.setStyleSheet("font-size: 24px; font-weight: bold; margin: 10px; color: #2c3e50;")
         welcome_row.addSpacing(11)#Προσθέτω κενό πριν το welcome_icon
