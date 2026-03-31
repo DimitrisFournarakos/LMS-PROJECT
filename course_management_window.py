@@ -2,8 +2,8 @@ import sqlite3
 from styles_css import styles
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF, QEasingCurve
-from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor
-from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course, get_user_by_id
+from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor, QBrush
+from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course, get_user_by_id, get_student_quiz_leaderboard
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
 from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
@@ -373,9 +373,11 @@ class CourseManagementWindow(QWidget):
         """Σελίδα 0: Προφίλ Χρήστη (Κοινή για Admin και Student)"""
         page = QWidget()
         layout = QVBoxLayout(page)
+        layout.setSpacing(16)
 
         card = QFrame()
-        card.setStyleSheet("background: white; border-radius: 10px; padding: 20px;")
+        card.setStyleSheet("background: white; border-radius: 10px; padding: 8px;")
+        card.setMaximumHeight(260)#Ύψος του frame που έχει τα στοιχεία φοιτητή(Ονοματεπώνυμο,email κλπ)
         card_layout = QVBoxLayout(card)
 
         user = get_user_by_id(self.user_id)#Καλώ αυτη την συνάρτηση από το db.py για να πάρω τα στοιχεία του χρήστη που είναι αποθηκευμένα στη βάση δεδομένων
@@ -402,17 +404,110 @@ class CourseManagementWindow(QWidget):
         welcome_row.addWidget(title)
         welcome_row.addStretch()
         layout.addLayout(welcome_row)
+ 
+        # Σειρά 1: Όνομα χρήστη
+        username_row = QHBoxLayout()
+        username_label_text = QLabel("Όνομα χρήστη:")
+        username_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
+        username_label_value = QLabel(username)
+        username_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
+        username_row.addWidget(username_label_text)
+        username_row.addWidget(username_label_value)
+        card_layout.addLayout(username_row)
 
-        username_label = QLabel(f"Όνομα χρήστη: {username}")
-        email_label = QLabel(f"Email: {email}")
-        role_label = QLabel(f"Ρόλος: {role}")
-        id_label = QLabel(f"ID χρήστη: {self.user_id}")
+        # Σειρά 2: Email
+        email_row = QHBoxLayout()
+        email_label_text = QLabel("Email:")
+        email_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
+        email_label_value = QLabel(email)
+        email_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
+        email_row.addWidget(email_label_text)
+        email_row.addWidget(email_label_value)
+        card_layout.addLayout(email_row)
 
-        for lbl in [username_label, email_label, role_label, id_label]:
-            lbl.setStyleSheet("font-size: 17px; color: #2c3e50; margin: 6px 0;")
-            card_layout.addWidget(lbl)
+        # Σειρά 3: Ρόλος
+        role_row = QHBoxLayout()
+        role_label_text = QLabel("Ρόλος:")
+        role_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
+        role_label_value = QLabel(role)
+        role_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
+        role_row.addWidget(role_label_text)
+        role_row.addWidget(role_label_value)
+        card_layout.addLayout(role_row)
+
+        # Σειρά 4: ID χρήστη
+        id_row = QHBoxLayout()
+        id_label_text = QLabel("ID χρήστη:")
+        id_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
+        id_label_value = QLabel(str(self.user_id))
+        id_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
+        id_row.addWidget(id_label_text)
+        id_row.addWidget(id_label_value)
+        card_layout.addLayout(id_row)
 
         layout.addWidget(card)
+
+        if not self.admin:
+            """Card που εμφανίζει το leaderboard των quiz που έχουν κάνει φοιτητές"""
+            leaderboard_card = QFrame()
+            leaderboard_card.setStyleSheet("background: white; border-radius: 10px; padding: 20px;")
+            leaderboard_card.setMinimumHeight(420)#Υψος του card που περιέχει το leaderboard
+            leaderboard_layout = QVBoxLayout(leaderboard_card)
+
+            leaderboard_title = QLabel("Leaderboard Quiz")
+            leaderboard_title.setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin-bottom: 8px;")
+            leaderboard_layout.addWidget(leaderboard_title)
+
+            rows = get_student_quiz_leaderboard(self.user_id)
+            if not rows:
+                empty_label = QLabel("Δεν υπάρχουν ακόμα αποτελέσματα quiz.")
+                empty_label.setStyleSheet("font-size: 16px; color: #5f6d7a;")
+                leaderboard_layout.addWidget(empty_label)
+            else:
+                leaderboard_table = QTableWidget()
+                leaderboard_table.setObjectName("leaderboardTable")
+                leaderboard_table.setColumnCount(4)
+                leaderboard_table.setHorizontalHeaderLabels(["Μάθημα", "Quiz", "Ημερομηνία", "Βαθμός (%)"])
+                leaderboard_table.setRowCount(len(rows))
+                leaderboard_table.verticalHeader().setVisible(False)
+                leaderboard_table.setEditTriggers(QTableWidget.NoEditTriggers)
+                leaderboard_table.setSelectionMode(QTableWidget.NoSelection)
+                leaderboard_table.setFocusPolicy(Qt.NoFocus)
+                leaderboard_table.setAlternatingRowColors(True)
+                leaderboard_table.setStyleSheet(styles.leaderboard_student_style())
+
+                leaderboard_header = leaderboard_table.horizontalHeader()
+                leaderboard_header.setVisible(True)
+                leaderboard_header.setDefaultAlignment(Qt.AlignCenter)
+                
+
+                for col in range(leaderboard_table.columnCount()):
+                    header_item = leaderboard_table.horizontalHeaderItem(col)
+                    if header_item:
+                        header_item.setForeground(QBrush(QColor("#1f2d3a")))
+                        header_font = header_item.font()
+                        header_font.setBold(True)
+                        header_item.setFont(header_font)
+
+                for row_idx, row_data in enumerate(rows):
+                    course_name, quiz_title, date_taken, score = row_data
+                    values = [course_name, quiz_title, date_taken, f"{float(score):.2f}"]
+                    for col_idx, value in enumerate(values):
+                        item = QTableWidgetItem(str(value))
+                        item.setTextAlignment(Qt.AlignCenter)
+                        leaderboard_table.setItem(row_idx, col_idx, item)
+
+                leaderboard_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+                leaderboard_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+                leaderboard_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+                leaderboard_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
+                leaderboard_table.resizeRowsToContents()
+                leaderboard_table.setMinimumHeight(320)#Υψος του πινακα
+                leaderboard_layout.addWidget(leaderboard_table)
+
+            layout.addWidget(leaderboard_card)
+
+
         layout.addStretch()
         self.content_stack.addWidget(page)
 

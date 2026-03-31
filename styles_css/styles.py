@@ -559,3 +559,62 @@ def lectures_next_page_btn_style():
                 opacity: 0.5;
             }
         """
+
+def leaderboard_student_style():
+    return """
+        QTableWidget {
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            background: #f8f9fa;
+            alternate-background-color: #ecf0f1;
+            gridline-color: #bdc3c7;
+            color: #2c3e50;
+            selection-background-color: #3498db;
+            selection-color: white;
+        }
+
+        QTableWidget QHeaderView:horizontal {
+            background-color: #eef2f5;
+            border: none;
+        }
+
+        QTableWidget QHeaderView::section:horizontal {
+            background-color: #eef2f5;
+            color: #1f2d3a;
+            font-weight: 700;
+            font-size: 13px;
+            font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
+            border: 1px solid #cfd8dc;
+            border-bottom: 1px solid #b0bec5;
+            padding: 6px;
+            min-height: 30px;
+        }
+
+        QTableWidget QTableCornerButton::section {
+            background-color: #eef2f5;
+            border: 1px solid #cfd8dc;
+        }
+        
+        QTableWidget::item {
+            padding: 6px;
+            border: 1px solid #ecf0f1;
+        }
+        
+        QTableWidget::item:selected {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        QTableWidget::item:hover {
+            background-color: #d5dbdb;
+            color: #2c3e50;
+        }
+        
+        QTableWidget QHeaderView::section:horizontal:hover {
+            background-color: #e3e9ee;
+            color: #1f2d3a;
+            font-size: 14px;
+        }
+    """

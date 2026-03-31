@@ -396,3 +396,23 @@ def get_courses_with_stats(student_id):
     courses = cursor.fetchall()
     conn.close()
     return courses
+
+
+def get_student_quiz_leaderboard(student_id):
+    """Επιστρέφει όλες τις προσπάθειες quiz του student με μάθημα, quiz, ημερομηνία και βαθμό."""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT c.name, q.title, r.date_taken, r.score
+        FROM quiz_results r
+        JOIN quizzes q ON q.quiz_id = r.quiz_id
+        JOIN courses c ON c.course_id = q.course_id
+        WHERE r.student_id = ?
+        ORDER BY r.score DESC, r.date_taken DESC
+        """,
+        (student_id,),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
