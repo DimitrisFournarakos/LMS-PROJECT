@@ -1,7 +1,7 @@
 import sqlite3
 from styles_css import styles
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
-from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF, QEasingCurve
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor
 from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course, get_user_by_id
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
@@ -197,18 +197,29 @@ class CourseManagementWindow(QWidget):
 
         # Αρχικά κλειστό sidebar
         self.sidebar_visible = False
-        # Κρύβω το header,body για να υπάρχει μόνο το background-color της λωρίδας του sidebar_conteiner
+        # Σε κλειστή κατάσταση αφήνουμε μόνο τα icons ορατά.
         self.sidebar_header.hide()
-        self.sidebar_body.hide()
+        self.sidebar_body.show()
+        self.set_sidebar_expanded(False)#Το sidebar_expanded είναι Icons + Γράμματα
         self.sidebar_container.setMinimumWidth(70)
         self.sidebar_container.setMaximumWidth(70)
 
     def eventFilter(self, obj, event):
-        # Όταν το ποντίκι μπει πάνω στο menu button auto-open-menu
-        if obj == self.menu_btn and event.type() == QEvent.Enter:
-            if not self.sidebar_visible:
+        """Auto-open & Auto-close Menu,όταν γίνεται hover στο menu icon και στα menu buttons"""
+        
+        # Όταν το ποντίκι μπει πάνω στο menu button ή στα icons του sidebar auto-open-menu
+        sidebar_hover_targets = []
+        for attr_name in ["menu_btn", "btn_profile", "btn_courses", "btn_stats", "back_btn", "btn_admin", "btn_enroll"]:
+            target = getattr(self, attr_name, None)
+            if target is not None:
+                sidebar_hover_targets.append(target)
+        
+        #Mόλις το ποντίκι μπει πάνω σε συγκεκριμένα κουμπιά του menu, αν το sidebar είναι κλειστό, ανοίγει.
+                                                                         #Το widget πάνω στο οποίο μπήκε (obj) είναι ένα από τα επιτρεπτά targets της λίστας sidebar_hover_targets (π.χ. menu button ή sidebar icons).
+        if event.type() == QEvent.Enter and obj in sidebar_hover_targets:#Το event είναι Enter (δηλαδή ο δείκτης του ποντικιού μόλις μπήκε πάνω σε widget).
+            if not self.sidebar_visible:#Κρατά ανοιχτό το sidebar και μετά το auto-open με το hover          
                 self.toggle_sidebar()
-            return True
+            return False
 
         # Auto-Close: MouseButtonPress σε οποιοδήποτε αντικείμενο ΕΚΤΟΣ sidebar
         if event.type() == QEvent.MouseButtonPress:
@@ -231,27 +242,52 @@ class CourseManagementWindow(QWidget):
         if current_width == 70:
             end_width = 250
             self.sidebar_visible = True
-            self.sidebar_header.show()
-            self.sidebar_body.show()
+            self.sidebar_container.setMaximumWidth(250)
         else:
             end_width = 70
             self.sidebar_visible = False
             self.sidebar_header.hide()
-            self.sidebar_body.hide()
+            self.sidebar_body.show()
+            self.sidebar_container.setMaximumWidth(70)
+            self.set_sidebar_expanded(False)
 
-        self.animation = QPropertyAnimation(
-            self.sidebar_container, b"minimumWidth")
+        self.animation = QPropertyAnimation(self.sidebar_container, b"minimumWidth")
         self.animation.setDuration(200)
+        self.animation.setEasingCurve(QEasingCurve.InOutCubic)
         self.animation.setStartValue(current_width)
         self.animation.setEndValue(end_width)
+        self.animation.finished.connect(self.on_animation_finished)
         self.animation.start()
 
     def on_animation_finished(self):
         if self.sidebar_visible:
+            self.sidebar_header.show()
             self.sidebar_body.show()
+            self.set_sidebar_expanded(True)
             self.sidebar_title_label.show()
-            self.sidebar_header.setStyleSheet(
-                "background-color: #1a252f; border-bottom: 1px solid #34495e;")
+            self.sidebar_header.setStyleSheet("background-color: #1a252f; border-bottom: 1px solid #34495e;")
+
+    def set_sidebar_expanded(self, expanded):
+        """ expanded=True: icon + κείμενο, expanded=False: μόνο icon. """
+        button_width = 250 if expanded else 40
+        self.sidebar_body_layout.setContentsMargins(15, 5, 5, 15) if expanded else self.sidebar_body_layout.setContentsMargins(10, 5, 10, 15)
+
+        buttons_with_text = [#Τα κουμπιά που υπάρχουν σε όλους τους χρήστες,τα βάζω πάντα στη λίστα για να αλλάζει το κείμενο τους ανάλογα με το αν είναι expanded ή όχι
+            (self.btn_profile, " Προφίλ"),
+            (self.btn_courses, " Μαθήματα"),
+            (self.btn_stats, " Στατιστικά"),
+            (self.back_btn, "Αποσύνδεση"),
+        ]
+
+        if self.admin and hasattr(self, 'btn_admin'):
+            buttons_with_text.insert(2, (self.btn_admin, " Διαχείριση Quiz"))
+        if not self.admin and hasattr(self, 'btn_enroll'):
+            buttons_with_text.insert(2, (self.btn_enroll, " Εγγραφή"))
+
+        for button, text in buttons_with_text:
+            button.setText(text if expanded else "")
+            button.setFixedWidth(button_width)
+            button.setCursor(Qt.PointingHandCursor if expanded else Qt.ArrowCursor)
 
     def setup_sidebar_buttons_to_layout(self, sidebar_body_layout):
         """Βοηθητική συνάρτηση για να τοποθετήσουμε τα κουμπιά στο νέο layout"""
@@ -321,6 +357,16 @@ class CourseManagementWindow(QWidget):
         self.apply_filter_to_children(back_btn_layout)
 
         self.sidebar_body_layout.addLayout(back_btn_layout)
+
+        # Εφαρμογή event filter στα κουμπιά του menu ώστε το hover πάνω στα icons να ανοίγει το sidebar.
+        sidebar_buttons = [self.btn_profile, self.btn_courses, self.btn_stats, self.back_btn]
+        if self.admin and hasattr(self, 'btn_admin'):
+            sidebar_buttons.append(self.btn_admin)
+        if not self.admin and hasattr(self, 'btn_enroll'):
+            sidebar_buttons.append(self.btn_enroll)
+
+        for btn in sidebar_buttons:#Εγκαθιστά το event filter σε όλα τα κουμπιά του sidebar για να ακούει το hover και να ανοίγει το menu
+            btn.installEventFilter(self)
 
     def create_profile_page(self):
         """Σελίδα 0: Προφίλ Χρήστη (Κοινή για Admin και Student)"""
