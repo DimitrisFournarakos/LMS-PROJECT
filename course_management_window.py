@@ -256,16 +256,17 @@ class CourseManagementWindow(QWidget):
         self.animation.setEasingCurve(QEasingCurve.InOutCubic)
         self.animation.setStartValue(current_width)
         self.animation.setEndValue(end_width)
-        self.animation.finished.connect(self.on_animation_finished)
+        self.animation.finished.connect(self.on_animation_finished)#Εμφανίζει τα γράμματα δίπλα από τα icons ,στο menu sidebar,μόλις τελειώσει το animation του ανοίγματος,για να μην εμφανίζονται τα γράμματα πριν ολοκληρωθεί το άνοιγμα του menu
         self.animation.start()
 
     def on_animation_finished(self):
+        """Η συνάρτηση αυτή εκτελείται όταν τελειώνει το animation του sidebar και «ολοκληρώνει» το οπτικό άνοιγμα του menu."""
         if self.sidebar_visible:
-            self.sidebar_header.show()
-            self.sidebar_body.show()
-            self.set_sidebar_expanded(True)
+            self.sidebar_header.show()#Εμφανίζει το header του sidebar (το πάνω κομμάτι με τίτλο/menu area).
+            self.sidebar_body.show()#Εμφανίζει το body του sidebar (τα κουμπιά επιλογών).
+            self.set_sidebar_expanded(True)#Expanded Mode = δείχνει κείμενο δίπλα στα icons,μεγαλώνει πλάτη/μορφοποίηση κουμπιών για «ανοιχτό» menu.
             self.sidebar_title_label.show()
-            self.sidebar_header.setStyleSheet("background-color: #1a252f; border-bottom: 1px solid #34495e;")
+            self.sidebar_header.setStyleSheet("background-color: #1a252f; border-bottom: 1px solid #34495e;") #Εφαρμόζω ξανά το style του header (χρώμα φόντου + border), ώστε η τελική εμφάνιση να είναι σωστή/σταθερή μετά το animation.
 
     def set_sidebar_expanded(self, expanded):
         """ expanded=True: icon + κείμενο, expanded=False: μόνο icon. """
