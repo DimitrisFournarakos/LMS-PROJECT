@@ -465,7 +465,6 @@ class CourseManagementWindow(QWidget):
                 leaderboard_layout.addWidget(empty_label)
             else:
                 leaderboard_table = QTableWidget()
-                leaderboard_table.setObjectName("leaderboardTable")
                 leaderboard_table.setColumnCount(4)
                 leaderboard_table.setHorizontalHeaderLabels(["Μάθημα", "Quiz", "Ημερομηνία", "Βαθμός (%)"])
                 leaderboard_table.setRowCount(len(rows))
@@ -474,16 +473,23 @@ class CourseManagementWindow(QWidget):
                 leaderboard_table.setSelectionMode(QTableWidget.NoSelection)
                 leaderboard_table.setFocusPolicy(Qt.NoFocus)
                 leaderboard_table.setAlternatingRowColors(True)
+                leaderboard_table.setWordWrap(False)
                 leaderboard_table.setStyleSheet(styles.leaderboard_student_style())
 
                 leaderboard_header = leaderboard_table.horizontalHeader()
                 leaderboard_header.setVisible(True)
                 leaderboard_header.setDefaultAlignment(Qt.AlignCenter)
+                leaderboard_header.setStretchLastSection(True)
+
+                rows_header = leaderboard_table.verticalHeader()
+                rows_header.setSectionResizeMode(QHeaderView.Fixed)
+                rows_header.setDefaultSectionSize(34)
                 
 
                 for col in range(leaderboard_table.columnCount()):
                     header_item = leaderboard_table.horizontalHeaderItem(col)
                     if header_item:
+                        header_item.setTextAlignment(Qt.AlignCenter)
                         header_item.setForeground(QBrush(QColor("#1f2d3a")))
                         header_font = header_item.font()
                         header_font.setBold(True)
@@ -497,12 +503,14 @@ class CourseManagementWindow(QWidget):
                         item.setTextAlignment(Qt.AlignCenter)
                         leaderboard_table.setItem(row_idx, col_idx, item)
 
-                leaderboard_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-                leaderboard_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-                leaderboard_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
-                leaderboard_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
-                leaderboard_table.resizeRowsToContents()
-                leaderboard_table.setMinimumHeight(320)#Υψος του πινακα
+                # Όλες οι στήλες κάνουν stretch για να γεμίζει πλήρως το πλάτος του πίνακα
+                header = leaderboard_table.horizontalHeader()
+
+                # Οι 3 στήλες stretch
+                for i in range(3):
+                    header.setSectionResizeMode(i, QHeaderView.Stretch)
+
+                leaderboard_table.setMinimumHeight(420)#Υψος του πινακα
                 leaderboard_layout.addWidget(leaderboard_table)
 
             layout.addWidget(leaderboard_card)

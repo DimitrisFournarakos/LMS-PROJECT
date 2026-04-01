@@ -584,12 +584,12 @@ def leaderboard_student_style():
             background-color: #eef2f5;
             color: #1f2d3a;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 20px;
             font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
             border: 1px solid #cfd8dc;
             border-bottom: 1px solid #b0bec5;
             padding: 6px;
-            min-height: 30px;
+            min-height: 70px;
         }
 
         QTableWidget QTableCornerButton::section {
@@ -615,6 +615,6 @@ def leaderboard_student_style():
         QTableWidget QHeaderView::section:horizontal:hover {
             background-color: #e3e9ee;
             color: #1f2d3a;
-            font-size: 14px;
+            font-size: 21px;
         }
     """
