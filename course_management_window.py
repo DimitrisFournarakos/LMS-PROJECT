@@ -1,7 +1,7 @@
 import sqlite3
 from styles_css import styles
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
-from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF, QEasingCurve
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF, QEasingCurve, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor, QBrush
 from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course, get_user_by_id, get_student_quiz_leaderboard
 from student_functions.student_quiz_selection_dialog import StudentQuizSelectionDialog
@@ -192,6 +192,28 @@ class CourseManagementWindow(QWidget):
         for child in widget.findChildren(QWidget):
             child.installEventFilter(self)
 
+    def apply_leaderboard_column_widths(self):
+        """Υπολογίζει σταθερά pixel widths ανά στήλη ώστε header και περιεχόμενο να μένουν 100% ευθυγραμμισμένα."""
+        if not hasattr(self, 'leaderboard_table') or self.leaderboard_table is None:
+            return
+        if self.leaderboard_table.columnCount() != 4:
+            return
+
+        viewport_width = self.leaderboard_table.viewport().width()
+        if viewport_width <= 0:
+            return
+
+        # Σταθερή αναλογία στηλών: Μάθημα | Quiz | Ημερομηνία | Βαθμός
+        widths = [
+            int(viewport_width * 0.25),
+            int(viewport_width * 0.29),
+            int(viewport_width * 0.30),
+        ]
+        widths.append(viewport_width - sum(widths))
+
+        for col, width in enumerate(widths):
+            self.leaderboard_table.setColumnWidth(col, max(80, width))
+
     def showEvent(self, event):
         super().showEvent(event)
 
@@ -204,8 +226,21 @@ class CourseManagementWindow(QWidget):
         self.sidebar_container.setMinimumWidth(70)
         self.sidebar_container.setMaximumWidth(70)
 
+        # Μετά το show/layout pass, εφαρμόζουμε ξανά τα fixed widths του leaderboard.
+        QTimer.singleShot(0, self.apply_leaderboard_column_widths)
+
     def eventFilter(self, obj, event):
         """Auto-open & Auto-close Menu,όταν γίνεται hover στο menu icon και στα menu buttons"""
+
+        # Κάθε πραγματικό resize του table ή του viewport επανυπολογίζει fixed πλάτη στηλών.
+        if hasattr(self, 'leaderboard_table') and self.leaderboard_table is not None:
+            if obj in (self.leaderboard_table, self.leaderboard_table.viewport()) and event.type() == QEvent.Resize:
+                QTimer.singleShot(0, self.apply_leaderboard_column_widths)
+                return False
+
+        if hasattr(self, 'leaderboard_table') and obj == self.leaderboard_table and event.type() == QEvent.Show:
+            QTimer.singleShot(0, self.apply_leaderboard_column_widths)
+            return False
         
         # Όταν το ποντίκι μπει πάνω στο menu button ή στα icons του sidebar auto-open-menu
         sidebar_hover_targets = []
@@ -469,20 +504,30 @@ class CourseManagementWindow(QWidget):
                 leaderboard_table.setColumnCount(4)
                 leaderboard_table.setHorizontalHeaderLabels(["Μάθημα", "Quiz", "Ημερομηνία", "Βαθμός (%)"])
                 leaderboard_table.setRowCount(len(rows))
+                #
+                self.leaderboard_table = leaderboard_table
                 leaderboard_table.verticalHeader().setVisible(False)
                 leaderboard_table.setEditTriggers(QTableWidget.NoEditTriggers)
                 leaderboard_table.setSelectionMode(QTableWidget.NoSelection)
                 leaderboard_table.setFocusPolicy(Qt.NoFocus)
                 leaderboard_table.setAlternatingRowColors(True)
+                #############
                 leaderboard_table.setWordWrap(False)
+                leaderboard_table.setShowGrid(True)
                 leaderboard_table.setStyleSheet(styles.leaderboard_student_style())
+                leaderboard_table.installEventFilter(self)
+                leaderboard_table.viewport().installEventFilter(self)
 
                 
                 leaderboard_header = leaderboard_table.horizontalHeader()
                 leaderboard_header.setVisible(True)
+                ###############
                 leaderboard_header.setDefaultAlignment(Qt.AlignCenter)
-                leaderboard_header.setStretchLastSection(True)
-
+                leaderboard_header.setStretchLastSection(False)
+                leaderboard_header.setFixedHeight(80)
+                for i in range(4):
+                    leaderboard_header.setSectionResizeMode(i, QHeaderView.Fixed)
+                #
                 # Μορφοποιώ την εμφάνιση των headers (κεντράρισμα, χρώμα, έντονη γραμματοσειρά)
                 for col in range(leaderboard_table.columnCount()):
                     header_item = leaderboard_table.horizontalHeaderItem(col)
@@ -502,12 +547,8 @@ class CourseManagementWindow(QWidget):
                         item.setTextAlignment(Qt.AlignCenter)
                         leaderboard_table.setItem(row_idx, col_idx, item)
 
-                # Όλες οι στήλες κάνουν stretch για να γεμίζει πλήρως το πλάτος του πίνακα
-                header = leaderboard_table.horizontalHeader()
-
-                # Οι 4 στήλες stretch
-                for i in range(4):
-                    header.setSectionResizeMode(i, QHeaderView.Stretch)
+                # Εφαρμογή pixel-perfect fixed widths μετά το πρώτο layout pass
+                QTimer.singleShot(0, self.apply_leaderboard_column_widths)
 
                 leaderboard_table.setMinimumHeight(420)#Υψος του πινακα
                 leaderboard_layout.addWidget(leaderboard_table)
