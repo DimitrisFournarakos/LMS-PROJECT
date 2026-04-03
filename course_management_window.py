@@ -464,6 +464,7 @@ class CourseManagementWindow(QWidget):
                 empty_label.setStyleSheet("font-size: 16px; color: #5f6d7a;")
                 leaderboard_layout.addWidget(empty_label)
             else:
+                # Δημιουργώ τον πίνακα για το leaderboard με 4 στήλες: Μάθημα, Quiz, Ημερομηνία, Βαθμός (%)
                 leaderboard_table = QTableWidget()
                 leaderboard_table.setColumnCount(4)
                 leaderboard_table.setHorizontalHeaderLabels(["Μάθημα", "Quiz", "Ημερομηνία", "Βαθμός (%)"])
@@ -476,16 +477,13 @@ class CourseManagementWindow(QWidget):
                 leaderboard_table.setWordWrap(False)
                 leaderboard_table.setStyleSheet(styles.leaderboard_student_style())
 
+                
                 leaderboard_header = leaderboard_table.horizontalHeader()
                 leaderboard_header.setVisible(True)
                 leaderboard_header.setDefaultAlignment(Qt.AlignCenter)
                 leaderboard_header.setStretchLastSection(True)
 
-                rows_header = leaderboard_table.verticalHeader()
-                rows_header.setSectionResizeMode(QHeaderView.Fixed)
-                rows_header.setDefaultSectionSize(34)
-                
-
+                # Μορφοποιώ την εμφάνιση των headers (κεντράρισμα, χρώμα, έντονη γραμματοσειρά)
                 for col in range(leaderboard_table.columnCount()):
                     header_item = leaderboard_table.horizontalHeaderItem(col)
                     if header_item:
@@ -495,6 +493,7 @@ class CourseManagementWindow(QWidget):
                         header_font.setBold(True)
                         header_item.setFont(header_font)
 
+                # Γεμίζω τον πίνακα με τα δεδομένα από τη βάση δεδομένων, μορφοποιώντας τον βαθμό ως ποσοστό με 2 δεκαδικά
                 for row_idx, row_data in enumerate(rows):
                     course_name, quiz_title, date_taken, score = row_data
                     values = [course_name, quiz_title, date_taken, f"{float(score):.2f}"]
@@ -506,8 +505,8 @@ class CourseManagementWindow(QWidget):
                 # Όλες οι στήλες κάνουν stretch για να γεμίζει πλήρως το πλάτος του πίνακα
                 header = leaderboard_table.horizontalHeader()
 
-                # Οι 3 στήλες stretch
-                for i in range(3):
+                # Οι 4 στήλες stretch
+                for i in range(4):
                     header.setSectionResizeMode(i, QHeaderView.Stretch)
 
                 leaderboard_table.setMinimumHeight(420)#Υψος του πινακα
