@@ -606,7 +606,7 @@ class CourseManagementWindow(QWidget):
         layout.addStretch()
         self.content_stack.addWidget(page)
 
-    def on_table_item_clicked(self, row, col):
+    def on_table_item_clicked(self, row):
         # Όταν ο Admin κάνει κλικ στον πίνακα, τον μεταφέρουμε αυτόματα στη σελίδα επεξεργασίας(CurrentIndex(2))
         if self.admin:
             self.content_stack.setCurrentIndex(2)
