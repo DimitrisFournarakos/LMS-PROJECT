@@ -655,3 +655,109 @@ def leaderboard_student_style():
             background: transparent;
         }
     """
+
+
+def leaderboard_scroll_style():
+    return """
+        QGroupBox {
+            border: 1px solid #d9e1e8;
+            border-radius: 12px;
+            margin-top: 14px;
+            background: white;
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 14px;
+            padding: 0 8px;
+        }
+
+        QGroupBox#LeaderboardItemGroup {
+            border: 1px solid #d9e1e8;
+            border-radius: 10px;
+            margin-top: 10px;
+            background: #f8fbfd;
+            font-weight: 600;
+            color: #1f2d3a;
+        }
+
+        QGroupBox#LeaderboardItemGroup::title {
+            subcontrol-origin: margin;
+            left: 12px;
+            padding: 0 6px;
+        }
+
+        QScrollArea {
+            border: none;
+            background: transparent;
+        }
+
+        QScrollArea QWidget#LeaderboardContent {
+            background: transparent;
+        }
+
+        QScrollBar:vertical {
+            border: none;
+            background: #f1f2f6;
+            width: 16px; /* Κάνω το scrollbar λίγο πιο φαρδύ για καλύτερη αίσθηση και χρήση */
+            margin: 6px 2px 6px 6px; /*βάζω περιθώριο για να μην κολλάει το scrollbar στο περιθώριο του groupbox*/
+            border-radius: 6px;
+        }
+
+        QScrollBar::handle:vertical {
+            background: #cdd3d9;
+            min-height: 30px;
+            border-radius: 6px;
+        }
+
+        QScrollBar::handle:vertical:hover {
+            background: #bcc4cc;
+        }
+
+        QScrollBar::add-line:vertical,
+        QScrollBar::sub-line:vertical {
+            height: 0px;
+            width: 0px;
+            border: none;
+            background: transparent;
+        }
+
+        QScrollBar::up-arrow:vertical,
+        QScrollBar::down-arrow:vertical {
+            width: 0px;
+            height: 0px;
+            background: transparent;
+        }
+
+        QScrollBar::add-page:vertical,
+        QScrollBar::sub-page:vertical {
+            background: transparent;
+        }
+    """
+
+
+def leaderboard_title_style():
+    return """
+        QFrame#LeaderboardTitleFrame {
+            border: 1px solid #d6dee5;
+            border-left: 6px solid #6aa6c9;
+            border-radius: 14px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #f8fcff, stop:1 #eef4f8);
+        }
+
+        QLabel#LeaderboardTitleMain {
+            color: #1f2d3a;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        QLabel#LeaderboardTitleSub {
+            color: #60717f;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    """

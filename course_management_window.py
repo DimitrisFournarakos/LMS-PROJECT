@@ -1,6 +1,6 @@
 import sqlite3
 from styles_css import styles
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox, QScrollArea, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF, QEasingCurve, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor, QBrush
 from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course, get_user_by_id, get_student_quiz_leaderboard
@@ -192,6 +192,11 @@ class CourseManagementWindow(QWidget):
         for child in widget.findChildren(QWidget):
             child.installEventFilter(self)
 
+    def _styled_form_label(self, text):
+        label = QLabel(text)
+        label.setStyleSheet("color: #1f2d3a; font-size: 15px; font-weight: 700;")
+        return label
+
     def showEvent(self, event):
         """Όταν το παράθυρο εμφανίζεται για πρώτη φορά, θέτουμε το sidebar σε κλειστή κατάσταση 
         όπου αφήνουμε μόνο τα icons ορατά"""
@@ -208,25 +213,6 @@ class CourseManagementWindow(QWidget):
 
     def eventFilter(self, obj, event):
         """Auto-open & Auto-close Menu,όταν γίνεται hover στο menu icon και στα menu buttons"""
-
-        # Σε resize/show κρατάμε τα fixed πλάτη συγχρονισμένα με το header.
-           #hasattr(αντικείμενο, "όνομα_attribute") ελέγχει αν υπάρχει το αντικείμενο,επιστρέφει True ή False.
-        if hasattr(self, 'leaderboard_table') and self.leaderboard_table is not None:
-            table = self.leaderboard_table
-                        # αν το event είναι Resize και συνέβη είτε στο ίδιο το table είτε στο viewport του Ή #αν το table μόλις εμφανίστηκε (Show
-            if (obj in (table, table.viewport()) and event.type() == QEvent.Resize) or (obj == table and event.type() == QEvent.Show):
-                viewport_width = table.viewport().width()#παίρνει το πραγματικό διαθέσιμο πλάτος όπου σχεδιάζονται τα κελιά
-
-                if table.columnCount() == 4 and viewport_width > 0:
-                    widths = [int(viewport_width * 0.25), int(viewport_width * 0.29), int(viewport_width * 0.30)]# 1η στήλη 25% ,2η -> 29%, 3 -> 30% 
-                    widths.append(viewport_width - sum(widths))#δίνει ό,τι υπόλοιπο έμεινε στην 4η στήλη
-
-                    for col, width in enumerate(widths):
-                        table.setColumnWidth(col, max(80, width))#ορίζει το πλάτος της κάθε στήλης, αλλά με ελάχιστο όριο 80 pixels.
-                                                                 #Άρα, ο πίνακας δεν αφήνει καμία στήλη να γίνει υπερβολικά στενή όταν μικραίνει το παράθυρο.
-                
-                return False
-        
         # Όταν το ποντίκι μπει πάνω στο menu button ή στα icons του sidebar auto-open-menu
         sidebar_hover_targets = []
         for attr_name in ["menu_btn", "btn_profile", "btn_courses", "btn_stats", "back_btn", "btn_admin", "btn_enroll"]:
@@ -468,73 +454,83 @@ class CourseManagementWindow(QWidget):
         layout.addWidget(card)
 
         if not self.admin:
-            """Card που εμφανίζει το leaderboard των quiz που έχουν κάνει φοιτητές"""
-            leaderboard_card = QFrame()
-            leaderboard_card.setStyleSheet("background: white; border-radius: 10px; padding: 20px;")
-            leaderboard_card.setMinimumHeight(420)#Υψος του card που περιέχει το leaderboard
-            leaderboard_layout = QVBoxLayout(leaderboard_card)
+            #εδω φτιάχνω το leaderboard για τα quiz αποτελέσματα του φοιτητή,με scroll και καθαρή προβολή,κάτω από τα στοιχεία του προφίλ του
+            leaderboard_group = QGroupBox()
+            leaderboard_group.setStyleSheet(styles.leaderboard_scroll_style())
+            leaderboard_group.setMinimumHeight(420)
+            leaderboard_group.setFixedWidth(1000)#πλάτος του leaderboard quiz frame
+            leaderboard_layout = QVBoxLayout(leaderboard_group)
+            leaderboard_layout.setContentsMargins(14, 14, 14, 14)
+            leaderboard_layout.setSpacing(12)
+
+            leaderboard_title_frame = QFrame()
+            leaderboard_title_frame.setObjectName("LeaderboardTitleFrame")
+            leaderboard_title_frame.setStyleSheet(styles.leaderboard_title_style())
+            leaderboard_title_layout = QVBoxLayout(leaderboard_title_frame)
+            leaderboard_title_layout.setContentsMargins(18, 14, 18, 14)
+            leaderboard_title_layout.setSpacing(4)
 
             leaderboard_title = QLabel("Leaderboard Quiz")
-            leaderboard_title.setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin-bottom: 8px;")
-            leaderboard_layout.addWidget(leaderboard_title)
+            leaderboard_title.setObjectName("LeaderboardTitleMain")
+            leaderboard_subtitle = QLabel("Δες συγκεντρωμένα το ιστορικό από τα quiz αποτελέσματά σου.")
+            leaderboard_subtitle.setObjectName("LeaderboardTitleSub")
+            leaderboard_subtitle.setWordWrap(True)
+
+            leaderboard_title_layout.addWidget(leaderboard_title)
+            leaderboard_title_layout.addWidget(leaderboard_subtitle)
+            leaderboard_layout.addWidget(leaderboard_title_frame)
 
             rows = get_student_quiz_leaderboard(self.user_id)
             if not rows:
                 empty_label = QLabel("Δεν υπάρχουν ακόμα αποτελέσματα quiz.")
-                empty_label.setStyleSheet("font-size: 16px; color: #5f6d7a;")
+                empty_label.setStyleSheet("font-size: 16px; color: #5f6d7a; padding: 8px 2px;")
                 leaderboard_layout.addWidget(empty_label)
             else:
-                # Δημιουργώ τον πίνακα για το leaderboard με 4 στήλες: Μάθημα, Quiz, Ημερομηνία, Βαθμός (%)
-                leaderboard_table = QTableWidget()
-                leaderboard_table.setColumnCount(4)
-                leaderboard_table.setHorizontalHeaderLabels(["Μάθημα", "Quiz", "Ημερομηνία", "Βαθμός (%)"])
-                leaderboard_table.setRowCount(len(rows))
-                
-                self.leaderboard_table = leaderboard_table #βάζω self στο leaderboard_table για να μπορώ να αποκτώ πρόσβαση και να κάνω update το table από άλλες μεθόδους της κλάσης,π.χ.να εφαρμόσω το eventFilter για να κρατάει τα πλάτη των columns συγχρονισμένα με το μέγεθος του παραθύρου.
-                leaderboard_table.verticalHeader().setVisible(False)
-                leaderboard_table.setEditTriggers(QTableWidget.NoEditTriggers)
-                leaderboard_table.setSelectionMode(QTableWidget.NoSelection)
-                leaderboard_table.setFocusPolicy(Qt.NoFocus)
-                leaderboard_table.setAlternatingRowColors(True)
-                
-                leaderboard_table.setWordWrap(True)#Το κείμενο κάθε κελιού μένει σε μία γραμμή.
-                leaderboard_table.setShowGrid(True)#Εμφανίζει γραμμές πλέγματος(Οριζόντιες & Κάθετες) του πίνακα, φαίνεται πιο χωρισμένος ο πίνακας
-                leaderboard_table.setStyleSheet(styles.leaderboard_student_style())
-                leaderboard_table.installEventFilter(self)#Παρακολουθώ events του ίδιου του QTableWidget (π.χ. Show, γενικά widget-level events).
-                leaderboard_table.viewport().installEventFilter(self)#περνάνε στο eventFilter τα Resize events του viewport.
-                                                                     #Το πλάτος που χρησιμοποιώ για τις στήλες βγαίνει από table.viewport().width()
+                leaderboard_scroll = QScrollArea()
+                leaderboard_scroll.setWidgetResizable(True)
+                leaderboard_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+                leaderboard_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+                leaderboard_scroll.setFrameShape(QFrame.NoFrame)
+                leaderboard_scroll.setStyleSheet(styles.leaderboard_scroll_style())
 
-                leaderboard_header = leaderboard_table.horizontalHeader()
-                leaderboard_header.setVisible(True)
-                leaderboard_header.setDefaultAlignment(Qt.AlignCenter)# ορίζω την προεπιλεγμένη στοίχιση του κειμένου στα headers του πίνακα στο κέντρο.
-                leaderboard_header.setStretchLastSection(False)
-                
-                for i in range(4):
-                    leaderboard_header.setSectionResizeMode(i, QHeaderView.Fixed)
-                
-                # Μορφοποιώ την εμφάνιση των headers (κεντράρισμα, χρώμα, έντονη γραμματοσειρά)
-                for col in range(leaderboard_table.columnCount()):
-                    header_item = leaderboard_table.horizontalHeaderItem(col)
-                    if header_item:
-                        header_item.setTextAlignment(Qt.AlignCenter)
-                        header_item.setForeground(QBrush(QColor("#1f2d3a")))
-                        header_font = header_item.font()
-                        header_font.setBold(True)
-                        header_item.setFont(header_font)
+                leaderboard_content = QWidget()
+                leaderboard_content.setObjectName("LeaderboardContent")
+                leaderboard_content_layout = QFormLayout(leaderboard_content)
+                leaderboard_content_layout.setContentsMargins(0, 0, 0, 0)
+                leaderboard_content_layout.setSpacing(12)
+                leaderboard_content_layout.setLabelAlignment(Qt.AlignLeft)
+                leaderboard_content_layout.setFormAlignment(Qt.AlignTop)
 
-                # Γεμίζω τον πίνακα με τα δεδομένα από τη βάση δεδομένων, μορφοποιώντας τον βαθμό ως ποσοστό με 2 δεκαδικά
-                for row_idx, row_data in enumerate(rows):
+                for row_data in rows:
                     course_name, quiz_title, date_taken, score = row_data
-                    values = [course_name, quiz_title, date_taken, f"{float(score):.2f}"]
-                    for col_idx, value in enumerate(values):
-                        item = QTableWidgetItem(value)
-                        item.setTextAlignment(Qt.AlignCenter)
-                        leaderboard_table.setItem(row_idx, col_idx, item)
+                    item_group = QGroupBox(f"{course_name} - {quiz_title}")
+                    item_group.setObjectName("LeaderboardItemGroup")
+                    item_group.setStyleSheet(styles.leaderboard_scroll_style())
+                    item_layout = QFormLayout(item_group)
+                    item_layout.setContentsMargins(16, 18, 16, 14)
+                    item_layout.setHorizontalSpacing(18)
+                    item_layout.setVerticalSpacing(10)
+                    item_layout.setLabelAlignment(Qt.AlignLeft)
+                    item_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
 
-                leaderboard_table.setMinimumHeight(420)#Υψος του πινακα
-                leaderboard_layout.addWidget(leaderboard_table)
+                    course_value = QLabel(course_name)
+                    quiz_value = QLabel(quiz_title)
+                    date_value = QLabel(date_taken)
+                    score_value = QLabel(f"{float(score):.2f}%")
 
-            layout.addWidget(leaderboard_card)
+                    for value_label in (course_value, quiz_value, date_value, score_value):
+                        value_label.setStyleSheet("color: #2c3e50; font-size: 15px;")
+
+                    item_layout.addRow(self._styled_form_label("Μάθημα:"), course_value)
+                    item_layout.addRow(self._styled_form_label("Quiz:"), quiz_value)
+                    item_layout.addRow(self._styled_form_label("Ημερομηνία:"), date_value)
+                    item_layout.addRow(self._styled_form_label("Βαθμός:"), score_value)
+                    leaderboard_content_layout.addRow(item_group)
+
+                leaderboard_scroll.setWidget(leaderboard_content)
+                leaderboard_layout.addWidget(leaderboard_scroll)
+            
+            layout.addWidget(leaderboard_group, alignment=Qt.AlignLeft)#Προσθέτω όλο το leaderboard στο τελικό Layout με αριστερή στοίχιση
 
 
         layout.addStretch()
