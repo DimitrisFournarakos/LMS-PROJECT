@@ -565,6 +565,8 @@ def leaderboard_student_style():
         QTableWidget {
             border: 1px solid #34495e;
             border-radius: 6px;
+            padding: 0px;
+            margin: 0px;
             font-size: 14px;
             font-weight: 500;
             background: #f8f9fa;
@@ -573,7 +575,14 @@ def leaderboard_student_style():
             color: #2c3e50;
             selection-background-color: #3498db;
             selection-color: white;
+            outline: 0;
+        }
+
+        QTableWidget QHeaderView {
+            border: none;
+            margin: 0px;
             padding: 0px;
+            background: #eef2f5;
         }
         
         QTableWidget QHeaderView::section:horizontal {
@@ -582,13 +591,19 @@ def leaderboard_student_style():
             font-weight: 600;
             font-size: 16px;
             font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
-            border: 1px solid #cfd8dc;
-            padding: 10px 8px;
-            min-height: 64px;
+            border: none;
+            border-bottom: 1px solid #bdc3c7;
+            padding: 2px 8px;
+            min-height: 52px; /*Βάζω το ύψος των πεδίων των headers*/
         }
 
         QTableWidget::item {
             padding: 4px 8px;
+            border: none;
+        }
+
+        QTableCornerButton::section {
+            background: transparent;
             border: none;
         }
         
@@ -601,5 +616,42 @@ def leaderboard_student_style():
             background-color: #e3e9ee;
             color: #1f2d3a;
             font-weight: 700;
+        }
+
+        QTableWidget QScrollBar:vertical {
+            border: none;
+            background: #f1f2f6;
+            width: 10px;
+            margin: 0px;
+        }
+
+        QTableWidget QScrollBar::handle:vertical {
+            background: #cdd3d9;
+            min-height: 24px;
+            border-radius: 5px;
+        }
+
+        QTableWidget QScrollBar::handle:vertical:hover {
+            background: #bcc4cc;
+        }
+
+        QTableWidget QScrollBar::add-line:vertical,
+        QTableWidget QScrollBar::sub-line:vertical {
+            height: 8px;
+            width: 10px;
+            border: none;
+            background: #eef2f5;
+        }
+
+        QTableWidget QScrollBar::up-arrow:vertical,
+        QTableWidget QScrollBar::down-arrow:vertical {
+            width: 5px;
+            height: 5px;
+            background: #7a8794;
+        }
+
+        QTableWidget QScrollBar::add-page:vertical,
+        QTableWidget QScrollBar::sub-page:vertical {
+            background: transparent;
         }
     """

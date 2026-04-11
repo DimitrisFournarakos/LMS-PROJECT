@@ -508,7 +508,7 @@ class CourseManagementWindow(QWidget):
                 leaderboard_header.setVisible(True)
                 leaderboard_header.setDefaultAlignment(Qt.AlignCenter)# ορίζω την προεπιλεγμένη στοίχιση του κειμένου στα headers του πίνακα στο κέντρο.
                 leaderboard_header.setStretchLastSection(False)
-                leaderboard_header.setFixedHeight(80)
+                
                 for i in range(4):
                     leaderboard_header.setSectionResizeMode(i, QHeaderView.Fixed)
                 
