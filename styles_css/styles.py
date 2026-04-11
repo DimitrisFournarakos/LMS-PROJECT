@@ -573,7 +573,7 @@ def leaderboard_student_style():
             color: #2c3e50;
             selection-background-color: #3498db;
             selection-color: white;
-            padding: 10px;
+            padding: 0px;
         }
         
         QTableWidget QHeaderView::section:horizontal {
