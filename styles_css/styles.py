@@ -645,8 +645,8 @@ def leaderboard_student_style():
 
         QTableWidget QScrollBar::up-arrow:vertical,
         QTableWidget QScrollBar::down-arrow:vertical {
-            width: 5px;
-            height: 5px;
+            width: 25px;
+            height: 25px;
             background: #7a8794;
         }
 
