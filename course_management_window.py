@@ -1,6 +1,6 @@
 import sqlite3
 from styles_css import styles
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox, QScrollArea, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox, QScrollArea, QFrame, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QLabel, QDialog, QHeaderView, QStackedWidget, QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect, QListWidget, QSizePolicy
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QRectF, QEasingCurve, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QCursor, QImage, QColor, QBrush
 from db import get_enrolled_courses, add_question_to_quiz, create_course,update_course, get_all_courses, delete_course, unenroll_user_from_course, get_user_by_id, get_student_quiz_leaderboard
@@ -458,13 +458,13 @@ class CourseManagementWindow(QWidget):
             leaderboard_group = QGroupBox()
             leaderboard_group.setStyleSheet(styles.leaderboard_scroll_style())
             leaderboard_group.setMinimumHeight(420)
-            leaderboard_group.setFixedWidth(1000)#πλάτος του leaderboard quiz frame
+            leaderboard_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             leaderboard_layout = QVBoxLayout(leaderboard_group)
             leaderboard_layout.setContentsMargins(14, 14, 14, 14)
             leaderboard_layout.setSpacing(12)
 
             leaderboard_title_frame = QFrame()
-            leaderboard_title_frame.setObjectName("LeaderboardTitleFrame")
+            leaderboard_title_frame.setObjectName("LeaderboardTitleFrame") #βάζω το στυλ του πλαισίου,μπλέ πλαίσιο με γαλάζιο background
             leaderboard_title_frame.setStyleSheet(styles.leaderboard_title_style())
             leaderboard_title_layout = QVBoxLayout(leaderboard_title_frame)
             leaderboard_title_layout.setContentsMargins(18, 14, 18, 14)
@@ -530,7 +530,132 @@ class CourseManagementWindow(QWidget):
                 leaderboard_scroll.setWidget(leaderboard_content)
                 leaderboard_layout.addWidget(leaderboard_scroll)
             
-            layout.addWidget(leaderboard_group, alignment=Qt.AlignLeft)#Προσθέτω όλο το leaderboard στο τελικό Layout με αριστερή στοίχιση
+            # Δημιουργώ το δεξί πλαίσιο για τα Ranks και το τοποθετώ δίπλα στο leaderboard
+            ranks_group = QGroupBox()
+            ranks_group.setStyleSheet(styles.leaderboard_scroll_style())
+            ranks_group.setMinimumHeight(420)
+            ranks_group.setMinimumWidth(320)
+            ranks_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            ranks_layout = QVBoxLayout(ranks_group)
+            ranks_layout.setContentsMargins(14, 14, 14, 14)
+            ranks_layout.setSpacing(12)
+
+            ranks_title_frame = QFrame()
+            ranks_title_frame.setObjectName("LeaderboardTitleFrame") #βάζω το στυλ του πλαισίου,μπλέ πλαίσιο με γαλάζιο background
+            ranks_title_frame.setStyleSheet(styles.leaderboard_title_style())
+            ranks_title_layout = QVBoxLayout(ranks_title_frame)
+            ranks_title_layout.setContentsMargins(18, 14, 18, 14)
+            ranks_title_layout.setSpacing(4)
+
+            ranks_title = QLabel("Ranks")
+            ranks_title.setObjectName("LeaderboardTitleMain")
+            ranks_subtitle = QLabel("Συνολικός Μέσος Όρος και κατάσταση μαθημάτων")
+            ranks_subtitle.setObjectName("LeaderboardTitleSub")
+            ranks_subtitle.setWordWrap(True)
+
+            ranks_title_layout.addWidget(ranks_title)
+            ranks_title_layout.addWidget(ranks_subtitle)
+            ranks_layout.addWidget(ranks_title_frame)
+
+            # Υπολογισμός μέσου όρου και κατάστασης μαθημάτων
+            course_scores = {}
+            for row_data in rows:
+                course_name = row_data[0]
+                try:
+                    score = float(row_data[3])
+                except Exception:
+                    score = 0.0
+                course_scores.setdefault(course_name, []).append(score)
+
+            all_scores = [s for scores in course_scores.values() for s in scores]
+            if all_scores:
+                overall_avg_percent = sum(all_scores) / len(all_scores)
+                overall_avg = overall_avg_percent / 10.0
+            else:
+                overall_avg = 0.0
+
+            # Καθορισμός Rank από το συνολικό μέσο όρο
+            if 8 < overall_avg <= 10:
+                rank_name = "Άριστα"
+            elif 7 < overall_avg <= 8:
+                rank_name = "Πολύ Καλά"
+            elif 6 < overall_avg <= 7:
+                rank_name = "Καλά"
+            elif 5 <= overall_avg <= 6:
+                rank_name = "Μέτρια"
+            else:
+                rank_name = "Χρειάζεται Περισσότερη Προσπάθεια"
+
+            # Frame για τον Μέσο Όρο και Κατάταξη
+            avg_rank_frame = QGroupBox()
+            avg_rank_frame.setObjectName("LeaderboardItemGroup")
+            avg_rank_frame.setStyleSheet(styles.leaderboard_scroll_style())
+            avg_rank_layout = QFormLayout(avg_rank_frame)
+            avg_rank_layout.setContentsMargins(16, 18, 16, 14)
+            avg_rank_layout.setHorizontalSpacing(18)
+            avg_rank_layout.setVerticalSpacing(10)
+            avg_rank_layout.setLabelAlignment(Qt.AlignLeft)
+            avg_rank_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+            overall_label = QLabel(f"{overall_avg:.2f}/10")
+            overall_label.setStyleSheet("color: #2c3e50; font-size: 15px;")
+            rank_label = QLabel(rank_name)
+            rank_label.setStyleSheet("color: #2c3e50; font-size: 15px;")
+            
+            avg_rank_layout.addRow(self._styled_form_label("Μέσος Όρος:"), overall_label)
+            avg_rank_layout.addRow(self._styled_form_label("Κατάταξη:"), rank_label)
+            ranks_layout.addWidget(avg_rank_frame)
+
+            # Λίστες περασμένων / αποτυχημένων μαθημάτων (μέσος όρος μαθήματος >=50% περνάει)
+            passed = []
+            failed = []
+            for course, scores in course_scores.items():
+                avg_course = sum(scores) / len(scores)
+                if avg_course > 50:
+                    passed.append(course)
+                else:
+                    failed.append(course)
+
+            # Frame για Περασμένα Μαθήματα
+            passed_frame = QGroupBox("Περασμένα Μαθήματα")
+            passed_frame.setObjectName("LeaderboardItemGroup")
+            passed_frame.setStyleSheet(styles.leaderboard_scroll_style())
+            passed_layout = QVBoxLayout(passed_frame)
+            passed_layout.setContentsMargins(16, 18, 16, 14)
+            passed_layout.setSpacing(10)
+
+            passed_list = QListWidget()
+            if passed:
+                passed_list.addItems(passed)
+            else:
+                passed_list.addItem("Δεν υπάρχουν περασμένα μαθήματα")
+            passed_list.setStyleSheet(styles.students_stats_rounded_sub_list())
+            passed_layout.addWidget(passed_list)
+            ranks_layout.addWidget(passed_frame)
+
+            # Frame για Αποτυχημένα Μαθήματα
+            failed_frame = QGroupBox("Αποτυχημένα Μαθήματα")
+            failed_frame.setObjectName("LeaderboardItemGroup")
+            failed_frame.setStyleSheet(styles.leaderboard_scroll_style())
+            failed_layout = QVBoxLayout(failed_frame)
+            failed_layout.setContentsMargins(16, 18, 16, 14)
+            failed_layout.setSpacing(10)
+
+            failed_list = QListWidget()
+            if failed:
+                failed_list.addItems(failed)
+            else:
+                failed_list.addItem("Δεν υπάρχουν αποτυχημένα μαθήματα")
+            failed_list.setStyleSheet(styles.students_stats_rounded_sub_list())
+            failed_layout.addWidget(failed_list)
+            ranks_layout.addWidget(failed_frame)
+
+            # Τοποθετώ τα δύο group side-by-side
+            side_by_side = QHBoxLayout()
+            side_by_side.setSpacing(18)
+            side_by_side.addWidget(leaderboard_group, 3)
+            side_by_side.addWidget(ranks_group, 1)
+            layout.addLayout(side_by_side)
 
 
         layout.addStretch()
