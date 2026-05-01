@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QListWidget, QMessageB
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from db import get_all_courses, get_quizzes_by_course, get_statistics_for_quiz
+from styles_css.styles import window_title_frame_style
 
 class AdminTotalQuizStatsWidget(QWidget):
     def __init__(self):
@@ -9,8 +10,7 @@ class AdminTotalQuizStatsWidget(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        label = QLabel("📊 Συνολικά Στατιστικά ανά Μάθημα")
-        layout.addWidget(label)
+        layout.addWidget(window_title_frame_style("📊 Συνολικά Στατιστικά ανά Μάθημα"))
 
         self.course_list = QListWidget()
         self.course_list.itemClicked.connect(self.load_stats_for_course)

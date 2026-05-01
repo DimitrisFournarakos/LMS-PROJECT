@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget,QWidget,QPushButton
 from PyQt5.QtCore import Qt,QSize,QTimer,QPropertyAnimation
 from PyQt5.QtGui import QIcon,QPixmap
 from db import get_available_courses_for_user,enroll_user_in_course
-from styles_css.styles import students_stats_rounded_container,subjects_available_course_list_style,subjects_available_back_btn_style
+from styles_css.styles import students_stats_rounded_container,subjects_available_course_list_style,subjects_available_back_btn_style,window_title_frame_style
 
 class EnrollPage(QWidget):
     def __init__(self, user_id, parent_window = 'CourseManagementWindow' ):
@@ -15,11 +15,7 @@ class EnrollPage(QWidget):
         self.main_layout.setContentsMargins(30,20,30,30)
         self.main_layout.setSpacing(20)
 
-        #Τίτλος QLabel
-        self.title = QLabel("Εγγραφή σε Νέο Μάθημα")
-        self.title.setFixedHeight(40)
-        self.title.setStyleSheet("font-size: 25px; font-weight: bold; color: #2c3e50;")
-        self.main_layout.addWidget(self.title)
+        self.main_layout.addWidget(window_title_frame_style("Εγγραφή σε Νέο Μάθημα"))
 
         #Δημιουργώ ένα container για να βαλω μεσα την λίστα με τα διαθεσιμα μαθηματα για εγγραφή
         self.list_container = QFrame()

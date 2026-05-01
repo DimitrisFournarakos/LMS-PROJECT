@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QListWidget, QMessageB
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from db import get_quizzes_by_course, get_statistics_for_quiz
+from styles_css.styles import window_title_frame_style
 
 class AdminQuizStatsDialog(QDialog):
     def __init__(self, course_id, parent=None):
@@ -13,8 +14,7 @@ class AdminQuizStatsDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.info_label = QLabel("Επέλεξε ένα quiz για να δεις στατιστικά:")
-        self.layout.addWidget(self.info_label)
+        self.layout.addWidget(window_title_frame_style("📊 Στατιστικά Quiz Μαθήματος", "Επέλεξε ένα quiz για να δεις στατιστικά:"))
 
         self.quiz_list = QListWidget()
         self.quiz_list.itemClicked.connect(self.show_quiz_statistics)
@@ -62,8 +62,7 @@ class AdminTotalQuizStatsDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.label = QLabel("Επέλεξε μάθημα για να δεις συνολικά στατιστικά:")
-        self.layout.addWidget(self.label)
+        self.layout.addWidget(window_title_frame_style("📊 Επιλογή Μαθήματος για Στατιστικά", "Επέλεξε μάθημα για να δεις συνολικά στατιστικά:"))
 
         self.course_list = QListWidget()
         self.course_list.itemClicked.connect(self.load_stats_for_course)

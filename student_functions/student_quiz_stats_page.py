@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from db import get_student_scores_by_course,get_courses_with_stats
-from styles_css.styles import students_stats_rounded_container,students_stats_rounded_sub_list
+from styles_css.styles import students_stats_rounded_container,students_stats_rounded_sub_list,window_title_frame_style
 
 class StudentQuizStatsPage(QWidget):
     def __init__(self, student_id, parent_window='CourseManagementWindow'):
@@ -16,11 +16,7 @@ class StudentQuizStatsPage(QWidget):
         self.main_layout.setContentsMargins(30, 20, 30, 30)
         self.main_layout.setSpacing(20)
 
-        #Τίτλος (QLabel)
-        self.label = QLabel("Τα στατιστικά μου")
-        self.label.setFixedHeight(40) # Σταθερό ύψος για να μην πιάνει χώρο
-        self.label.setStyleSheet("font-size: 25px; font-weight: bold; color: #2c3e50;")    
-        self.main_layout.addWidget(self.label)   
+        self.main_layout.addWidget(window_title_frame_style("Τα στατιστικά μου"))
 
         #Container για το Γράφημα (QFrame με στρογγυλεμένες γωνίες)
         self.graph_container = QFrame()

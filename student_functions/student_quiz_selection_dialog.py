@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
 )
 from db import get_enrolled_courses, get_quizzes_by_course
 from quiz_functions.quiz_execution_dialog import QuizExecutionDialog
+from styles_css.styles import window_title_frame_style
 
 
 class StudentQuizSelectionDialog(QDialog):
@@ -15,8 +16,7 @@ class StudentQuizSelectionDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.label = QLabel("Επιλέξτε Μάθημα και Quiz")
-        self.layout.addWidget(self.label)
+        self.layout.addWidget(window_title_frame_style("Επιλέξτε Μάθημα και Quiz"))
 
         self.course_list = QListWidget()
         self.course_list.itemClicked.connect(self.load_quizzes)

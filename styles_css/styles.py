@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect
-from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QFrame, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt5.QtGui import QColor, QPixmap
+from PyQt5.QtCore import Qt
 
 def get_main_window_style():
     """Επιστρέφει το γενικό στυλ για τα παράθυρα της εφαρμογής."""
@@ -130,6 +131,43 @@ def apply_shadow(widget,blur=8,x=2,y=2,alpha=50):
     shadow.setYOffset(y)
     shadow.setColor(QColor(255, 255, 255, alpha))
     widget.setGraphicsEffect(shadow)
+
+def window_title_frame_style(title_text, subtitle_text=None, icon_path=None):
+    header_frame = QFrame()
+    header_frame.setObjectName("LeaderboardTitleFrame")
+    header_frame.setStyleSheet(leaderboard_title_style())
+
+    header_layout = QVBoxLayout(header_frame)
+    header_layout.setContentsMargins(18, 14, 18, 14)
+    header_layout.setSpacing(4)
+
+    title_row = QHBoxLayout()
+    title_row.setSpacing(10)
+    title_row.setContentsMargins(0, 0, 0, 0)
+
+    if icon_path:
+        icon_label = QLabel()
+        icon_pixmap = QPixmap(icon_path)
+        if not icon_pixmap.isNull():
+            icon_label.setPixmap(icon_pixmap.scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        icon_label.setFixedSize(28, 28)
+        icon_label.setAlignment(Qt.AlignVCenter)
+        title_row.addWidget(icon_label)
+
+    title_label = QLabel(title_text)
+    title_label.setObjectName("LeaderboardTitleMain")
+    title_row.addWidget(title_label)
+    title_row.addStretch()
+
+    header_layout.addLayout(title_row)
+
+    if subtitle_text:
+        subtitle_label = QLabel(subtitle_text)
+        subtitle_label.setObjectName("LeaderboardTitleSub")
+        subtitle_label.setWordWrap(True)
+        header_layout.addWidget(subtitle_label)
+
+    return header_frame
 
 def title_frame_style():
     return"""

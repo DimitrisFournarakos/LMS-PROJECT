@@ -395,21 +395,7 @@ class CourseManagementWindow(QWidget):
             email = "-"
             role = "admin" if self.admin else "student"
 
-        welcome_row = QHBoxLayout()
-        welcome_icon = QLabel()
-
-        custom_welcome_pixmap = QPixmap("icons/welcome_icon.png")
-        welcome_icon.setPixmap(custom_welcome_pixmap.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        welcome_icon.setFixedSize(30, 30)
-        welcome_icon.setAlignment(Qt.AlignVCenter)
-        
-        title = QLabel(f"Καλώς Ήρθες, {username}!")
-        title.setStyleSheet("font-size: 24px; font-weight: bold; margin: 10px; color: #2c3e50;")
-        welcome_row.addSpacing(11)#Προσθέτω κενό πριν το welcome_icon
-        welcome_row.addWidget(welcome_icon)
-        welcome_row.addWidget(title)
-        welcome_row.addStretch()
-        layout.addLayout(welcome_row)
+        layout.addWidget(styles.window_title_frame_style(f"Καλώς Ήρθες, {username}!", icon_path="icons/welcome_icon.png"))
  
         # Σειρά 1: Όνομα χρήστη
         username_row = QHBoxLayout()
@@ -666,11 +652,7 @@ class CourseManagementWindow(QWidget):
         page = QWidget()
         layout = QVBoxLayout(page)
 
-        title = QLabel(
-            "Τα μαθήματα μου" if not self.admin else "Πίνακας Ελέγχου Μαθημάτων")
-        title.setStyleSheet(
-            "font-size: 24px; font-weight: bold; margin: 10px; color: #2c3e50;")
-        layout.addWidget(title)
+        layout.addWidget(styles.window_title_frame_style("Τα μαθήματα μου" if not self.admin else "Πίνακας Ελέγχου Μαθημάτων"))
 
         self.table = TableWithBackground()
         self.table.setColumnCount(7)
@@ -701,10 +683,7 @@ class CourseManagementWindow(QWidget):
         page = QWidget()
         layout = QVBoxLayout(page)
 
-        title = QLabel("Επεξεργασία Μαθημάτων & Διαχείριση Quiz")
-        title.setStyleSheet(
-            "font-size: 20px; font-weight: bold; margin: 10px;")
-        layout.addWidget(title)
+        layout.addWidget(styles.window_title_frame_style("Επεξεργασία Μαθημάτων & Διαχείριση Quiz"))
 
         # Φτιάχνω ένα container-πλαίσιο για να βάλω τα πεδία κειμένου("όνομα,περιγραφή κλπ.")
         form_container = QFrame()
