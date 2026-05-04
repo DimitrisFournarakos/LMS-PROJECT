@@ -1,19 +1,17 @@
 from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton,
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton,
     QPushButton, QMessageBox, QButtonGroup
 )
 from PyQt5.QtCore import Qt
 from db import save_quiz_result
 import sqlite3
 
-class QuizExecutionDialog(QDialog):
-    def __init__(self, student_id, quiz_id, parent=None):
+class QuizExecutionDialog(QWidget):
+    def __init__(self, student_id, quiz_id, parent=None, selection_page=None):
         super().__init__(parent)
         self.student_id = student_id
         self.quiz_id = quiz_id
-
-        self.setWindowTitle("Εκτέλεση Quiz")
-        self.setGeometry(100, 100, 600, 400)
+        self.selection_page = selection_page  # Reference στο selection page για επιστροφή
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -21,7 +19,11 @@ class QuizExecutionDialog(QDialog):
         self.questions = self.load_questions()
         if not self.questions:
             QMessageBox.warning(self, "Σφάλμα", "Δεν βρέθηκαν ερωτήσεις για αυτό το quiz.")
-            self.reject()
+            try:
+                if self.parent() and hasattr(self.parent(), 'reject'):
+                    self.parent().reject()
+            except Exception:
+                pass
             return
 
         self.current_index = 0
@@ -53,6 +55,10 @@ class QuizExecutionDialog(QDialog):
         self.prev_btn.clicked.connect(self.previous_question)
         self.prev_btn.setEnabled(False)
         self.nav_layout.addWidget(self.prev_btn, alignment=Qt.AlignLeft)
+
+        self.back_quiz_btn = QPushButton("← Πίσω")
+        self.back_quiz_btn.clicked.connect(self.go_back_to_selection)
+        self.nav_layout.addWidget(self.back_quiz_btn, alignment=Qt.AlignLeft)
 
         self.final_btn = QPushButton("Τελική Υποβολή")
         self.final_btn.clicked.connect(self.finish_quiz)
@@ -147,6 +153,18 @@ class QuizExecutionDialog(QDialog):
             self.current_index -= 1
             self.show_question()
 
+    def go_back_to_selection(self):
+        """Επιστροφή στο quiz selection page"""
+        confirm = QMessageBox.question(
+            self, 
+            "Επιβεβαίωση", 
+            "Θέλετε σίγουρα να εγκαταλείψετε το quiz; Οι απαντήσεις δεν θα αποθηκευτούν.",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if confirm == QMessageBox.Yes:
+            if self.selection_page:
+                self.selection_page.show_selection_again()
+
     def finish_quiz(self):
         if not self.save_answer():
             return
@@ -161,4 +179,7 @@ class QuizExecutionDialog(QDialog):
         score = round((correct_count / total) * 100, 2)
         save_quiz_result(self.student_id, self.quiz_id, score)
         QMessageBox.information(self, "Ολοκλήρωση", f"Τέλος quiz.\nΣκορ: {score}%")
-        self.accept()
+        
+        # Επιστροφή στο selection page
+        if self.selection_page:
+            self.selection_page.show_selection_again()

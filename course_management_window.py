@@ -178,6 +178,13 @@ class CourseManagementWindow(QWidget):
             self.stats_page = StudentQuizStatsPage(self.user_id, self)
         self.content_stack.addWidget(self.stats_page)
 
+        # Σελίδα 5: Online Εξέταση (μόνο για Student)
+        if not self.admin:
+            self.quiz_selection_page = StudentQuizSelectionDialog(self.user_id, parent_window=self)
+            self.content_stack.addWidget(self.quiz_selection_page)
+        else:
+            self.content_stack.addWidget(QWidget())  # Empty widget για admin
+
         # Σύνθεση κύριου layout
         self.main_content_layout.addWidget(self.sidebar_container)
         self.main_content_layout.addWidget(self.content_stack, 1)
@@ -294,6 +301,8 @@ class CourseManagementWindow(QWidget):
             buttons_with_text.insert(2, (self.btn_admin, " Διαχείριση Quiz"))
         if not self.admin and hasattr(self, 'btn_enroll'):
             buttons_with_text.insert(2, (self.btn_enroll, " Εγγραφή"))
+        if not self.admin and hasattr(self, 'btn_take_exam'):
+            buttons_with_text.insert(2, (self.btn_take_exam, " Online Εξέταση"))
 
         for button, text in buttons_with_text:
             button.setText(text if expanded else "")
@@ -319,6 +328,15 @@ class CourseManagementWindow(QWidget):
         self.btn_courses.clicked.connect(
             lambda: self.content_stack.setCurrentIndex(1))
         sidebar_body_layout.addWidget(self.btn_courses)
+
+        if not self.admin:
+            self.btn_take_exam = QPushButton(" Online Εξέταση")
+            self.btn_take_exam.setIcon(QIcon("icons/online-test.png"))
+            self.btn_take_exam.setIconSize(QSize(15, 15))
+            self.btn_take_exam.setFixedSize(40, 40)
+            self.btn_take_exam.setFixedWidth(250)
+            self.btn_take_exam.clicked.connect(lambda: self.content_stack.setCurrentIndex(5))
+            self.sidebar_body_layout.addWidget(self.btn_take_exam)
 
         if self.admin:
             self.btn_admin = QPushButton(" Διαχείριση Quiz")
@@ -375,6 +393,8 @@ class CourseManagementWindow(QWidget):
             sidebar_buttons.append(self.btn_admin)
         if not self.admin and hasattr(self, 'btn_enroll'):
             sidebar_buttons.append(self.btn_enroll)
+        if not self.admin and hasattr(self, 'btn_take_exam'):
+            sidebar_buttons.append(self.btn_take_exam)
 
         for btn in sidebar_buttons:#Εγκαθιστά το event filter σε όλα τα κουμπιά του sidebar για να ακούει το hover και να ανοίγει το menu
             btn.installEventFilter(self)
