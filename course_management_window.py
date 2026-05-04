@@ -652,7 +652,7 @@ class CourseManagementWindow(QWidget):
         page = QWidget()
         layout = QVBoxLayout(page)
 
-        layout.addWidget(styles.window_title_frame_style("Τα μαθήματα μου" if not self.admin else "Πίνακας Ελέγχου Μαθημάτων"))
+        layout.addWidget(styles.window_title_frame_style("Τα μαθήματα μου" if not self.admin else "Πίνακας Ελέγχου Μαθημάτων",icon_path="icons/my_subjects.png"))
 
         self.table = TableWithBackground()
         self.table.setColumnCount(7)
