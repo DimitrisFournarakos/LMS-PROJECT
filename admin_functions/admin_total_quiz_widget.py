@@ -10,7 +10,7 @@ class AdminTotalQuizStatsWidget(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        layout.addWidget(window_title_frame_style("📊 Συνολικά Στατιστικά ανά Μάθημα"))
+        layout.addWidget(window_title_frame_style(" Συνολικά Στατιστικά ανά Μάθημα", icon_path="icons/growth-graph.png"))
 
         self.course_list = QListWidget()
         self.course_list.itemClicked.connect(self.load_stats_for_course)

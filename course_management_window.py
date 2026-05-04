@@ -8,6 +8,7 @@ from student_functions.student_quiz_selection_dialog import StudentQuizSelection
 from student_functions.student_quiz_stats_page import StudentQuizStatsPage
 from quiz_functions.quiz_selectiondialog import AdminQuizCourseSelectionDialog
 from subjects_interface.subjects_available_interface import EnrollPage
+from admin_functions.admin_total_quiz_widget import AdminTotalQuizStatsWidget
 import qtawesome as qta
 from lectures_functions.lectures_functions import LecturesPage
 
@@ -170,8 +171,11 @@ class CourseManagementWindow(QWidget):
         else:  # Αν είναι admin, βάζω πάλι ένα κενό widget για να μην μπερδευτούν τα index αν προστεθεί κάτι μετά
             self.content_stack.addWidget(QWidget())
 
-        # Σελίδα 4: Στατιστικά (Για όλους ή μονο για student)
-        self.stats_page = StudentQuizStatsPage(self.user_id, self)
+        # Σελίδα 4: Στατιστικά (Admin: Συνολικά Quiz Stats, Student: Προσωπικά Stats)
+        if self.admin:
+            self.stats_page = AdminTotalQuizStatsWidget()
+        else:
+            self.stats_page = StudentQuizStatsPage(self.user_id, self)
         self.content_stack.addWidget(self.stats_page)
 
         # Σύνθεση κύριου layout
@@ -395,7 +399,7 @@ class CourseManagementWindow(QWidget):
             email = "-"
             role = "admin" if self.admin else "student"
 
-        layout.addWidget(styles.window_title_frame_style(f"Καλώς Ήρθες, {username}!", icon_path="icons/welcome_icon.png"))
+        layout.addWidget(styles.window_title_frame_style(f" Καλώς Ήρθες, {username}!", icon_path="icons/welcome_icon.png"))
  
         # Σειρά 1: Όνομα χρήστη
         username_row = QHBoxLayout()
@@ -652,7 +656,7 @@ class CourseManagementWindow(QWidget):
         page = QWidget()
         layout = QVBoxLayout(page)
 
-        layout.addWidget(styles.window_title_frame_style("Τα μαθήματα μου" if not self.admin else "Πίνακας Ελέγχου Μαθημάτων",icon_path="icons/my_subjects.png"))
+        layout.addWidget(styles.window_title_frame_style(" Τα μαθήματα μου" if not self.admin else " Πίνακας Ελέγχου Μαθημάτων",icon_path="icons/my_subjects.png"))
 
         self.table = TableWithBackground()
         self.table.setColumnCount(7)
@@ -683,7 +687,7 @@ class CourseManagementWindow(QWidget):
         page = QWidget()
         layout = QVBoxLayout(page)
 
-        layout.addWidget(styles.window_title_frame_style("Επεξεργασία Μαθημάτων & Διαχείριση Quiz"))
+        layout.addWidget(styles.window_title_frame_style("Επεξεργασία Μαθημάτων & Διαχείριση Quiz", icon_path="icons/edit_courses.png"))
 
         # Φτιάχνω ένα container-πλαίσιο για να βάλω τα πεδία κειμένου("όνομα,περιγραφή κλπ.")
         form_container = QFrame()

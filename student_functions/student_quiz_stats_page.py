@@ -16,7 +16,7 @@ class StudentQuizStatsPage(QWidget):
         self.main_layout.setContentsMargins(30, 20, 30, 30)
         self.main_layout.setSpacing(20)
 
-        self.main_layout.addWidget(window_title_frame_style("Τα στατιστικά μου"))
+        self.main_layout.addWidget(window_title_frame_style(" Τα στατιστικά μου", icon_path="icons/growth-graph.png"))
 
         #Container για το Γράφημα (QFrame με στρογγυλεμένες γωνίες)
         self.graph_container = QFrame()

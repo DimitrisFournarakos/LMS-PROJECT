@@ -14,7 +14,7 @@ class AdminQuizStatsDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.layout.addWidget(window_title_frame_style("📊 Στατιστικά Quiz Μαθήματος", "Επέλεξε ένα quiz για να δεις στατιστικά:"))
+        self.layout.addWidget(window_title_frame_style("📊 Στατιστικά Quiz Μαθήματος", "Επέλεξε ένα quiz για να δεις στατιστικά:", icon_path="icons/stats.png"))
 
         self.quiz_list = QListWidget()
         self.quiz_list.itemClicked.connect(self.show_quiz_statistics)
@@ -62,7 +62,7 @@ class AdminTotalQuizStatsDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.layout.addWidget(window_title_frame_style("📊 Επιλογή Μαθήματος για Στατιστικά", "Επέλεξε μάθημα για να δεις συνολικά στατιστικά:"))
+        self.layout.addWidget(window_title_frame_style("📊 Επιλογή Μαθήματος για Στατιστικά", "Επέλεξε μάθημα για να δεις συνολικά στατιστικά:", icon_path="icons/stats.png"))
 
         self.course_list = QListWidget()
         self.course_list.itemClicked.connect(self.load_stats_for_course)

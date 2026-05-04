@@ -16,7 +16,7 @@ class StudentQuizSelectionDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.layout.addWidget(window_title_frame_style("Επιλέξτε Μάθημα και Quiz"))
+        self.layout.addWidget(window_title_frame_style("Επιλέξτε Μάθημα και Quiz", icon_path="icons/online-test.png"))
 
         self.course_list = QListWidget()
         self.course_list.itemClicked.connect(self.load_quizzes)

@@ -15,7 +15,7 @@ class EnrollPage(QWidget):
         self.main_layout.setContentsMargins(30,20,30,30)
         self.main_layout.setSpacing(20)
 
-        self.main_layout.addWidget(window_title_frame_style("Εγγραφή σε Νέο Μάθημα"))
+        self.main_layout.addWidget(window_title_frame_style(" Εγγραφή σε Νέο Μάθημα", icon_path="icons/register-subject-title.png"))
 
         #Δημιουργώ ένα container για να βαλω μεσα την λίστα με τα διαθεσιμα μαθηματα για εγγραφή
         self.list_container = QFrame()
