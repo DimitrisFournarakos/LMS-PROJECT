@@ -123,6 +123,97 @@ def subjects_list_style():
         font-family: 'Segoe UI', sans-serif;
         """
 
+def student_quiz_main_container_style():
+    """Στυλ για το κύριο container της επιλογής quiz"""
+    return """
+        background-color: #f5f5f5;
+    """
+
+def student_quiz_instruction_style():
+    """Στυλ για το instruction label της επιλογής quiz"""
+    return """
+        font-size: 16px;
+        color: #34495e;
+        font-weight: 500;
+    """
+
+def student_quiz_group_style():
+    """Στυλ για τα group boxes των μαθημάτων και των quizzes"""
+    return """
+        QGroupBox {
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 10px;
+            padding: 0 3px 0 3px;
+        }
+    """
+
+def student_quiz_list_style():
+    """Στυλ για τις λίστες μαθημάτων και quizzes"""
+    return """
+        QListWidget {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: white;
+            padding: 5px;
+        }
+        QListWidget::item {
+            padding: 10px;
+            margin: 2px 0px;
+            border-radius: 4px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        QListWidget::item:hover {
+            background-color: #d5dbdb;
+            color: #1a252f;
+        }
+        QListWidget::item:selected {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+    """
+
+def student_quiz_button_style(color):
+    """Στυλ για τα action buttons της επιλογής quiz"""
+    def _adjust_color(hex_color, factor):
+        hex_color = hex_color.lstrip('#')
+        r, g, b = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
+        r = max(0, min(255, int(r * factor)))
+        g = max(0, min(255, int(g * factor)))
+        b = max(0, min(255, int(b * factor)))
+        return f'#{r:02x}{g:02x}{b:02x}'
+
+    hover_color = _adjust_color(color, 1.2)
+    pressed_color = _adjust_color(color, 0.85)
+    return f"""
+        QPushButton {{
+            background-color: {color};
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }}
+        QPushButton:hover {{
+            background-color: {hover_color};
+        }}
+        QPushButton:pressed {{
+            background-color: {pressed_color};
+        }}
+    """
+
 def apply_shadow(widget,blur=8,x=2,y=2,alpha=50):
     """Εφαρμόζει σκιά σε ένα widget"""
     shadow = QGraphicsDropShadowEffect()
