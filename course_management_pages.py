@@ -42,8 +42,7 @@ class CourseManagementPages:
             email = "-"
             role = "admin" if self.admin else "student"
 
-        layout.addWidget(styles.window_title_frame_style(
-            f" Καλώς Ήρθες, {username}!", icon_path="icons/welcome_icon.png"))
+        layout.addWidget(styles.window_title_frame_style(f" Καλώς Ήρθες, {username}!", icon_path="icons/welcome_icon.png"))
 
         # Σειρά 1: Όνομα χρήστη
         username_row = QHBoxLayout()
@@ -334,14 +333,10 @@ class CourseManagementPages:
         """Σελίδα 2: Φόρμα Διαχείρισης μόνο για Admin"""
         page = QWidget()
         layout = QVBoxLayout(page)
-
-        layout.addWidget(styles.window_title_frame_style(
-            "Επεξεργασία Μαθημάτων & Διαχείριση Quiz", 
-            icon_path="icons/edit_courses.png"))
+        layout.addWidget(styles.window_title_frame_style("Επεξεργασία Μαθημάτων & Διαχείριση Quiz", icon_path="icons/edit_courses.png"))
 
         form_container = QFrame()
-        form_container.setStyleSheet(
-            "background: white; border-radius: 10px; padding: 20px;")
+        form_container.setStyleSheet("background: white; border-radius: 10px; padding: 20px;")
         form_layout = QVBoxLayout(form_container)
 
         self.name_input = QLineEdit()

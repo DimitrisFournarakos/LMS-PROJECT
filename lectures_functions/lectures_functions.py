@@ -26,9 +26,10 @@ class LecturesPage(QWidget):
         main_layout.setSpacing(20)
 
         # Τίτλος
-        title = QLabel(f"Διαλέξεις Μαθήματος")
-        title.setStyleSheet(
-            "font-size: 25px; font-weight: bold; color: #2c3e50;")
+        title = QWidget()
+        title_layout = QVBoxLayout(title)
+        title_layout.addWidget(styles.window_title_frame_style("Διαλέξεις Μαθήματος",icon_path="icons/lectures.png"))
+       
         main_layout.addWidget(title)
 
         # Stacked widget για να εναλλάσσουμε μεταξύ λίστας και viewer
