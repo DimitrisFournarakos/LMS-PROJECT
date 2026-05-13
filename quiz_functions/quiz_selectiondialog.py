@@ -1,15 +1,6 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QListWidget, QPushButton,
-    QHBoxLayout, QMessageBox,QDialog
-)
-from db import get_all_courses
-
 import sqlite3
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QListWidget, QPushButton, QMessageBox,
-    QHBoxLayout
-)
-
+from db import get_all_courses
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QListWidget, QPushButton,QHBoxLayout, QMessageBox,QDialog)
 
 def get_all_courses():
     conn = sqlite3.connect("lms.db")
@@ -18,10 +9,6 @@ def get_all_courses():
     courses = cursor.fetchall()
     conn.close()
     return courses
-
-
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QListWidget, QPushButton, QHBoxLayout
-
 
 class AdminQuizCourseSelectionDialog(QDialog):
     def __init__(self, parent=None):
