@@ -1,5 +1,6 @@
 import sqlite3
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton,QPushButton, QMessageBox, QButtonGroup, QFrame, QProgressBar)
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton, QPushButton, QButtonGroup, QFrame, QProgressBar)
+from PyQt5.QtCore import Qt
 from db import save_quiz_result
 from styles_css import styles
 
@@ -38,6 +39,57 @@ class QuizExecutionDialog(QWidget):
         content_layout = QVBoxLayout(main_container)
         content_layout.setContentsMargins(20, 20, 20, 20)
         content_layout.setSpacing(15)
+
+        # Inline ενημερωτικό πλαίσιο για warnings / confirmations / results
+        self.inline_alert_frame = QFrame()
+        self.inline_alert_frame.setObjectName("quizExecutionAlertFrame")
+        self.inline_alert_frame.setStyleSheet(styles.quiz_execution_inline_alert_style())
+        inline_alert_layout = QHBoxLayout(self.inline_alert_frame)
+        inline_alert_layout.setContentsMargins(12, 10, 12, 10)
+        inline_alert_layout.setSpacing(12)
+
+        # Icon at left
+        self.inline_alert_icon = QLabel("⚠️")
+        self.inline_alert_icon.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        inline_alert_layout.addWidget(self.inline_alert_icon, 0)
+
+        # Centered message label (allows wrap for result messages)
+        self.inline_alert_text = QLabel()
+        self.inline_alert_text.setObjectName("quizExecutionAlertText")
+        self.inline_alert_text.setWordWrap(True)
+        self.inline_alert_text.setAlignment(Qt.AlignCenter)
+        self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
+        inline_alert_layout.addWidget(self.inline_alert_text, 1)
+
+        # Buttons on the right (compact)
+        btns_container = QFrame()
+        btns_container.setStyleSheet("background-color: #fff4e5;")
+        btns_layout = QHBoxLayout(btns_container)
+        btns_layout.setContentsMargins(0, 0, 0, 0)
+        btns_layout.setSpacing(8)
+
+        self.inline_alert_yes_btn = self._create_button("Ναι", "#27ae60")
+        self.inline_alert_yes_btn.setStyleSheet(styles.quiz_execution_inline_alert_button_style("#27ae60", compact=True))
+        self.inline_alert_yes_btn.clicked.connect(self._handle_inline_alert_yes)
+
+        self.inline_alert_no_btn = self._create_button("Όχι", "#34495e")
+        self.inline_alert_no_btn.setStyleSheet(styles.quiz_execution_inline_alert_button_style("#34495e", compact=True))
+        self.inline_alert_no_btn.clicked.connect(self._hide_inline_alert)
+
+        self.inline_alert_close_btn = self._create_button("Επιστροφή", "#3498db")
+        self.inline_alert_close_btn.setStyleSheet(styles.quiz_execution_inline_alert_button_style("#3498db", compact=True))
+        self.inline_alert_close_btn.clicked.connect(self._handle_inline_alert_close)
+
+        btns_layout.addWidget(self.inline_alert_yes_btn)
+        btns_layout.addWidget(self.inline_alert_no_btn)
+        btns_layout.addWidget(self.inline_alert_close_btn)
+
+        inline_alert_layout.addWidget(btns_container, 0)
+
+        self._inline_alert_mode = None
+        self._inline_alert_callback = None
+        self._hide_inline_alert()
+        content_layout.addWidget(self.inline_alert_frame)
 
         # Progress bar
         self.progress_bar = QProgressBar()
@@ -88,10 +140,6 @@ class QuizExecutionDialog(QWidget):
         # Action buttons layout
         button_layout = QHBoxLayout()
         button_layout.setSpacing(10)
-
-        self.submit_btn = self._create_button("✓ Υποβολή Απάντησης", "#27ae60")
-        self.submit_btn.clicked.connect(self.submit_answer)
-        button_layout.addWidget(self.submit_btn)
 
         self.prev_btn = self._create_button("← Προηγούμενη", "#34495e")
         self.prev_btn.clicked.connect(self.previous_question)
@@ -177,6 +225,50 @@ class QuizExecutionDialog(QWidget):
         """)
         return btn
 
+    def _set_inline_alert_state(self, kind):
+        self.inline_alert_frame.setStyleSheet(styles.quiz_execution_inline_alert_style(kind))
+        
+        if kind == "success":
+            self.inline_alert_icon.setText("✅")
+            self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
+        elif kind == "info":
+            self.inline_alert_icon.setText("ℹ️")
+            self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
+        elif kind == "confirm":
+            self.inline_alert_icon.setText("❓")
+            
+        else:
+            self.inline_alert_icon.setText("⚠️")
+            self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
+
+    def _show_inline_alert(self, message, kind="warning", mode="message", callback=None):
+        self._inline_alert_mode = mode
+        self._inline_alert_callback = callback
+        self._set_inline_alert_state(kind)
+        self.inline_alert_text.setText(message)
+        self.inline_alert_yes_btn.setVisible(mode == "confirm")
+        self.inline_alert_no_btn.setVisible(mode == "confirm")
+        self.inline_alert_close_btn.setVisible(mode == "result")
+        self.inline_alert_frame.setVisible(True)
+
+    def _hide_inline_alert(self):
+        self.inline_alert_text.clear()
+        self._inline_alert_mode = None
+        self._inline_alert_callback = None
+        self.inline_alert_frame.setVisible(False)
+
+    def _handle_inline_alert_yes(self):
+        callback = self._inline_alert_callback
+        self._hide_inline_alert()
+        if callback:
+            callback()
+
+    def _handle_inline_alert_close(self):
+        callback = self._inline_alert_callback
+        self._hide_inline_alert()
+        if callback:
+            callback()
+
     @staticmethod
     def _lighten_color(hex_color):
         """Ανοιχτοποιεί ένα χρώμα"""
@@ -260,21 +352,12 @@ class QuizExecutionDialog(QWidget):
                 break
 
         if not selected:
-            QMessageBox.warning(self, "Προσοχή", "Παρακαλώ επιλέξτε μια απάντηση.")
+            self._show_inline_alert("Παρακαλώ επιλέξτε μια απάντηση πριν συνεχίσετε.", kind="warning")
             return False
 
+        self._hide_inline_alert()
         self.user_answers[self.current_index] = selected
         return True
-
-    def submit_answer(self):
-        """Υποβάλλει την τρέχουσα απάντηση"""
-        if not self.save_answer():
-            return
-        QMessageBox.information(
-            self,
-            "✓ Απάντηση Υποβλήθηκε",
-            f"Υποβάλατε την απάντηση: {self.user_answers[self.current_index]}"
-        )
 
     def next_question(self):
         """Μετάβαση στην επόμενη ερώτηση"""
@@ -292,16 +375,16 @@ class QuizExecutionDialog(QWidget):
 
     def go_back_to_selection(self):
         """Επιστροφή στο quiz selection page"""
-        confirm = QMessageBox.question(
-            self, 
-            "Επιβεβαίωση", 
-            "Θέλετε σίγουρα να εγκαταλείψετε το quiz;\nΟι απαντήσεις δεν θα αποθηκευτούν.",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+        self._show_inline_alert(
+            "<span style='font-size:16px; '><b>Επιβεβαίωση:</b> Θέλετε σίγουρα να εγκαταλείψετε το quiz; Οι απαντήσεις δεν θα αποθηκευτούν.</span>",
+            kind="confirm",
+            mode="confirm",
+            callback=self._return_to_selection
         )
-        if confirm == QMessageBox.Yes:
-            if self.selection_page:
-                self.selection_page.show_selection_again()
+
+    def _return_to_selection(self):
+        if self.selection_page:
+            self.selection_page.show_selection_again()
 
     def finish_quiz(self):
         """Ολοκληρώνει το quiz και υπολογίζει τη βαθμολογία"""
@@ -322,15 +405,18 @@ class QuizExecutionDialog(QWidget):
         save_quiz_result(self.student_id, self.quiz_id, score)
         
         # Εμφάνιση αποτελέσματος
-        result_msg = f""" ✓ QUIZ ΟΛΟΚΛΗΡΩΘΗΚΕ           
-                            Σωστές Απαντήσεις: {correct_count}/{total}
-                            Βαθμολογία: {score}%
+        result_msg = (
+            f"<div style='text-align:center'>"
+            f"<b>✓ Το quiz ολοκληρώθηκε</b><br>"
+            f"Σωστές απαντήσεις: <b>{correct_count}/{total}</b><br>"
+            f"Βαθμολογία: <b>{score}%</b><br><br>"
+            f"{'🎉 Διακρίθηκες!' if score >= 70 else '✓ Καλή απόδοση' if score >= 50 else '⚠️ Χρειάζεται περισσότερη προσπάθεια'}"
+            f"</div>"
+        )
 
-                            {'🎉 Διακρίθηκες!' if score >= 70 else '✓ Καλή απόδοση' if score >= 50 else '⚠️ Χρειάζεται περισσότερη προσπάθεια'}
-                    """
-        
-        QMessageBox.information(self, "Ολοκλήρωση Quiz", result_msg)
-        
-        # Επιστροφή στο selection page
-        if self.selection_page:
-            self.selection_page.show_selection_again()
+        self._show_inline_alert(
+            result_msg,
+            kind="success",
+            mode="result",
+            callback=self._return_to_selection
+        )

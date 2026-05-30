@@ -137,6 +137,85 @@ def student_quiz_instruction_style():
         font-weight: 500;
     """
 
+def student_quiz_inline_alert_style():
+    """Στυλ για το inline ενημερωτικό πλαίσιο της επιλογής quiz"""
+    return """
+        QFrame#inlineAlertFrame {
+            background-color: #fff4e5;
+            border: 1px solid #f4c27a;
+            border-radius: 10px;
+        }
+    """
+
+def quiz_execution_inline_alert_style(kind="warning"):
+    """Στυλ για τα inline alerts του quiz execution dialog"""
+    if kind == "success":
+        background = "#edf8f0"
+        border = "#8fd19e"
+        text = "#216b3a"
+    elif kind == "info":
+        background = "#eaf4ff"
+        border = "#8bb6e8"
+        text = "#1f4e79"
+    elif kind == "confirm":
+        background = "#fff4e5"
+        border = "#e6c46a"
+        text = "#7a5b12"
+    else:
+        background = "#fff4e5"
+        border = "#f4c27a"
+        text = "#8a5a00"
+
+    return f"""
+        QFrame#quizExecutionAlertFrame {{
+            background-color: {background};
+            border: 1px solid {border};
+            border-radius: 10px;
+        }}
+        QLabel#quizExecutionAlertText {{
+            color: {text};
+            font-size: 12px;
+            font-weight: 600;
+        }}
+    """
+
+def quiz_execution_inline_alert_button_style(color, compact=False):
+    """Στυλ για τα κουμπιά του inline alert στο quiz execution dialog"""
+    def _adjust_color(hex_color, factor):
+        hex_color = hex_color.lstrip('#')
+        r, g, b = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
+        r = max(0, min(255, int(r * factor)))
+        g = max(0, min(255, int(g * factor)))
+        b = max(0, min(255, int(b * factor)))
+        return f'#{r:02x}{g:02x}{b:02x}'
+
+    hover_color = _adjust_color(color, 1.08)
+    pressed_color = _adjust_color(color, 0.92)
+    font_size = "13px" 
+    padding = "4px 10px" 
+    min_height = "20px" 
+    min_width = "25px" 
+   
+    return f"""
+        QPushButton {{
+            background-color: {color};
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: {padding};
+            font-size: {font_size};
+            font-weight: bold;
+            min-height: {min_height};
+            min-width: {min_width};
+        }}
+        QPushButton:hover {{
+            background-color: {hover_color};
+        }}
+        QPushButton:pressed {{
+            background-color: {pressed_color};
+        }}
+    """
+
 def student_quiz_group_style():
     """Στυλ για τα group boxes των μαθημάτων και των quizzes"""
     return """

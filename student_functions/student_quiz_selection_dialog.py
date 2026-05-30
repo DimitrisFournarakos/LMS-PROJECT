@@ -54,6 +54,29 @@ class StudentQuizSelectionDialog(QWidget):
         instruction_row.addWidget(instruction, 1)
         content_layout.addLayout(instruction_row)
 
+        # Inline ενημερωτικό πλαίσιο (αντί για popup)
+        self.inline_alert_frame = QFrame()
+        self.inline_alert_frame.setObjectName("inlineAlertFrame")
+        self.inline_alert_frame.setStyleSheet(styles.student_quiz_inline_alert_style())
+        inline_alert_layout = QHBoxLayout(self.inline_alert_frame)
+        inline_alert_layout.setContentsMargins(12, 10, 12, 10)
+        inline_alert_layout.setSpacing(8)
+
+        self.inline_alert_icon = QLabel("⚠️")
+        self.inline_alert_icon.setStyleSheet("background-color: #fff4e5; ")
+        self.inline_alert_icon.setAlignment(Qt.AlignTop)
+        self.inline_alert_text = QLabel()
+        self.inline_alert_text.setWordWrap(True)
+        self.inline_alert_text.setStyleSheet(
+            "color: #8a5a00; font-size: 13px; font-weight: 500; "
+            "background-color: #fff4e5; border-radius: 6px;"
+        )
+
+        inline_alert_layout.addWidget(self.inline_alert_icon, 0)
+        inline_alert_layout.addWidget(self.inline_alert_text, 1)
+        self.inline_alert_frame.setVisible(False)
+        content_layout.addWidget(self.inline_alert_frame)
+
         # Two-column layout for courses and quizzes
         selection_layout = QHBoxLayout()
         selection_layout.setSpacing(15)
@@ -113,9 +136,21 @@ class StudentQuizSelectionDialog(QWidget):
         btn.setMinimumHeight(45)
         btn.setStyleSheet(styles.student_quiz_button_style(color))
         return btn
+ 
+
+    def _show_inline_alert(self, message):
+        """Εμφανίζει inline μήνυμα ενημέρωσης μέσα στο ίδιο interface ότι δεν υπάρχουν διαθέσιμα quizzes.(Online Εξέταση - Επιλογή Quiz)"""
+        self.inline_alert_text.setText(message)
+        self.inline_alert_frame.setVisible(True)
+
+    def _hide_inline_alert(self):
+        """Κρύβει το inline μήνυμα ενημέρωσης μέσα στο ίδιο interface ότι δεν υπάρχουν διαθέσιμα quizzes."""
+        self.inline_alert_text.clear()
+        self.inline_alert_frame.setVisible(False)
 
     def load_courses(self):
         """Φορτώνει τα μαθήματα του φοιτητή"""
+        self._hide_inline_alert()
         courses = get_enrolled_courses(self.student_id)
         self.course_list.clear()
         
@@ -133,6 +168,7 @@ class StudentQuizSelectionDialog(QWidget):
 
     def load_quizzes(self, item):
         """Φορτώνει τα quizzes του επιλεγμένου μαθήματος"""
+        self._hide_inline_alert()
         course_id = item.data(Qt.UserRole)
         quizzes = get_quizzes_by_course(course_id)
         self.quiz_list.clear()
@@ -151,15 +187,12 @@ class StudentQuizSelectionDialog(QWidget):
 
     def start_selected_quiz(self):
         """Ξεκινάει το επιλεγμένο quiz"""
+        self._hide_inline_alert()
         selected = self.quiz_list.currentItem()
         
         # Έλεγχος αν έχει επιλεγεί κάτι
         if not selected or "❌" in selected.text():
-            QMessageBox.warning(
-                self, 
-                "⚠️ Προειδοποίηση", 
-                "Παρακαλώ επιλέξτε ένα ενεργό quiz."
-            )
+            self._show_inline_alert("Παρακαλώ επιλέξτε ένα ενεργό quiz.")
             return
         
         quiz_id = selected.data(Qt.UserRole)
@@ -175,10 +208,9 @@ class StudentQuizSelectionDialog(QWidget):
             
             # Έλεγχος αν έχουν φορτωθεί ερωτήσεις
             if not self.current_quiz_widget.questions or len(self.current_quiz_widget.questions) == 0:
-                QMessageBox.warning(
-                    self,
-                    "⚠️ Quiz μη διαθέσιμο",
-                    "Το επιλεγμένο quiz δεν έχει διαθέσιμες ερωτήσεις αυτή τη στιγμή.\n\nΠαρακαλώ επιλέξτε ένα άλλο quiz."
+                self._show_inline_alert(
+                    "Το επιλεγμένο quiz δεν έχει διαθέσιμες ερωτήσεις αυτή τη στιγμή. "
+                    "Παρακαλώ επιλέξτε ένα άλλο quiz."
                 )
                 self.current_quiz_widget.deleteLater()
                 self.current_quiz_widget = None
@@ -204,6 +236,7 @@ class StudentQuizSelectionDialog(QWidget):
             self.current_quiz_widget.deleteLater()
             self.current_quiz_widget = None
         
+        self._hide_inline_alert()
         self.quiz_list.clear()
         self.setVisible(True)
         
