@@ -1,6 +1,7 @@
 import sqlite3
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton, QPushButton, QButtonGroup, QFrame, QProgressBar)
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton, QPushButton, QButtonGroup, QFrame, QProgressBar, QSizePolicy)
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QIcon, QPixmap
 from db import save_quiz_result
 from styles_css import styles
 
@@ -91,6 +92,18 @@ class QuizExecutionDialog(QWidget):
         self._hide_inline_alert()
         content_layout.addWidget(self.inline_alert_frame)
 
+        # Back button row: place the back (X) button above the progress bar, right-aligned and top
+        try:
+            back_row = QHBoxLayout()
+            back_row.setContentsMargins(0, 0, 0, 0)
+            back_row.addStretch()
+            # ensure back_quiz_btn exists (created in setup_header)
+            if hasattr(self, 'back_quiz_btn') and self.back_quiz_btn:
+                back_row.addWidget(self.back_quiz_btn, 0, Qt.AlignTop | Qt.AlignRight)
+            content_layout.addLayout(back_row)
+        except Exception:
+            pass
+
         # Progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setMaximum(len(self.questions))
@@ -137,25 +150,29 @@ class QuizExecutionDialog(QWidget):
         question_layout.addStretch()
         content_layout.addWidget(question_card)
 
-        # Action buttons layout
+        # Action buttons layout: left controls, spacer, right primary actions
         button_layout = QHBoxLayout()
-        button_layout.setSpacing(10)
+        button_layout.setSpacing(12)
 
         self.prev_btn = self._create_button("← Προηγούμενη", "#34495e")
         self.prev_btn.clicked.connect(self.previous_question)
+        self.prev_btn.setToolTip("Προηγούμενη ερώτηση")
+        self.prev_btn.setMinimumWidth(150)
         button_layout.addWidget(self.prev_btn)
 
-        self.back_quiz_btn = self._create_button("← Πίσω", "#e74c3c")
-        self.back_quiz_btn.clicked.connect(self.go_back_to_selection)
-        button_layout.addWidget(self.back_quiz_btn)
+        button_layout.addStretch()
 
         self.next_btn = self._create_button("Επόμενη →", "#3498db")
         self.next_btn.clicked.connect(self.next_question)
+        self.next_btn.setToolTip("Επόμενη ερώτηση")
+        self.next_btn.setMinimumWidth(160)
         button_layout.addWidget(self.next_btn)
 
-        self.final_btn = self._create_button("🎯 Τελική Υποβολή", "#27ae60")
+        self.final_btn = self._create_button(" Τελική Υποβολή", "#27ae60")
         self.final_btn.clicked.connect(self.finish_quiz)
         self.final_btn.setVisible(False)
+        self.final_btn.setToolTip("Ολοκληρώστε και υποβάλετε το quiz")
+        self.final_btn.setMinimumWidth(180)
         button_layout.addWidget(self.final_btn)
 
         content_layout.addLayout(button_layout)
@@ -170,6 +187,21 @@ class QuizExecutionDialog(QWidget):
             " Online Εξέταση Quiz",
             icon_path="icons/online-test-title.png"
         )
+
+        # Δημιουργία back_button με εικονίδιο
+        close_btn = QPushButton()
+        close_btn.setToolTip("Επιστροφή")
+        close_btn_icon = QIcon("icons/close-window.png")
+        close_btn.setIcon(close_btn_icon)
+        close_btn.setIconSize(QSize(32, 32))
+        close_btn.setStyleSheet(styles.lectures_back_btn_style())
+        close_btn.setCursor(Qt.PointingHandCursor)
+        close_btn.setFixedSize(26, 26)
+        close_btn.clicked.connect(self.go_back_to_selection)
+
+        # Expose as back_quiz_btn so other code can reference it if needed
+        self.back_quiz_btn = close_btn
+
         self.outer_layout.addWidget(header_frame)
 
     def _create_option_button(self, label):
@@ -200,29 +232,16 @@ class QuizExecutionDialog(QWidget):
     def _create_button(self, text, color):
         """Δημιουργεί ένα styled button"""
         btn = QPushButton(text)
-        btn.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {color};
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 10px 15px;
-                font-size: 14px;
-                font-weight: bold;
-                cursor: pointer;
-                min-height: 40px;
-            }}
-            QPushButton:hover {{
-                background-color: {self._lighten_color(color)};
-            }}
-            QPushButton:pressed {{
-                background-color: {self._darken_color(color)};
-            }}
-            QPushButton:disabled {{
-                background-color: #bdc3c7;
-                color: #7f8c8d;
-            }}
-        """)
+        # Prefer shared style from styles module for consistent look
+        try:
+            btn.setStyleSheet(styles.student_quiz_button_style(color))
+        except Exception:
+            # fallback simple styling
+            btn.setStyleSheet(f"background-color: {color}; color: white; border: none; border-radius: 6px; padding: 10px 15px; font-size:14px; font-weight:bold;")
+
+        btn.setMinimumHeight(44)
+        btn.setMinimumWidth(140)
+        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         return btn
 
     def _set_inline_alert_state(self, kind):
