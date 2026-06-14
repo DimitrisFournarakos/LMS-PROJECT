@@ -352,7 +352,7 @@ class QuizExecutionDialog(QWidget):
     def go_back_to_selection(self):
         """Επιστροφή στο quiz selection page"""
         self._show_inline_alert(
-            "<span style='font-size:16px; '><b>Επιβεβαίωση:</b> Θέλετε σίγουρα να εγκαταλείψετε το quiz; Οι απαντήσεις δεν θα αποθηκευτούν.</span>",
+            "<span style='font-size:16px; '><b>Επιβεβαίωση:</b> Θέλετε σίγουρα να εγκαταλείψετε το quiz; Οι απαντήσεις δεν θα αποθηκευτούν αν δεν έχετε πατήσει τελική υποβολή.</span>",
             kind="confirm",
             mode="confirm",
             callback=self._return_to_selection
@@ -362,7 +362,7 @@ class QuizExecutionDialog(QWidget):
         if self.selection_page:
             self.selection_page.show_selection_again()
 
-    def display_results(self, correct_count, total, score):
+    def display_results(self, correct_count, total, score, mistakes):
         """Δημιουργεί και εμφανίζει το frame αποτελεσμάτων"""
         # Κρύψιμο του question card και των κουμπιών πλοήγησης
         self.question_card.setVisible(False)
@@ -389,18 +389,19 @@ class QuizExecutionDialog(QWidget):
         results_layout.setContentsMargins(28, 26, 28, 26)
 
         title_label = QLabel("Quiz Results")
-        title_label.setStyleSheet("font-size: 22px; font-weight: 700; color: #1f2937;")
+        title_label.setStyleSheet("font-size: 22px; font-weight: 700; border-radius: 8px; color: #1f2937;")
         title_label.setAlignment(Qt.AlignCenter)
         results_layout.addWidget(title_label)
 
         subtitle_label = QLabel("Αναλυτική σύνοψη της απόδοσής σου")
-        subtitle_label.setStyleSheet("font-size: 16px; color: #6b7280;")
+        subtitle_label.setStyleSheet("font-size: 16px; border-radius: 8px; color: #6b7280;")
         subtitle_label.setAlignment(Qt.AlignCenter)
         results_layout.addWidget(subtitle_label)
 
         summary_frame = QFrame()
+        summary_frame.setObjectName("quizResultsSummaryFrame")
         summary_frame.setStyleSheet("""
-            QFrame {
+            QFrame#quizResultsSummaryFrame {
                 background-color: #f8fafc;
                 border: 1px solid #e5e7eb;
                 border-radius: 10px;
@@ -412,11 +413,11 @@ class QuizExecutionDialog(QWidget):
 
         total_label = QLabel(f"{correct_count}/{total}")
         total_label.setAlignment(Qt.AlignCenter)
-        total_label.setStyleSheet("font-size: 22px; font-weight: 700; padding-left: 14px; padding-right: 14px; color: #111827;")
+        total_label.setStyleSheet("font-size: 22px; font-weight: 700; padding-left: 14px; padding-right: 14px; border-radius: 8px; color: #111827;")
         summary_layout.addWidget(total_label, 0)
 
         total_text = QLabel("Σωστές Απαντήσεις")
-        total_text.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; font-weight: 700; color: #111827;")
+        total_text.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; border-radius: 8px; font-weight: 700; color: #111827;")
         summary_layout.addWidget(total_text, 1)
 
         score_badge = QLabel(f"{score:.0f}%")
@@ -445,8 +446,9 @@ class QuizExecutionDialog(QWidget):
         results_layout.addWidget(summary_frame)
 
         metrics_frame = QFrame()
+        metrics_frame.setObjectName("quizResultsMetricsFrame")
         metrics_frame.setStyleSheet("""
-            QFrame {
+            QFrame#quizResultsMetricsFrame {
                 background-color: #ffffff;
                 border: 1px solid #e5e7eb;
                 border-radius: 10px;
@@ -457,7 +459,7 @@ class QuizExecutionDialog(QWidget):
         metrics_layout.setSpacing(14)
 
         achieved_label = QLabel("Απόδοση")
-        achieved_label.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; padding-right: 14px; font-weight: 700; color: #111827;")
+        achieved_label.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; padding-right: 14px; border-radius: 8px; font-weight: 700; color: #111827;")
         metrics_layout.addWidget(achieved_label)
 
         if score >= 70:
@@ -487,32 +489,60 @@ class QuizExecutionDialog(QWidget):
 
         results_layout.addWidget(metrics_frame)
 
-        progress_frame = QFrame()
-        progress_frame.setStyleSheet("""
-            QFrame {
+        analysis_frame = QFrame()
+        analysis_frame.setObjectName("quizResultsAnalysisFrame")
+        analysis_frame.setStyleSheet("""
+            QFrame#quizResultsAnalysisFrame {
                 background-color: #f8fafc;
                 border: 1px solid #e5e7eb;
                 border-radius: 10px;
             }
         """)
-        progress_layout = QVBoxLayout(progress_frame)
-        progress_layout.setContentsMargins(14, 12, 14, 12)
-        progress_layout.setSpacing(8)
+        analysis_layout = QVBoxLayout(analysis_frame)
+        analysis_layout.setContentsMargins(14, 12, 14, 12)
+        analysis_layout.setSpacing(10)
 
-        progress_text = QLabel("Αναλογία επιτυχίας")
-        progress_text.setStyleSheet("font-size: 12px; font-weight: 600; color: #6b7280;")
-        progress_layout.addWidget(progress_text)
+        analysis_title = QLabel("Ανάλυση Αποτελεσμάτων")
+        analysis_title.setStyleSheet("font-size: 14px; font-weight: 700; color: #374151;")
+        analysis_layout.addWidget(analysis_title)
 
-        score_bar = QProgressBar()
-        score_bar.setRange(0, 100)
-        score_bar.setValue(int(score))
-        score_bar.setTextVisible(True)
-        score_bar.setFormat("%p%")
-        score_bar.setFixedHeight(18)
-        score_bar.setStyleSheet(styles.progress_bar_style())
-        progress_layout.addWidget(score_bar)
+        if not mistakes:
+            no_mistakes = QLabel("Δεν υπάρχουν λάθη. Όλες οι απαντήσεις ήταν σωστές.")
+            no_mistakes.setStyleSheet("font-size: 13px; color: #166534; background-color: #ecfdf5; border: none; border-radius: 8px; padding: 10px;")
+            analysis_layout.addWidget(no_mistakes)
+        else:
+            for i, item in enumerate(mistakes, start=1):
+                mistake_item = QFrame()
+                mistake_item.setObjectName("quizResultsMistakeItem")
+                mistake_item.setStyleSheet("""
+                    QFrame#quizResultsMistakeItem {
+                        background-color: #ffffff;
+                        border: none;
+                        border-radius: 8px;
+                    }
+                """)
+                mistake_layout = QVBoxLayout(mistake_item)
+                mistake_layout.setContentsMargins(10, 8, 10, 8)
+                mistake_layout.setSpacing(6)
 
-        results_layout.addWidget(progress_frame)
+                q_label = QLabel(f"Ερώτηση {i}: {item['question_text']}")
+                q_label.setWordWrap(True)
+                q_label.setStyleSheet("font-size: 12px; font-weight: 600; color: #111827; border: none; background: transparent;")
+                mistake_layout.addWidget(q_label)
+
+                user_label = QLabel(f"Δική σου απάντηση: {item['user_answer']}")
+                user_label.setWordWrap(True)
+                user_label.setStyleSheet("font-size: 12px; color: #b91c1c; border: none; background: transparent;")
+                mistake_layout.addWidget(user_label)
+
+                correct_label = QLabel(f"Σωστή απάντηση: {item['correct_answer']}")
+                correct_label.setWordWrap(True)
+                correct_label.setStyleSheet("font-size: 12px; color: #166534; font-weight: 600; border: none; background: transparent;")
+                mistake_layout.addWidget(correct_label)
+
+                analysis_layout.addWidget(mistake_item)
+
+        results_layout.addWidget(analysis_frame)
 
         results_layout.addStretch()
 
@@ -523,12 +553,29 @@ class QuizExecutionDialog(QWidget):
         if not self.save_answer():
             return
 
-        # Υπολογισμός σωστών απαντήσεων
+        # Υπολογισμός σωστών απαντήσεων και συλλογή λαθών
         correct_count = 0
+        mistakes = []
+
+        def format_option(option_letter, question_row):
+            idx_map = {'A': 1, 'B': 2, 'C': 3, 'D': 4}
+            letter = (option_letter or '').upper()
+            opt_idx = idx_map.get(letter)
+            if opt_idx is None:
+                return "-"
+            return f"{letter}. {question_row[opt_idx]}"
+
         for idx, user_ans in self.user_answers.items():
-            correct = self.questions[idx][5].upper()
+            question_row = self.questions[idx]
+            correct = question_row[5].upper()
             if user_ans == correct:
                 correct_count += 1
+            else:
+                mistakes.append({
+                    "question_text": question_row[0],
+                    "user_answer": format_option(user_ans, question_row),
+                    "correct_answer": format_option(correct, question_row)
+                })
 
         total = len(self.questions)
         score = round((correct_count / total) * 100, 2)
@@ -537,4 +584,4 @@ class QuizExecutionDialog(QWidget):
         save_quiz_result(self.student_id, self.quiz_id, score)
         
         # Εμφάνιση αποτελέσματος στο νέο frame
-        self.display_results(correct_count, total, score)
+        self.display_results(correct_count, total, score, mistakes)
