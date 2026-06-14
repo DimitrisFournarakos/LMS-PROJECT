@@ -110,10 +110,11 @@ class QuizExecutionDialog(QWidget):
         content_layout.addWidget(self.progress_bar)
 
         # Question card
-        question_card = QFrame()
-        question_card.setStyleSheet("background: white; border-radius: 10px; padding: 20px; border: 1px solid #ddd;")
-        question_card.setMinimumHeight(400)
-        question_layout = QVBoxLayout(question_card)
+        # Question card
+        self.question_card = QFrame()
+        self.question_card.setStyleSheet("background: white; border-radius: 10px; padding: 20px; border: 1px solid #ddd;")
+        self.question_card.setMinimumHeight(400)
+        question_layout = QVBoxLayout(self.question_card)
         question_layout.setSpacing(12)
 
         self.question_label = QLabel()
@@ -135,34 +136,36 @@ class QuizExecutionDialog(QWidget):
             self.options_group.addButton(btn)
 
         question_layout.addStretch()
-        content_layout.addWidget(question_card)
+        content_layout.addWidget(self.question_card)
 
         # Action buttons layout: left controls, spacer, right primary actions
-        button_layout = QHBoxLayout()
-        button_layout.setSpacing(12)
+        # Action buttons layout: left controls, spacer, right primary actions
+        self.button_layout = QHBoxLayout()
+        self.button_layout.setSpacing(12)
 
         self.prev_btn = self._create_button("← Προηγούμενη", "#34495e")
         self.prev_btn.clicked.connect(self.previous_question)
         self.prev_btn.setToolTip("Προηγούμενη ερώτηση")
         self.prev_btn.setMinimumWidth(150)
-        button_layout.addWidget(self.prev_btn)
+        self.button_layout.addWidget(self.prev_btn)
 
-        button_layout.addStretch()
+        self.button_layout.addStretch()
 
         self.next_btn = self._create_button("Επόμενη →", "#3498db")
         self.next_btn.clicked.connect(self.next_question)
         self.next_btn.setToolTip("Επόμενη ερώτηση")
         self.next_btn.setMinimumWidth(160)
-        button_layout.addWidget(self.next_btn)
+        self.button_layout.addWidget(self.next_btn)
 
         self.final_btn = self._create_button(" Τελική Υποβολή", "#27ae60")
         self.final_btn.clicked.connect(self.finish_quiz)
         self.final_btn.setVisible(False)
         self.final_btn.setToolTip("Ολοκληρώστε και υποβάλετε το quiz")
         self.final_btn.setMinimumWidth(180)
-        button_layout.addWidget(self.final_btn)
+        self.button_layout.addWidget(self.final_btn)
 
-        content_layout.addLayout(button_layout)
+        self.content_layout_ref = content_layout
+        content_layout.addLayout(self.button_layout)
 
         self.outer_layout.addWidget(main_container)
 
@@ -359,6 +362,106 @@ class QuizExecutionDialog(QWidget):
         if self.selection_page:
             self.selection_page.show_selection_again()
 
+    def display_results(self, correct_count, total, score):
+        """Δημιουργεί και εμφανίζει το frame αποτελεσμάτων"""
+        # Κρύψιμο του question card και των κουμπιών πλοήγησης
+        self.question_card.setVisible(False)
+        self.prev_btn.setVisible(False)
+        self.next_btn.setVisible(False)
+        self.final_btn.setVisible(False)
+        
+        # Δημιουργία results frame
+        results_frame = QFrame()
+        results_frame.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ffffff, stop:1 #f9f9f9);
+            border-radius: 15px;
+            border: 2px solid #27ae60;
+            padding: 24px;
+        """)
+        results_layout = QVBoxLayout(results_frame)
+        results_layout.setSpacing(16)
+        results_layout.setContentsMargins(24, 24, 24, 24)
+        
+        # Τίτλος με emoji
+        title_label = QLabel("✓ Το Quiz Ολοκληρώθηκε!")
+        title_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #27ae60;")
+        title_label.setAlignment(Qt.AlignCenter)
+        results_layout.addWidget(title_label)
+        
+        # Διαχωριστική γραμμή
+        separator = QFrame()
+        separator.setStyleSheet("background-color: #27ae60; height: 2px;")
+        separator.setFixedHeight(2)
+        results_layout.addWidget(separator)
+        
+        # Σωστές απαντήσεις
+        correct_frame = QFrame()
+        correct_frame.setStyleSheet("""
+            background-color: #e8f8f5;
+            border-left: 4px solid #27ae60;
+            border-radius: 5px;
+            padding: 10px;
+        """)
+        correct_layout = QHBoxLayout(correct_frame)
+        correct_emoji = QLabel("📝")
+        correct_emoji.setStyleSheet("font-size: 18px;")
+        correct_layout.addWidget(correct_emoji, 0)
+        correct_label = QLabel()
+        correct_label.setText(f"<b>Σωστές Απαντήσεις:</b><br><span style='font-size: 16px; color: #27ae60;'>{correct_count} / {total}</span>")
+        correct_label.setStyleSheet("font-size: 13px; color: #2c3e50;")
+        correct_layout.addWidget(correct_label, 1)
+        results_layout.addWidget(correct_frame)
+        
+        # Βαθμολογία
+        score_frame = QFrame()
+        score_frame.setStyleSheet("""
+            background-color: #fef5e7;
+            border-left: 4px solid #f39c12;
+            border-radius: 5px;
+            padding: 10px;
+        """)
+        score_layout = QHBoxLayout(score_frame)
+        score_emoji = QLabel("⭐")
+        score_emoji.setStyleSheet("font-size: 18px;")
+        score_layout.addWidget(score_emoji, 0)
+        score_label = QLabel()
+        score_label.setText(f"<b>Βαθμολογία:</b><br><span style='font-size: 16px; color: #f39c12;'>{score}%</span>")
+        score_label.setStyleSheet("font-size: 13px; color: #2c3e50;")
+        score_layout.addWidget(score_label, 1)
+        results_layout.addWidget(score_frame)
+        
+        # Μήνυμα ανάλογα με τη βαθμολογία
+        if score >= 70:
+            message = "🎉 Εξαιρετικά! Διακρίθηκες στο quiz!"
+            message_color = "#27ae60"
+            message_bg = "#d5f4e6"
+        elif score >= 50:
+            message = "✓ Καλή απόδοση! Συνέχισε την προσπάθειά σου."
+            message_color = "#3498db"
+            message_bg = "#d6eaf8"
+        else:
+            message = "⚠️ Χρειάζεται περισσότερη προσπάθεια. Δοκίμασε ξανά!"
+            message_color = "#e74c3c"
+            message_bg = "#fadbd8"
+        
+        message_frame = QFrame()
+        message_frame.setStyleSheet(f"""
+            background-color: {message_bg};
+            border-left: 4px solid {message_color};
+            border-radius: 5px;
+            padding: 10px;
+        """)
+        message_layout = QHBoxLayout(message_frame)
+        message_label = QLabel(message)
+        message_label.setStyleSheet(f"font-size: 13px; font-weight: bold; color: {message_color};")
+        message_label.setAlignment(Qt.AlignCenter)
+        message_layout.addWidget(message_label)
+        results_layout.addWidget(message_frame)
+        
+        results_layout.addStretch()
+        
+        self.content_layout_ref.addWidget(results_frame)
+
     def finish_quiz(self):
         """Ολοκληρώνει το quiz και υπολογίζει τη βαθμολογία"""
         if not self.save_answer():
@@ -377,19 +480,5 @@ class QuizExecutionDialog(QWidget):
         # Αποθήκευση αποτελέσματος
         save_quiz_result(self.student_id, self.quiz_id, score)
         
-        # Εμφάνιση αποτελέσματος
-        result_msg = (
-            f"<div style='text-align:center'>"
-            f"<b>✓ Το quiz ολοκληρώθηκε</b><br>"
-            f"Σωστές απαντήσεις: <b>{correct_count}/{total}</b><br>"
-            f"Βαθμολογία: <b>{score}%</b><br><br>"
-            f"{'🎉 Διακρίθηκες!' if score >= 70 else '✓ Καλή απόδοση' if score >= 50 else '⚠️ Χρειάζεται περισσότερη προσπάθεια'}"
-            f"</div>"
-        )
-
-        self._show_inline_alert(
-            result_msg,
-            kind="success",
-            mode="result",
-            callback=self._return_to_selection
-        )
+        # Εμφάνιση αποτελέσματος στο νέο frame
+        self.display_results(correct_count, total, score)
