@@ -448,7 +448,7 @@ class QuizExecutionDialog(QWidget):
         metrics_frame.setObjectName("quizResultsMetricsFrame")
         metrics_frame.setStyleSheet("""
             QFrame#quizResultsMetricsFrame {
-                background-color: #ffffff;
+                background-color: #f8fafc;
                 border: 1px solid #e5e7eb;
                 border-radius: 10px;
             }
@@ -458,7 +458,7 @@ class QuizExecutionDialog(QWidget):
         metrics_layout.setSpacing(14)
 
         achieved_label = QLabel("Απόδοση")
-        achieved_label.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; padding-right: 14px; border-radius: 8px; font-weight: 700; color: #111827;")
+        achieved_label.setStyleSheet("font-size: 16px; padding-left: 14px; padding-right: 14px; border-radius: 8px; font-weight: 700; color: #111827; border: 1px solid #e5e7eb;")
         metrics_layout.addWidget(achieved_label)
 
         if score >= 70:
@@ -483,7 +483,9 @@ class QuizExecutionDialog(QWidget):
             background-color: {message_bg};
             border-radius: 8px;
             padding: 8px 12px;
+            border: 1px solid #e5e7eb;
         """)
+        achieved_label.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {message_color}; background-color: {message_bg}; padding: 8px 12px;")
         metrics_layout.addWidget(message_label, 1)
 
         results_layout.addWidget(metrics_frame)
