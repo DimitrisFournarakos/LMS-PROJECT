@@ -369,97 +369,153 @@ class QuizExecutionDialog(QWidget):
         self.prev_btn.setVisible(False)
         self.next_btn.setVisible(False)
         self.final_btn.setVisible(False)
-        
         # Δημιουργία results frame
         results_frame = QFrame()
+        results_frame.setObjectName("quizResultsFrame")
         results_frame.setStyleSheet("""
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ffffff, stop:1 #f9f9f9);
-            border-radius: 15px;
-            border: 2px solid #27ae60;
-            padding: 24px;
+            QFrame#quizResultsFrame {
+                background-color: #ffffff;
+                border: 1px solid #d9e2ec;
+                border-radius: 14px;
+            }
         """)
+        try:
+            styles.apply_shadow(results_frame, blur=20, x=0, y=4, alpha=35)
+        except Exception:
+            pass
+
         results_layout = QVBoxLayout(results_frame)
-        results_layout.setSpacing(16)
-        results_layout.setContentsMargins(24, 24, 24, 24)
-        
-        # Τίτλος με emoji
-        title_label = QLabel("✓ Το Quiz Ολοκληρώθηκε!")
-        title_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #27ae60;")
+        results_layout.setSpacing(14)
+        results_layout.setContentsMargins(28, 26, 28, 26)
+
+        title_label = QLabel("Quiz Results")
+        title_label.setStyleSheet("font-size: 22px; font-weight: 700; color: #1f2937;")
         title_label.setAlignment(Qt.AlignCenter)
         results_layout.addWidget(title_label)
-        
-        # Διαχωριστική γραμμή
-        separator = QFrame()
-        separator.setStyleSheet("background-color: #27ae60; height: 2px;")
-        separator.setFixedHeight(2)
-        results_layout.addWidget(separator)
-        
-        # Σωστές απαντήσεις
-        correct_frame = QFrame()
-        correct_frame.setStyleSheet("""
-            background-color: #e8f8f5;
-            border-left: 4px solid #27ae60;
-            border-radius: 5px;
-            padding: 10px;
+
+        subtitle_label = QLabel("Αναλυτική σύνοψη της απόδοσής σου")
+        subtitle_label.setStyleSheet("font-size: 16px; color: #6b7280;")
+        subtitle_label.setAlignment(Qt.AlignCenter)
+        results_layout.addWidget(subtitle_label)
+
+        summary_frame = QFrame()
+        summary_frame.setStyleSheet("""
+            QFrame {
+                background-color: #f8fafc;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+            }
         """)
-        correct_layout = QHBoxLayout(correct_frame)
-        correct_emoji = QLabel("📝")
-        correct_emoji.setStyleSheet("font-size: 18px;")
-        correct_layout.addWidget(correct_emoji, 0)
-        correct_label = QLabel()
-        correct_label.setText(f"<b>Σωστές Απαντήσεις:</b><br><span style='font-size: 16px; color: #27ae60;'>{correct_count} / {total}</span>")
-        correct_label.setStyleSheet("font-size: 13px; color: #2c3e50;")
-        correct_layout.addWidget(correct_label, 1)
-        results_layout.addWidget(correct_frame)
-        
-        # Βαθμολογία
-        score_frame = QFrame()
-        score_frame.setStyleSheet("""
-            background-color: #fef5e7;
-            border-left: 4px solid #f39c12;
-            border-radius: 5px;
-            padding: 10px;
-        """)
-        score_layout = QHBoxLayout(score_frame)
-        score_emoji = QLabel("⭐")
-        score_emoji.setStyleSheet("font-size: 18px;")
-        score_layout.addWidget(score_emoji, 0)
-        score_label = QLabel()
-        score_label.setText(f"<b>Βαθμολογία:</b><br><span style='font-size: 16px; color: #f39c12;'>{score}%</span>")
-        score_label.setStyleSheet("font-size: 13px; color: #2c3e50;")
-        score_layout.addWidget(score_label, 1)
-        results_layout.addWidget(score_frame)
-        
-        # Μήνυμα ανάλογα με τη βαθμολογία
+        summary_layout = QHBoxLayout(summary_frame)
+        summary_layout.setContentsMargins(14, 12, 14, 12)
+        summary_layout.setSpacing(16)
+
+        total_label = QLabel(f"{correct_count}/{total}")
+        total_label.setAlignment(Qt.AlignCenter)
+        total_label.setStyleSheet("font-size: 22px; font-weight: 700; padding-left: 14px; padding-right: 14px; color: #111827;")
+        summary_layout.addWidget(total_label, 0)
+
+        total_text = QLabel("Σωστές Απαντήσεις")
+        total_text.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; font-weight: 700; color: #111827;")
+        summary_layout.addWidget(total_text, 1)
+
+        score_badge = QLabel(f"{score:.0f}%")
+        score_badge.setAlignment(Qt.AlignCenter)
         if score >= 70:
-            message = "🎉 Εξαιρετικά! Διακρίθηκες στο quiz!"
-            message_color = "#27ae60"
-            message_bg = "#d5f4e6"
+            score_color = "#166534"
+            score_bg = "#dcfce7"
         elif score >= 50:
-            message = "✓ Καλή απόδοση! Συνέχισε την προσπάθειά σου."
-            message_color = "#3498db"
-            message_bg = "#d6eaf8"
+            score_color = "#1d4ed8"
+            score_bg = "#dbeafe"
         else:
-            message = "⚠️ Χρειάζεται περισσότερη προσπάθεια. Δοκίμασε ξανά!"
-            message_color = "#e74c3c"
-            message_bg = "#fadbd8"
-        
-        message_frame = QFrame()
-        message_frame.setStyleSheet(f"""
-            background-color: {message_bg};
-            border-left: 4px solid {message_color};
-            border-radius: 5px;
-            padding: 10px;
+            score_color = "#b45309"
+            score_bg = "#fef3c7"
+
+        score_badge.setStyleSheet(f"""
+            font-size: 22px;
+            font-weight: 700;
+            color: {score_color};
+            background-color: {score_bg};
+            border-radius: 10px;
+            padding: 8px 14px;
+            min-width: 80px;
         """)
-        message_layout = QHBoxLayout(message_frame)
+        summary_layout.addWidget(score_badge, 0)
+
+        results_layout.addWidget(summary_frame)
+
+        metrics_frame = QFrame()
+        metrics_frame.setStyleSheet("""
+            QFrame {
+                background-color: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+            }
+        """)
+        metrics_layout = QHBoxLayout(metrics_frame)
+        metrics_layout.setContentsMargins(14, 12, 14, 12)
+        metrics_layout.setSpacing(14)
+
+        achieved_label = QLabel("Απόδοση")
+        achieved_label.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; padding-right: 14px; font-weight: 700; color: #111827;")
+        metrics_layout.addWidget(achieved_label)
+
+        if score >= 70:
+            message = "Εξαιρετική επίδοση."
+            message_color = "#166534"
+            message_bg = "#f0fdf4"
+        elif score >= 50:
+            message = "Καλή απόδοση."
+            message_color = "#1d4ed8"
+            message_bg = "#eff6ff"
+        else:
+            message = "Χρειάζεται βελτίωση."
+            message_color = "#92400e"
+            message_bg = "#fffbeb"
+
         message_label = QLabel(message)
-        message_label.setStyleSheet(f"font-size: 13px; font-weight: bold; color: {message_color};")
         message_label.setAlignment(Qt.AlignCenter)
-        message_layout.addWidget(message_label)
-        results_layout.addWidget(message_frame)
-        
+        message_label.setStyleSheet(f"""
+            font-size: 16px;
+            font-weight: 600;
+            color: {message_color};
+            background-color: {message_bg};
+            border-radius: 8px;
+            padding: 8px 12px;
+        """)
+        metrics_layout.addWidget(message_label, 1)
+
+        results_layout.addWidget(metrics_frame)
+
+        progress_frame = QFrame()
+        progress_frame.setStyleSheet("""
+            QFrame {
+                background-color: #f8fafc;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+            }
+        """)
+        progress_layout = QVBoxLayout(progress_frame)
+        progress_layout.setContentsMargins(14, 12, 14, 12)
+        progress_layout.setSpacing(8)
+
+        progress_text = QLabel("Αναλογία επιτυχίας")
+        progress_text.setStyleSheet("font-size: 12px; font-weight: 600; color: #6b7280;")
+        progress_layout.addWidget(progress_text)
+
+        score_bar = QProgressBar()
+        score_bar.setRange(0, 100)
+        score_bar.setValue(int(score))
+        score_bar.setTextVisible(True)
+        score_bar.setFormat("%p%")
+        score_bar.setFixedHeight(18)
+        score_bar.setStyleSheet(styles.progress_bar_style())
+        progress_layout.addWidget(score_bar)
+
+        results_layout.addWidget(progress_frame)
+
         results_layout.addStretch()
-        
+
         self.content_layout_ref.addWidget(results_frame)
 
     def finish_quiz(self):
