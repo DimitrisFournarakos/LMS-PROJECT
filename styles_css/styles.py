@@ -611,6 +611,38 @@ def students_stats_rounded_sub_list():
             }
         """
 
+def quiz_student_mistakes_list_style():
+    return """
+                QScrollArea {
+                    border: none;
+                    background-color: transparent;
+                }
+                QScrollBar:vertical {
+                    border: none;
+                    background: #f1f5f9;
+                    width: 8px;
+                    margin: 0px 0px 0px 0px;
+                    border-radius: 4px;
+                }
+                QScrollBar::handle:vertical {
+                    background: #cbd5e1;
+                    min-height: 30px;
+                    border-radius: 4px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #94a3b8;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    height: 0px;
+                }
+                QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+                    background: none;
+                }
+                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                    background: none;
+                }
+            """
+
 def available_courses_list_style():
     return """          
     QListWidget {

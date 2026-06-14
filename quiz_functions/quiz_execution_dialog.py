@@ -1,6 +1,6 @@
-﻿from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton, QPushButton, QButtonGroup, QFrame, QProgressBar, QSizePolicy)
+﻿from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,QScrollArea, QRadioButton, QPushButton, QButtonGroup, QFrame, QProgressBar, QSizePolicy)
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon
 from db import save_quiz_result, get_questions_by_quiz_id
 from styles_css import styles
 
@@ -109,7 +109,6 @@ class QuizExecutionDialog(QWidget):
         self.progress_bar.setStyleSheet(styles.progress_bar_style())
         content_layout.addWidget(self.progress_bar)
 
-        # Question card
         # Question card
         self.question_card = QFrame()
         self.question_card.setStyleSheet("background: white; border-radius: 10px; padding: 20px; border: 1px solid #ddd;")
@@ -489,35 +488,46 @@ class QuizExecutionDialog(QWidget):
 
         results_layout.addWidget(metrics_frame)
 
-        analysis_frame = QFrame()
-        analysis_frame.setObjectName("quizResultsAnalysisFrame")
-        analysis_frame.setStyleSheet("""
-            QFrame#quizResultsAnalysisFrame {
-                background-color: #f8fafc;
-                border: 1px solid #e5e7eb;
-                border-radius: 10px;
-            }
-        """)
-        analysis_layout = QVBoxLayout(analysis_frame)
-        analysis_layout.setContentsMargins(14, 12, 14, 12)
-        analysis_layout.setSpacing(10)
-
+        
+        #Frame για την Ανάλυση των Αποτελεσμάτων-Βαζουμε Scroll Area,δημιουργόντας List αν υπάρχουν πολλά λαθη και δεν χωρανε όλα μαζί.
         analysis_title = QLabel("Ανάλυση Αποτελεσμάτων")
         analysis_title.setStyleSheet("font-size: 14px; font-weight: 700; color: #374151;")
-        analysis_layout.addWidget(analysis_title)
+        results_layout.addWidget(analysis_title)
 
         if not mistakes:
             no_mistakes = QLabel("Δεν υπάρχουν λάθη. Όλες οι απαντήσεις ήταν σωστές.")
             no_mistakes.setStyleSheet("font-size: 13px; color: #166534; background-color: #ecfdf5; border: none; border-radius: 8px; padding: 10px;")
-            analysis_layout.addWidget(no_mistakes)
+            results_layout.addWidget(no_mistakes)
         else:
+            # Δημιουργία Scroll Area
+            scroll_area = QScrollArea()
+            scroll_area.setWidgetResizable(True)
+            scroll_area.setBorder(False) if hasattr(scroll_area, 'setBorder') else None # fallback
+            
+            # Μοντέρνο & Διακριτικό στυλ για το Scrollbar (Ταίριασμα με την υπόλοιπη διεπαφή)
+            scroll_area.setStyleSheet(styles.quiz_student_mistakes_list_style())
+
+            # Το εσωτερικό frame που θα κρατάει τη λίστα των λαθών
+            analysis_frame = QFrame()
+            analysis_frame.setObjectName("quizResultsAnalysisFrame")
+            analysis_frame.setStyleSheet("""
+                QFrame#quizResultsAnalysisFrame {
+                    background-color: #f8fafc;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 10px;
+                }
+            """)
+            analysis_layout = QVBoxLayout(analysis_frame)
+            analysis_layout.setContentsMargins(14, 12, 14, 12)
+            analysis_layout.setSpacing(10)
+
             for i, item in enumerate(mistakes, start=1):
                 mistake_item = QFrame()
                 mistake_item.setObjectName("quizResultsMistakeItem")
                 mistake_item.setStyleSheet("""
                     QFrame#quizResultsMistakeItem {
                         background-color: #ffffff;
-                        border: none;
+                        border: 1px solid #e5e7eb;
                         border-radius: 8px;
                     }
                 """)
@@ -542,10 +552,13 @@ class QuizExecutionDialog(QWidget):
 
                 analysis_layout.addWidget(mistake_item)
 
-        results_layout.addWidget(analysis_frame)
+            analysis_layout.addStretch()
+            
+            # Σύνδεση του frame με το Scroll Area και προσθήκη στο κεντρικό layout
+            scroll_area.setWidget(analysis_frame)
+            results_layout.addWidget(scroll_area)
 
         results_layout.addStretch()
-
         self.content_layout_ref.addWidget(results_frame)
 
     def finish_quiz(self):
