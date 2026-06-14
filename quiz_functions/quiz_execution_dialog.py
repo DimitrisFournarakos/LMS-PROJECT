@@ -352,7 +352,7 @@ class QuizExecutionDialog(QWidget):
     def go_back_to_selection(self):
         """Επιστροφή στο quiz selection page"""
         self._show_inline_alert(
-            "<span style='font-size:16px; '><b>Επιβεβαίωση:</b> Θέλετε σίγουρα να εγκαταλείψετε το quiz; Οι απαντήσεις δεν θα αποθηκευτούν αν δεν έχετε πατήσει τελική υποβολή.</span>",
+            "<span style='font-size:16px; '><b>Επιβεβαίωση:</b> Θέλετε σίγουρα να εγκαταλείψετε το quiz; Οι απαντήσεις δεν θα αποθηκευτούν αν δεν έχετε πατήσει Τελική Υποβολή.</span>",
             kind="confirm",
             mode="confirm",
             callback=self._return_to_selection
