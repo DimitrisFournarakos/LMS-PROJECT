@@ -283,7 +283,6 @@ def student_quiz_button_style(color):
             padding: 10px 20px;
             font-size: 14px;
             font-weight: bold;
-            cursor: pointer;
         }}
         QPushButton:hover {{
             background-color: {hover_color};
@@ -969,3 +968,40 @@ def leaderboard_title_style():
             font-weight: 500;
         }
     """
+
+def progress_bar_style():
+    return """
+            QProgressBar {
+                border: 2px solid #34495e;
+                border-radius: 8px;
+                text-align: center;
+                background-color: #ecf0f1;
+                height: 25px;
+            }
+            QProgressBar::chunk {
+                background-color: #3498db;
+                border-radius: 6px;
+            }
+        """
+
+def option_button_quiz_style():
+    return """
+            QRadioButton {
+                font-size: 16px;
+                color: #2c3e50;
+                padding: 12px;
+                background-color: #ecf0f1;
+                border-radius: 8px;
+                border: 2px solid #bdc3c7;
+                margin: 5px 0px;
+            }
+            QRadioButton:hover {
+                background-color: #d5dbdb;
+                border: 2px solid #3498db;
+            }
+            QRadioButton:checked {
+                background-color: #3498db;
+                color: white;
+                border: 2px solid #2980b9;
+            }
+        """

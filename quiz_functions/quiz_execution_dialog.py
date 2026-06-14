@@ -1,8 +1,7 @@
-import sqlite3
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton, QPushButton, QButtonGroup, QFrame, QProgressBar, QSizePolicy)
+﻿from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton, QPushButton, QButtonGroup, QFrame, QProgressBar, QSizePolicy)
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon, QPixmap
-from db import save_quiz_result
+from db import save_quiz_result, get_questions_by_quiz_id
 from styles_css import styles
 
 
@@ -21,7 +20,7 @@ class QuizExecutionDialog(QWidget):
         self.outer_layout.setContentsMargins(15, 15, 15, 15)
         self.outer_layout.setSpacing(15)
 
-        self.questions = self.load_questions()
+        self.questions = get_questions_by_quiz_id(self.quiz_id)
         
         # Έλεγχος για κενά ή μη διαθέσιμα quizzes
         if not self.questions:
@@ -107,19 +106,7 @@ class QuizExecutionDialog(QWidget):
         # Progress bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setMaximum(len(self.questions))
-        self.progress_bar.setStyleSheet("""
-            QProgressBar {
-                border: 2px solid #34495e;
-                border-radius: 8px;
-                text-align: center;
-                background-color: #ecf0f1;
-                height: 25px;
-            }
-            QProgressBar::chunk {
-                background-color: #3498db;
-                border-radius: 6px;
-            }
-        """)
+        self.progress_bar.setStyleSheet(styles.progress_bar_style())
         content_layout.addWidget(self.progress_bar)
 
         # Question card
@@ -207,26 +194,7 @@ class QuizExecutionDialog(QWidget):
     def _create_option_button(self, label):
         """Δημιουργεί ένα styled option button"""
         btn = QRadioButton()
-        btn.setStyleSheet("""
-            QRadioButton {
-                font-size: 16px;
-                color: #2c3e50;
-                padding: 12px;
-                background-color: #ecf0f1;
-                border-radius: 8px;
-                border: 2px solid #bdc3c7;
-                margin: 5px 0px;
-            }
-            QRadioButton:hover {
-                background-color: #d5dbdb;
-                border: 2px solid #3498db;
-            }
-            QRadioButton:checked {
-                background-color: #3498db;
-                color: white;
-                border: 2px solid #2980b9;
-            }
-        """)
+        btn.setStyleSheet(styles.option_button_quiz_style())
         return btn
 
     def _create_button(self, text, color):
@@ -307,20 +275,6 @@ class QuizExecutionDialog(QWidget):
         g = int(g * 0.85)
         b = int(b * 0.85)
         return f'#{r:02x}{g:02x}{b:02x}'
-
-    def load_questions(self):
-        """Φορτώνει τις ερωτήσεις για το quiz"""
-        conn = sqlite3.connect("lms.db")
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT question_text, option_a, option_b, option_c, option_d, correct_option
-            FROM questions
-            WHERE quiz_id = ?
-            ORDER BY question_id
-        """, (self.quiz_id,))
-        results = cursor.fetchall()
-        conn.close()
-        return results
 
     def show_question(self):
         """Εμφανίζει την τρέχουσα ερώτηση"""

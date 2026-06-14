@@ -308,6 +308,20 @@ def add_question_to_quiz(quiz_id, question_text, option_a, option_b, option_c, o
         conn.close()
         return False
 
+def get_questions_by_quiz_id(quiz_id):
+    """Φορτώνει όλες τις ερωτήσεις για ένα συγκεκριμένο quiz"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT question_text, option_a, option_b, option_c, option_d, correct_option
+        FROM questions
+        WHERE quiz_id = ?
+        ORDER BY question_id
+    """, (quiz_id,))
+    results = cursor.fetchall()
+    conn.close()
+    return results
+
 def get_all_courses():
     conn = sqlite3.connect('lms.db')
     cursor = conn.cursor()
