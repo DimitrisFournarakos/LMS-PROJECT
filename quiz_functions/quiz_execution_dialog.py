@@ -388,14 +388,9 @@ class QuizExecutionDialog(QWidget):
         results_layout.setContentsMargins(28, 26, 28, 26)
 
         title_label = QLabel("Quiz Results")
-        title_label.setStyleSheet("font-size: 22px; font-weight: 700; border-radius: 8px; color: #1f2937;")
+        title_label.setStyleSheet("font-size: 22px; font-weight: 700; border-radius: 8px; color: #1f2937; min-height: 52px;")
         title_label.setAlignment(Qt.AlignCenter)
         results_layout.addWidget(title_label)
-
-        subtitle_label = QLabel("Αναλυτική σύνοψη της απόδοσής σου")
-        subtitle_label.setStyleSheet("font-size: 16px; border-radius: 8px; color: #6b7280;")
-        subtitle_label.setAlignment(Qt.AlignCenter)
-        results_layout.addWidget(subtitle_label)
 
         summary_frame = QFrame()
         summary_frame.setObjectName("quizResultsSummaryFrame")
