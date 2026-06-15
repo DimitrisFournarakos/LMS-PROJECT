@@ -412,7 +412,17 @@ class QuizExecutionDialog(QWidget):
 
         total_label = QLabel(f"{correct_count}/{total}")
         total_label.setAlignment(Qt.AlignCenter)
-        total_label.setStyleSheet("font-size: 22px; font-weight: 700; padding-left: 14px; padding-right: 14px; border-radius: 8px; color: #111827;")
+        if score >= 70:
+            score_color = "#166534"
+            score_bg = "#dcfce7"
+        elif score >= 50:
+            score_color = "#1d4ed8"
+            score_bg = "#dbeafe"
+        else:
+            score_color = "#b45309"
+            score_bg = "#fef3c7"
+
+        total_label.setStyleSheet(f"font-size: 22px; font-weight: 700; padding-left: 14px; padding-right: 14px; border-radius: 8px; color: {score_color}; background-color: {score_bg};")
         summary_layout.addWidget(total_label, 0)
 
         total_text = QLabel("Σωστές Απαντήσεις")
