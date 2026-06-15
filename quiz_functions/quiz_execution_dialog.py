@@ -426,7 +426,7 @@ class QuizExecutionDialog(QWidget):
         summary_layout.addWidget(total_label, 0)
 
         total_text = QLabel("Σωστές Απαντήσεις")
-        total_text.setStyleSheet("font-size: 16px; color: #6b7280; padding-left: 14px; border-radius: 8px; font-weight: 700; color: #111827;")
+        total_text.setStyleSheet(f"font-size: 16px; color: #6b7280; padding-left: 14px; border-radius: 8px; font-weight: 700; color: {score_color}; background-color: {score_bg};")
         summary_layout.addWidget(total_text, 1)
 
         score_badge = QLabel(f"{score:.0f}%")
