@@ -465,6 +465,7 @@ class QuizExecutionDialog(QWidget):
             message = "Εξαιρετική επίδοση."
             message_color = "#166534"
             message_bg = "#f0fdf4"
+            
         elif score >= 50:
             message = "Καλή απόδοση."
             message_color = "#1d4ed8"
@@ -485,7 +486,7 @@ class QuizExecutionDialog(QWidget):
             padding: 8px 12px;
             border: 1px solid #e5e7eb;
         """)
-        achieved_label.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {message_color}; background-color: {message_bg}; padding: 8px 12px;")
+        achieved_label.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {message_color}; background-color: {message_bg}; padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb;")
         metrics_layout.addWidget(message_label, 1)
 
         results_layout.addWidget(metrics_frame)
@@ -493,12 +494,12 @@ class QuizExecutionDialog(QWidget):
         
         #Frame για την Ανάλυση των Αποτελεσμάτων-Βαζουμε Scroll Area,δημιουργόντας List αν υπάρχουν πολλά λαθη και δεν χωρανε όλα μαζί.
         analysis_title = QLabel("Ανάλυση Αποτελεσμάτων")
-        analysis_title.setStyleSheet("font-size: 14px; font-weight: 700; color: #374151;")
+        analysis_title.setStyleSheet("font-size: 16px; font-weight: 700; color: #374151; border: none; border-radius: 8px; padding: 10px; min-height: 30px;")
         results_layout.addWidget(analysis_title)
 
         if not mistakes:
             no_mistakes = QLabel("Δεν υπάρχουν λάθη. Όλες οι απαντήσεις ήταν σωστές.")
-            no_mistakes.setStyleSheet("font-size: 13px; color: #166534; background-color: #ecfdf5; border: none; border-radius: 8px; padding: 10px;")
+            no_mistakes.setStyleSheet("font-size: 14px; color: #166534; background-color: #ecfdf5; border: none; border-radius: 8px; padding: 10px;")
             results_layout.addWidget(no_mistakes)
         else:
             # Δημιουργία Scroll Area
@@ -539,17 +540,17 @@ class QuizExecutionDialog(QWidget):
 
                 q_label = QLabel(f"Ερώτηση {i}: {item['question_text']}")
                 q_label.setWordWrap(True)
-                q_label.setStyleSheet("font-size: 12px; font-weight: 600; color: #111827; border: none; background: transparent;")
+                q_label.setStyleSheet("font-size: 14px; font-weight: 600; color: #111827; border: none; background: transparent;")
                 mistake_layout.addWidget(q_label)
 
                 user_label = QLabel(f"Δική σου απάντηση: {item['user_answer']}")
                 user_label.setWordWrap(True)
-                user_label.setStyleSheet("font-size: 12px; color: #b91c1c; border: none; background: transparent;")
+                user_label.setStyleSheet("font-size: 14px; color: #b91c1c; border: none; background: transparent;")
                 mistake_layout.addWidget(user_label)
 
                 correct_label = QLabel(f"Σωστή απάντηση: {item['correct_answer']}")
                 correct_label.setWordWrap(True)
-                correct_label.setStyleSheet("font-size: 12px; color: #166534; font-weight: 600; border: none; background: transparent;")
+                correct_label.setStyleSheet("font-size: 14px; color: #166534; font-weight: 600; border: none; background: transparent;")
                 mistake_layout.addWidget(correct_label)
 
                 analysis_layout.addWidget(mistake_item)
