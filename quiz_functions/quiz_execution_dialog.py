@@ -35,7 +35,7 @@ class QuizExecutionDialog(QWidget):
 
         # MAIN CONTENT AREA
         main_container = QFrame()
-        main_container.setStyleSheet("background-color: #f5f5f5;")
+        main_container.setStyleSheet("background-color: white; border-radius: 12px; border: 1px solid #ddd;")
         content_layout = QVBoxLayout(main_container)
         content_layout.setContentsMargins(20, 20, 20, 20)
         content_layout.setSpacing(15)
@@ -314,6 +314,7 @@ class QuizExecutionDialog(QWidget):
         if self.current_index == len(self.questions) - 1:
             self.next_btn.setVisible(False)
             self.final_btn.setVisible(True)
+            self.progress_bar.setVisible(False)
         else:
             self.next_btn.setVisible(True)
             self.final_btn.setVisible(False)
