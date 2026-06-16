@@ -386,10 +386,10 @@ class QuizExecutionDialog(QWidget):
 
         results_layout = QVBoxLayout(results_frame)
         results_layout.setSpacing(14)
-        results_layout.setContentsMargins(28, 26, 28, 26)
+        results_layout.setContentsMargins(22, 8, 8, 22)
 
         title_label = QLabel("Quiz Results")
-        title_label.setStyleSheet("font-size: 22px; font-weight: 700; border-radius: 8px; color: #1f2937; min-height: 52px;")
+        title_label.setStyleSheet("font-size: 25px; font-weight: 700; border: none; color: #1f2937; min-height: 55px;")
         title_label.setAlignment(Qt.AlignCenter)
         results_layout.addWidget(title_label)
 
