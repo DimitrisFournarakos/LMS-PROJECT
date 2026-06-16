@@ -385,7 +385,7 @@ class QuizExecutionDialog(QWidget):
             pass
 
         results_layout = QVBoxLayout(results_frame)
-        results_layout.setSpacing(14)
+        results_layout.setSpacing(10)
         results_layout.setContentsMargins(22, 8, 8, 22)
 
         title_label = QLabel("Quiz Results")
@@ -397,14 +397,12 @@ class QuizExecutionDialog(QWidget):
         summary_frame.setObjectName("quizResultsSummaryFrame")
         summary_frame.setStyleSheet("""
             QFrame#quizResultsSummaryFrame {
-                background-color: #f8fafc;
-                border: 1px solid #e5e7eb;
-                border-radius: 10px;
+                border: none;
             }
         """)
         summary_layout = QHBoxLayout(summary_frame)
         summary_layout.setContentsMargins(14, 12, 14, 12)
-        summary_layout.setSpacing(16)
+        summary_layout.setSpacing(10)
 
         total_label = QLabel(f"{correct_count}/{total}")
         total_label.setAlignment(Qt.AlignCenter)
@@ -418,11 +416,11 @@ class QuizExecutionDialog(QWidget):
             score_color = "#b45309"
             score_bg = "#fef3c7"
 
-        total_label.setStyleSheet(f"font-size: 22px; font-weight: 700; padding-left: 14px; padding-right: 14px; border-radius: 8px; color: {score_color}; background-color: {score_bg};")
+        total_label.setStyleSheet(f"font-size: 22px; font-weight: 700; padding-left: 14px; padding-right: 14px; border-radius: 8px; border: none; color: {score_color}; background-color: {score_bg};")
         summary_layout.addWidget(total_label, 0)
 
         total_text = QLabel("Σωστές Απαντήσεις")
-        total_text.setStyleSheet(f"font-size: 16px; color: #6b7280; padding-left: 14px; border-radius: 8px; font-weight: 700; color: {score_color}; background-color: {score_bg};")
+        total_text.setStyleSheet(f"font-size: 16px; color: #6b7280; padding-left: 14px; border-radius: 8px; border: none; font-weight: 700; color: {score_color}; background-color: {score_bg};")
         summary_layout.addWidget(total_text, 1)
 
         score_badge = QLabel(f"{score:.0f}%")
@@ -444,6 +442,7 @@ class QuizExecutionDialog(QWidget):
             background-color: {score_bg};
             border-radius: 10px;
             padding: 8px 14px;
+            border: none;
             min-width: 80px;
         """)
         summary_layout.addWidget(score_badge, 0)
