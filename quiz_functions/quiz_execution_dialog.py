@@ -179,13 +179,11 @@ class QuizExecutionDialog(QWidget):
 
         # Δημιουργία back_button με εικονίδιο
         close_btn = QPushButton()
-        close_btn.setToolTip("Επιστροφή")
-        close_btn_icon = QIcon("icons/close-window.png")
-        close_btn.setIcon(close_btn_icon)
-        close_btn.setIconSize(QSize(32, 32))
+        close_btn.setText("✕ Έξοδος")
+        close_btn.setLayoutDirection(Qt.RightToLeft)
         close_btn.setStyleSheet(styles.lectures_back_btn_style())
         close_btn.setCursor(Qt.PointingHandCursor)
-        close_btn.setFixedSize(26, 26)
+        
         close_btn.clicked.connect(self.go_back_to_selection)
 
         # Expose as back_quiz_btn so other code can reference it if needed
@@ -453,17 +451,15 @@ class QuizExecutionDialog(QWidget):
         metrics_frame.setObjectName("quizResultsMetricsFrame")
         metrics_frame.setStyleSheet("""
             QFrame#quizResultsMetricsFrame {
-                background-color: #f8fafc;
-                border: 1px solid #e5e7eb;
-                border-radius: 10px;
+                border: none;
             }
         """)
         metrics_layout = QHBoxLayout(metrics_frame)
         metrics_layout.setContentsMargins(14, 12, 14, 12)
-        metrics_layout.setSpacing(14)
+        metrics_layout.setSpacing(10)
 
         achieved_label = QLabel("Απόδοση")
-        achieved_label.setStyleSheet("font-size: 16px; padding-left: 14px; padding-right: 14px; border-radius: 8px; font-weight: 700; color: #111827; border: 1px solid #e5e7eb;")
+        achieved_label.setStyleSheet("font-size: 16px; padding-left: 14px; padding-right: 14px; border-radius: 8px; border: none; font-weight: 700; color: #111827; ")
         metrics_layout.addWidget(achieved_label)
 
         if score >= 70:
@@ -489,9 +485,9 @@ class QuizExecutionDialog(QWidget):
             background-color: {message_bg};
             border-radius: 8px;
             padding: 8px 12px;
-            border: 1px solid #e5e7eb;
+            border: none;
         """)
-        achieved_label.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {message_color}; background-color: {message_bg}; padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb;")
+        achieved_label.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {message_color}; background-color: {message_bg}; padding: 8px 12px; border-radius: 8px; border: none;")
         metrics_layout.addWidget(message_label, 1)
 
         results_layout.addWidget(metrics_frame)

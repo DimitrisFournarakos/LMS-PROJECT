@@ -750,18 +750,24 @@ def unenroll_btn_style():
 
 def lectures_back_btn_style():
     return """
-            QPushButton {
-                border: none;
-                background: transparent;
-            }
-            QPushButton:hover {
-                background-color: rgba(220, 53, 69, 0.15);
-                border-radius: 4px;
-            }
-            QPushButton:pressed {
-                background-color: rgba(220, 53, 69, 0.3);
-            }
-        """
+        QPushButton {
+            border: none;
+            background: transparent;
+            color: #333333; /* Αρχικό χρώμα γραμμάτων */
+        }
+        QPushButton:hover {
+            background: transparent;
+            color: #dc3545; /* Κοκκινίζουν τα γράμματα */
+            
+            /* Αυτό αλλάζει το χρώμα του png icon σε κόκκινο στο hover! */
+            qproperty-icon: url(icons/close-window.png) rgba(220, 53, 69, 1);
+        }
+        QPushButton:pressed {
+            background: transparent;
+            color: #b02a37;
+            qproperty-icon: url(icons/close-window.png) rgba(176, 42, 55, 1);
+        }
+    """
 
 def lectures_prev_page_btn_style():
     return """
