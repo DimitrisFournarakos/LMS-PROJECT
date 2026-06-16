@@ -1030,16 +1030,16 @@ def option_button_quiz_style():
                 padding: 12px;
                 background-color: #ecf0f1;
                 border-radius: 8px;
-                border: 2px solid #bdc3c7;
+                border: none;
                 margin: 5px 0px;
             }
             QRadioButton:hover {
                 background-color: #d5dbdb;
-                border: 2px solid #3498db;
+                border: none;
             }
             QRadioButton:checked {
                 background-color: #3498db;
                 color: white;
-                border: 2px solid #2980b9;
+                border: none;
             }
         """

@@ -37,15 +37,15 @@ class QuizExecutionDialog(QWidget):
         main_container = QFrame()
         main_container.setStyleSheet("background-color: white; border-radius: 12px; border: 1px solid #ddd;")
         content_layout = QVBoxLayout(main_container)
-        content_layout.setContentsMargins(20, 20, 20, 20)
-        content_layout.setSpacing(15)
+        content_layout.setContentsMargins(12, 5, 10, 20)
+        content_layout.setSpacing(10)
 
         # Inline ενημερωτικό πλαίσιο για warnings / confirmations / results
         self.inline_alert_frame = QFrame()
         self.inline_alert_frame.setObjectName("quizExecutionAlertFrame")
         self.inline_alert_frame.setStyleSheet(styles.quiz_execution_inline_alert_style())
         inline_alert_layout = QHBoxLayout(self.inline_alert_frame)
-        inline_alert_layout.setContentsMargins(12, 10, 12, 10)
+        inline_alert_layout.setContentsMargins(12, 5, 12, 10)
         inline_alert_layout.setSpacing(12)
 
         # Icon at left
@@ -372,9 +372,7 @@ class QuizExecutionDialog(QWidget):
         results_frame.setObjectName("quizResultsFrame")
         results_frame.setStyleSheet("""
             QFrame#quizResultsFrame {
-                background-color: #ffffff;
-                border: 1px solid #d9e2ec;
-                border-radius: 14px;
+                border: none;
             }
         """)
         try:
