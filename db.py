@@ -274,7 +274,7 @@ def get_quizzes_by_course(course_id):
         SELECT quiz_id, title FROM quizzes WHERE course_id = ?
     """, (course_id,))
     rows = cursor.fetchall()
-    print(f"DEBUG: Quizzes for course {course_id}: {rows}")
+    
     conn.close()
     return [{'quiz_id': row[0], 'title': row[1]} for row in rows]
 
