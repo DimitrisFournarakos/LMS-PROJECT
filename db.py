@@ -30,19 +30,7 @@ def create_tables():
             admin_id INTEGER,
             start_date TEXT,
             end_date TEXT,
-            pdf_path TEXT,
             FOREIGN KEY (admin_id) REFERENCES users(user_id)
-        )
-    """)
-
-    # Πίνακας βαθμών grades
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS grades (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            student_name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            course TEXT NOT NULL,
-            grade REAL
         )
     """)
 
@@ -107,19 +95,7 @@ def create_tables():
         )
     """)
 
-    # Πίνακας προσπαθειών φοιτητών για quiz
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS quiz_attempts (
-            attempt_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            quiz_id INTEGER NOT NULL,
-            score REAL,
-            timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(user_id) REFERENCES users(user_id),
-            FOREIGN KEY(quiz_id) REFERENCES quizzes(quiz_id)
-        )
-    """)
-        # Πίνακας αποτελεσμάτων quiz
+    # Πίνακας αποτελεσμάτων quiz
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS quiz_results (
             result_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -131,13 +107,6 @@ def create_tables():
             FOREIGN KEY (quiz_id) REFERENCES quizzes(quiz_id)
         )
     """)
-
-
-    # Προσθήκη της στήλης pdf_path αν λείπει
-    cursor.execute("PRAGMA table_info(courses)")
-    columns = [info[1] for info in cursor.fetchall()]
-    if 'pdf_path' not in columns:
-        cursor.execute("ALTER TABLE courses ADD COLUMN pdf_path TEXT")
 
     conn.commit()
     conn.close()
@@ -187,7 +156,7 @@ def get_lecture_pdf_by_id(lecture_id):
 
 #  Συναρτήσεις για εγγραφές 
 def create_course(name, description, category, instructor, start_date, end_date):
-    conn = sqlite3.connect('lms.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO courses (name, description, category, instructor, start_date, end_date)
@@ -197,7 +166,7 @@ def create_course(name, description, category, instructor, start_date, end_date)
     conn.close()
 
 def update_course(course_id, name, description, category, instructor, start_date, end_date):
-    conn = sqlite3.connect('lms.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('''
         UPDATE courses
@@ -271,7 +240,7 @@ def create_quiz_in_db(title, description, course_id):
         conn.close()
 
 def get_quizzes_by_course(course_id):
-    conn = sqlite3.connect("lms.db")
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT quiz_id, title FROM quizzes WHERE course_id = ?
@@ -282,19 +251,9 @@ def get_quizzes_by_course(course_id):
     return [{'quiz_id': row[0], 'title': row[1]} for row in rows]
 
 
-def delete_quiz_by_id(quiz_id):
-    conn = sqlite3.connect("lms.db")
-    cursor = conn.cursor()
-    # Διαγραφή ερωτήσεων που ανήκουν στο quiz
-    cursor.execute("DELETE FROM questions WHERE quiz_id = ?", (quiz_id,))
-    # Διαγραφή quiz
-    cursor.execute("DELETE FROM quizzes WHERE quiz_id = ?", (quiz_id,))
-    conn.commit()
-    conn.close()
-
 def add_question_to_quiz(quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option):
     print(f"DEBUG: Κλήση add_question_to_quiz με quiz_id: {quiz_id}, question_text: '{question_text}', correct_option: {correct_option}")
-    conn = sqlite3.connect('lms.db')
+    conn = connect_db()
     cursor = conn.cursor()
     try:
         cursor.execute("""
@@ -326,15 +285,15 @@ def get_questions_by_quiz_id(quiz_id):
     return results
 
 def get_all_courses():
-    conn = sqlite3.connect('lms.db')
+    conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM courses')
+    cursor.execute('SELECT * FROM courses ORDER BY name')
     courses = cursor.fetchall()
     conn.close()
     return courses
 
 def delete_course(course_id):
-    conn = sqlite3.connect('lms.db')
+    conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('DELETE FROM courses WHERE course_id = ?', (course_id,))
     conn.commit()
@@ -350,6 +309,57 @@ def get_user_by_id(user_id):
     row = cursor.fetchone()
     conn.close()
     return row
+
+def get_user_for_login(email, password):
+    conn = connect_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT user_id, username, role FROM users WHERE email = ? AND password = ?",
+            (email, password),
+        )
+        return cursor.fetchone()
+    finally:
+        conn.close()
+
+def user_exists_by_email(email):
+    conn = connect_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM users WHERE email = ?", (email,))
+        return cursor.fetchone() is not None
+    finally:
+        conn.close()
+
+def user_exists_by_username(username):
+    conn = connect_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM users WHERE username = ?", (username,))
+        return cursor.fetchone() is not None
+    finally:
+        conn.close()
+
+def user_exists_by_password(password):
+    conn = connect_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM users WHERE password = ?", (password,))
+        return cursor.fetchone() is not None
+    finally:
+        conn.close()
+
+def create_user(username, email, password, role):
+    conn = connect_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
+            (username, email, password, role),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 #Συνάρτηση για αποθήκευση βαθμολογίας

@@ -5,7 +5,7 @@
 
 import qtawesome as qta
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QPushButton, QStackedWidget, QTableWidgetItem)
-from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QEasingCurve, QTimer
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEvent, QEasingCurve
 from PyQt5.QtGui import QIcon, QColor, QCursor
 from db import get_enrolled_courses, get_all_courses
 from styles_css import styles

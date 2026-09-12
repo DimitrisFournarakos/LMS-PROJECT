@@ -50,79 +50,6 @@ def get_table_header_style():
         }
     """
 
-def get_table_widget_style():
-    """Στυλ πίνακα που δένει με το μπεζ θέμα."""
-    return """
-        QTableWidget {
-            font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif;
-            font-size: 17px;
-            font-weight: 600;
-            background-color: rgba(255, 250, 240, 0.5); /* Floral White ημιδιαφάνεια */
-            alternate-background-color: rgba(245, 222, 179, 0.3); /* Ελαφρύ Wheat στα rows */
-            border: 1px solid #c2b280;
-            border-radius: 8px;
-            gridline-color: rgba(194, 178, 128, 0.3);
-            color: #3e2723;
-            selection-background-color: #c2b280;
-            selection-color: white;
-        }
-        
-        /* Κουμπί 'Προβολή/Διαλέξεις' μέσα στον πίνακα */
-        QTableWidget QPushButton {
-            background-color: #5d4037; /* Σκούρο καφέ/μπρούτζινο για να ξεχωρίζει */
-            color: #fff8e7;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-weight: bold;
-            font-size: 14px;
-            margin: 2px;
-        }
-        
-        QTableWidget QPushButton:hover {
-            background-color: #8d6e63;
-        }
-
-        /* Hover effect στα κελιά που ταιριάζει με το μπεζ */
-        QTableWidget::item:hover {
-            background-color: rgba(255, 253, 208, 0.8); /* Cream χρώμα */
-            color: #5d4037;
-        }
-
-        QTableWidget::item {
-            padding: 4px;
-        }
-        
-    """
-
-
-def get_table_wrapper_style():
-    """Το εξωτερικό πλαίσιο που αγκαλιάζει τον πίνακα."""
-    return """
-        background-color: rgba(255, 255, 255, 150); 
-        border: 1px solid rgba(194, 178, 128, 0.4);
-        border-radius: 10px;
-    """
-
-def get_right_panel_container_style():
-    """Στυλ για το δεξί panel διαχείρισης."""
-    return """
-        background-color: #e0e0e0;
-        border-radius: 12px;
-        padding: 18px;
-        border: 1px solid #bbb;
-    """
-
-def subjects_list_style():
-    """Στυλ για τον τίτλο Λίστα Μαθημάτων"""
-    return """
-        font-size: 24px; 
-        font-weight: bold; 
-        color: #0d47a1; 
-        letter-spacing: 1px;
-        font-family: 'Segoe UI', sans-serif;
-        """
-
 def student_quiz_main_container_style():
     """Στυλ για το κύριο container της επιλογής quiz"""
     return """
@@ -337,16 +264,6 @@ def window_title_frame_style(title_text, subtitle_text=None, icon_path=None):
         header_layout.addWidget(subtitle_label)
 
     return header_frame
-
-def title_frame_style():
-    return"""
-    #TitleFrame {
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e3f2fd, stop:1 white);
-        border-left: 5px solid #0d47a1;
-        border-radius: 5px;
-        padding: 5px;
-                }
-        """
 
 # Αριστερή πλευρά - branding panel
 def main_window_left_side():

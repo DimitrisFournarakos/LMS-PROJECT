@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QApplication, QSizePolicy ,QGraphicsOpacityEffect
 from PyQt5.QtGui import QFont,QPixmap,QPainter,QRegion, QPainterPath
 from PyQt5.QtCore import Qt,QTimer,QPropertyAnimation, QEasingCurve
-from db import connect_db,initialize_database
+from db import get_user_for_login, initialize_database
 from course_management_window import CourseManagementWindow
 from styles_css.styles import input_style_login_window,main_window_left_side,main_window_left_side_rounded_label,main_window_right_side_login,main_window_exit_button,apply_shadow
 from login_window import LoginWindow
@@ -140,14 +140,7 @@ class MainWindow(QWidget):
        
         email = self.login_widget.email_input.text()
         password = self.login_widget.password_input.text()
-        valid = True
- 
-          
-        conn = connect_db()       #SELECT user_id,role,username:Επιλέγω αυτές τις τρεις στήλες από τον πίνακα users(FROM users)
-        cursor = conn.cursor()    #WHERE email=? AND password=?:Φέρνω μόνο τη γραμμή όπου το email και το password ταιριάζουν με αυτά που θα σου δώσω
-        cursor.execute("SELECT user_id, username, role FROM users WHERE email=? AND  password=?", (email, password))
-        user = cursor.fetchone()#επιστρέφει ένα tuple,μία λίστα με στοιχεία π.χ.user = (1, "Dimitris", "admin"),user_id primary key
-        conn.close()
+        user = get_user_for_login(email, password)
 
         if user:
             user_id = user[0]  #π.χ.      1
@@ -171,11 +164,7 @@ class MainWindow(QWidget):
 
         else:
             self.login_widget.login_error.setText("Λάθος email ή κωδικός.")
-            self.login_widget.login_error.show()           
-            valid = False
-        
-        if not valid:
-                return # Σταματάμε αν υπάρχει σφάλμα
+            self.login_widget.login_error.show()
 
     def open_course_management_window(self, user_id, admin=False):
         self.course_window = CourseManagementWindow(user_id=user_id, admin=admin)

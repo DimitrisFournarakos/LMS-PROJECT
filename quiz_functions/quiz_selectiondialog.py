@@ -1,14 +1,5 @@
-import sqlite3
 from db import get_all_courses
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QListWidget, QPushButton,QHBoxLayout, QMessageBox,QDialog)
-
-def get_all_courses():
-    conn = sqlite3.connect("lms.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT course_id, name FROM courses ORDER BY name")
-    courses = cursor.fetchall()
-    conn.close()
-    return courses
 
 class AdminQuizCourseSelectionDialog(QDialog):
     def __init__(self, parent=None):

@@ -2,7 +2,12 @@ import re
 from PyQt5.QtCore import Qt, QEvent,QSize
 from PyQt5.QtGui import QFont,QIcon
 from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QLabel, QVBoxLayout, QMessageBox,QComboBox,QAction
-from db import connect_db
+from db import (
+    create_user,
+    user_exists_by_email,
+    user_exists_by_password,
+    user_exists_by_username,
+)
 from styles_css.styles import input_style_register_window,input_style_role_combo_register,back_btn_style,login_register_window,login_register_user_title_style
 
 #Αυτή την μέθοδο την έβαλα έξω από την κλάση RegisterWindow γιατί ακριβώς την ίδια θέλω να ξαναχρησιμοποιήσω στο login_window.py για το πεδίο password
@@ -160,7 +165,6 @@ class RegisterWindow(QWidget):
             register_btn.setIcon(register_icon)
             register_btn.setIconSize(QSize(16, 16)) 
             register_btn.setLayoutDirection(Qt.RightToLeft) # Τοποθετεί το εικονίδιο στα δεξιά του κειμένου
-            register_btn.clicked.connect(self.register_user)  # Συνδέουμε το κουμπί στο method της κλάσης
 
             back_btn = QPushButton("Επιστροφή")
             back_btn.setCursor(Qt.PointingHandCursor)
@@ -296,59 +300,32 @@ class RegisterWindow(QWidget):
 
 
             #Έλεγχος αν το email υπάρχει ήδη στη βάση δεδομένων
-            conn = connect_db()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users WHERE email=?", (email,))
-            existing_email = cursor.fetchone()
-            
-            if existing_email:
+            if user_exists_by_email(email):
                 self.email_already_exists_error.setText("• Το email αυτό χρησιμοποιείται ήδη.")
                 self.email_already_exists_error.show()
                 self.email_input.setStyleSheet(input_style_register_window() + "border: 1px solid #E74C3C;")
-                valid = False
-                conn.close() #Κλείνουμε τη σύνδεση με τη βάση δεδομένων πριν επιστρέψουμε,για να μην έχουμε ανοιχτές συνδέσεις που δεν χρησιμοποιούνται
-                return # Σταματάμε αν υπάρχει σφάλμα,σταματάει η διαδικασία εγγραφής αν το email υπάρχει ήδη 
+                return
             
             #Έλεγχος αν το Όνοματεπώνυμο υπάρχει ήδη στη βάση δεδομένων
-            conn = connect_db()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users WHERE username=?", (name,))
-            existing_name = cursor.fetchone()
-            
-            if existing_name:
+            if user_exists_by_username(name):
                 self.name_already_exists_error.setText("• Αυτό το όνομα χρήστη χρησιμοποιείται ήδη.")
                 self.name_already_exists_error.show()
                 self.name_input.setStyleSheet(input_style_register_window() + "border: 1px solid #E74C3C;")
-                valid = False
-                conn.close() 
-                return 
+                return
             
             #Έλεγχος αν το password υπάρχει ήδη στη βάση δεδομένων
-            conn = connect_db()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users WHERE password=?", (password,))
-            existing_password = cursor.fetchone()
-            
-            if existing_password:
+            if user_exists_by_password(password):
                 self.password_already_exists_error.setText("• Αυτό το συνθηματικό χρησιμοποιείται ήδη.")
                 self.password_already_exists_error.show()
                 self.password_input.setStyleSheet(input_style_register_window() + "border: 1px solid #E74C3C;")
-                valid = False
-                conn.close() 
                 return
 
-                                     
             try:
-                cursor.execute("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-                            (name, email, password, selected_role))
-                conn.commit()
-                
+                create_user(name, email, password, selected_role)
                 self.role = selected_role  # Θέσε τον ρόλο ώστε να γίνει login με τον σωστό ρόλο
                 self.host.load_login_fields(prefill_email=email, prefill_password=password)  # Προ-γέμισε τα πεδία σύνδεσης με τα στοιχεία που μόλις εγγράφηκαν
             except Exception as e:
                 QMessageBox.warning(self, "Σφάλμα", f"Προέκυψε σφάλμα κατά την εγγραφή: {str(e)}")
-            finally:
-                conn.close()
 
                                      
             
