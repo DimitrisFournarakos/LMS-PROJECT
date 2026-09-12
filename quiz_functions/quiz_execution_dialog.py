@@ -343,6 +343,8 @@ class QuizExecutionDialog(QWidget):
 
     def previous_question(self):
         """Μετάβαση στην προηγούμενη ερώτηση"""
+        # Κρατάμε την απάντηση πριν αλλάξουμε ερώτηση, ώστε να μη χαθεί.
+        self.save_answer()
         if self.current_index > 0:
             self.current_index -= 1
             self.show_question()
@@ -593,10 +595,8 @@ class QuizExecutionDialog(QWidget):
                 })
 
         total = len(self.questions)
-        score = round((correct_count / total) * 100, 2)
-        
-        # Αποθήκευση αποτελέσματος
-        save_quiz_result(self.student_id, self.quiz_id, score)
+        # Η βάση υπολογίζει ξανά το score από τις απαντήσεις πριν το αποθηκεύσει.
+        score = save_quiz_result(self.student_id, self.quiz_id, self.user_answers)
         
         # Εμφάνιση αποτελέσματος στο νέο frame
         self.display_results(correct_count, total, score, mistakes)

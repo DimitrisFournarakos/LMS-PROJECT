@@ -315,7 +315,8 @@ class RegisterWindow(QWidget):
             try:
                 create_user(name, email, password, selected_role)
                 self.role = selected_role  # Θέσε τον ρόλο ώστε να γίνει login με τον σωστό ρόλο
-                self.host.load_login_fields(prefill_email=email, prefill_password=password)  # Προ-γέμισε τα πεδία σύνδεσης με τα στοιχεία που μόλις εγγράφηκαν
+                # Προ-γέμισε μόνο το email. Ο χρήστης πληκτρολογεί ξανά το password στο login.
+                self.host.load_login_fields(prefill_email=email)
             except Exception as e:
                 QMessageBox.warning(self, "Σφάλμα", f"Προέκυψε σφάλμα κατά την εγγραφή: {str(e)}")
 

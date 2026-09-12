@@ -1,13 +1,17 @@
 import base64
 import hashlib
 import hmac
+import logging
 import secrets
 import sqlite3
 import os
 from datetime import datetime
+from pathlib import Path
 
 PASSWORD_HASH_ALGORITHM = "pbkdf2_sha256"
 PASSWORD_HASH_ITERATIONS = 600_000
+DATABASE_PATH = Path(__file__).resolve().with_name("lms.db")
+logger = logging.getLogger(__name__)
 
 def hash_password(password):
     salt = secrets.token_bytes(16)
@@ -48,7 +52,10 @@ def verify_password(password, stored_value):
     return valid, valid
 
 def connect_db():
-    return sqlite3.connect("lms.db")
+    conn = sqlite3.connect(DATABASE_PATH)
+    # Ενεργοποιούμε τα foreign keys σε κάθε σύνδεση, όπως απαιτεί η SQLite.
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
 
 def create_tables():
     conn = connect_db()
@@ -247,49 +254,58 @@ def update_course(actor_user_id, course_id, name, description, category, instruc
     finally:
         conn.close()
 
-def get_enrolled_courses(user_id):
+def get_enrolled_courses(actor_user_id):
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT c.* FROM courses c
-        JOIN enrollments e ON c.course_id = e.course_id
-        WHERE e.user_id = ?
-    """, (user_id,))
-    courses = cursor.fetchall()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_student(cursor, actor_user_id)
+        cursor.execute("""
+            SELECT c.* FROM courses c
+            JOIN enrollments e ON c.course_id = e.course_id
+            WHERE e.user_id = ?
+            """, (actor_user_id,))
+        courses = cursor.fetchall()
+    finally:
+        conn.close()
     return courses
 
-def get_available_courses_for_user(user_id):
+def get_available_courses_for_user(actor_user_id):
     """Επιστρέφει τα μαθήματα στα οποία ΔΕΝ είναι εγγεγραμμένος ο φοιτητής"""
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT * FROM courses
-        WHERE course_id NOT IN (
-            SELECT course_id FROM enrollments WHERE user_id = ?
-        )
-    """, (user_id,))
-    results = cursor.fetchall()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_student(cursor, actor_user_id)
+        cursor.execute("""
+            SELECT * FROM courses
+            WHERE course_id NOT IN (
+                SELECT course_id FROM enrollments WHERE user_id = ?
+            )
+        """, (actor_user_id,))
+        results = cursor.fetchall()
+    finally:
+        conn.close()
     return results
 
-def enroll_user_in_course(user_id, course_id):
+def enroll_user_in_course(actor_user_id, course_id):
     """Εγγράφει έναν φοιτητή σε μάθημα (αν δεν είναι ήδη εγγεγραμμένος)"""
     conn = connect_db()
-    cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO enrollments (user_id, course_id) VALUES (?, ?)", (user_id, course_id))
+        cursor = conn.cursor()
+        require_student(cursor, actor_user_id)
+        cursor.execute("INSERT INTO enrollments (user_id, course_id) VALUES (?, ?)", (actor_user_id, course_id))
         conn.commit()
     except sqlite3.IntegrityError:
         pass  # Ήδη εγγεγραμμένος
-    conn.close()
+    finally:
+        conn.close()
 
-def unenroll_user_from_course(user_id, course_id):
+def unenroll_user_from_course(actor_user_id, course_id):
     """Κάνει Απεγγραφή έναν φοιτητή από ενα μάθημα"""
     conn = connect_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM enrollments WHERE user_id = ? AND course_id = ?", (user_id,course_id))
+        require_student(cursor, actor_user_id)
+        cursor.execute("DELETE FROM enrollments WHERE user_id = ? AND course_id = ?", (actor_user_id,course_id))
         conn.commit()
         return True   
     except sqlite3.IntegrityError:
@@ -324,24 +340,24 @@ def get_quizzes_by_course(course_id):
 
 
 def add_question_to_quiz(actor_user_id, quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option):
-    print(f"DEBUG: Κλήση add_question_to_quiz με quiz_id: {quiz_id}, question_text: '{question_text}', correct_option: {correct_option}")
     conn = connect_db()
-    cursor = conn.cursor()
     try:
+        cursor = conn.cursor()
         require_admin(cursor, actor_user_id)
         cursor.execute("""
             INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option))
         conn.commit()
-        print(f"DEBUG: Ερώτηση προστέθηκε επιτυχώς στο quiz_id: {quiz_id}")
-        conn.close()
+
         return True
-    except Exception as e:
-        print(f"DEBUG: Σφάλμα κατά την προσθήκη ερώτησης: {e}")
+    
+    except sqlite3.Error as error:
+        logger.exception("Αποτυχία προσθήκης ερώτησης στο quiz %s", quiz_id)
         conn.rollback()
-        conn.close()
         return False
+    finally:
+        conn.close()
 
 def get_questions_by_quiz_id(quiz_id):
     """Φορτώνει όλες τις ερωτήσεις για ένα συγκεκριμένο quiz"""
@@ -370,6 +386,12 @@ def delete_course(actor_user_id, course_id):
     try:
         cursor = conn.cursor()
         require_admin(cursor, actor_user_id)
+        # Διαγράφουμε πρώτα τα εξαρτώμενα records για να μη μείνουν orphan δεδομένα.
+        cursor.execute("DELETE FROM quiz_results WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE course_id = ?)", (course_id,))
+        cursor.execute("DELETE FROM questions WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE course_id = ?)", (course_id,))
+        cursor.execute("DELETE FROM quizzes WHERE course_id = ?", (course_id,))
+        cursor.execute("DELETE FROM lectures WHERE course_id = ?", (course_id,))
+        cursor.execute("DELETE FROM enrollments WHERE course_id = ?", (course_id,))
         cursor.execute('DELETE FROM courses WHERE course_id = ?', (course_id,))
         conn.commit()
     finally:
@@ -445,14 +467,11 @@ def create_user(username, email, password, role):
 
 
 #Συνάρτηση για αποθήκευση βαθμολογίας
-def save_quiz_result(actor_user_id, quiz_id, score):
-    """Αποθηκεύει αποτέλεσμα μόνο για εγγεγραμμένο student actor."""
+def save_quiz_result(actor_user_id, quiz_id, answers):
+    """Υπολογίζει και αποθηκεύει αποτέλεσμα για εγγεγραμμένο student actor."""
     conn = connect_db()
     try:
         cursor = conn.cursor()
-        if not 0 <= score <= 100:
-            raise ValueError("Η βαθμολογία πρέπει να είναι μεταξύ 0 και 100.")
-
         cursor.execute(
             """
             SELECT 1
@@ -466,11 +485,26 @@ def save_quiz_result(actor_user_id, quiz_id, score):
         if cursor.fetchone() is None:
             raise PermissionError("Ο χρήστης δεν έχει δικαίωμα υποβολής σε αυτό το quiz.")
 
+        cursor.execute(
+            "SELECT correct_option FROM questions WHERE quiz_id = ? ORDER BY question_id",
+            (quiz_id,),
+        )
+        correct_options = [row[0].upper() for row in cursor.fetchall()]
+        if not correct_options or set(answers) != set(range(len(correct_options))):
+            raise ValueError("Δεν υποβλήθηκαν όλες οι απαντήσεις του quiz.")
+
+        correct_count = sum(
+            answers[index].upper() == correct_option
+            for index, correct_option in enumerate(correct_options)
+        )
+        score = round((correct_count / len(correct_options)) * 100, 2)
+
         cursor.execute("""
             INSERT INTO quiz_results (student_id, quiz_id, score, date_taken)
             VALUES (?, ?, ?, ?)
         """, (actor_user_id, quiz_id, score, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         conn.commit()
+        return score
     finally:
         conn.close()
 
