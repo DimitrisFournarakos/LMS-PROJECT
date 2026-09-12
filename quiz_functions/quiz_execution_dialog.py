@@ -317,7 +317,7 @@ class QuizExecutionDialog(QWidget):
             self.next_btn.setVisible(True)
             self.final_btn.setVisible(False)
 
-    def save_answer(self):
+    def save_answer(self, show_warning=True):
         """Αποθηκεύει την τρέχουσα απάντηση"""
         selected = None
         for i, btn in enumerate(self.options_group.buttons()):
@@ -325,9 +325,12 @@ class QuizExecutionDialog(QWidget):
                 selected = chr(65 + i)  # A=65, B=66, κλπ.
                 break
 
-        if not selected:
+        if not selected and show_warning:
             self._show_inline_alert("Παρακαλώ επιλέξτε μια απάντηση πριν συνεχίσετε.", kind="warning")
             return False
+
+        if not selected:
+            return True
 
         self._hide_inline_alert()
         self.user_answers[self.current_index] = selected
@@ -344,7 +347,7 @@ class QuizExecutionDialog(QWidget):
     def previous_question(self):
         """Μετάβαση στην προηγούμενη ερώτηση"""
         # Κρατάμε την απάντηση πριν αλλάξουμε ερώτηση, ώστε να μη χαθεί.
-        self.save_answer()
+        self.save_answer(show_warning=False)
         if self.current_index > 0:
             self.current_index -= 1
             self.show_question()

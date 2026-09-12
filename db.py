@@ -578,7 +578,7 @@ def get_student_quiz_leaderboard(actor_user_id):
             JOIN quizzes q ON q.quiz_id = r.quiz_id
             JOIN courses c ON c.course_id = q.course_id
             WHERE r.student_id = ?
-            ORDER BY r.score DESC, r.date_taken DESC
+            ORDER BY r.date_taken DESC, r.result_id DESC
             """,
             (actor_user_id,),
         )
