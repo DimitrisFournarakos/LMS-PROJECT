@@ -74,6 +74,20 @@ def student_quiz_inline_alert_style():
         }
     """
 
+def student_quiz_inline_alert_icon_style():
+    """Στυλ για το warning icon του quiz selection alert."""
+    return "background-color: #fff4e5;"
+
+def student_quiz_inline_alert_text_style():
+    """Στυλ για το κείμενο του quiz selection alert."""
+    return """
+        color: #8a5a00;
+        font-size: 13px;
+        font-weight: 500;
+        background-color: #fff4e5;
+        border-radius: 6px;
+    """
+
 def quiz_execution_inline_alert_style(kind="warning"):
     """Στυλ για τα inline alerts του quiz execution dialog"""
     if kind == "success":
@@ -144,20 +158,18 @@ def quiz_execution_inline_alert_button_style(color, compact=False):
     """
 
 def student_quiz_group_style():
-    """Στυλ για τα group boxes των μαθημάτων και των quizzes"""
+    """Στυλ για τα containers μαθημάτων και διαθέσιμων quiz."""
     return """
-        QGroupBox {
-            border: 2px solid #bdc3c7;
-            border-radius: 8px;
-            margin-top: 10px;
-            padding-top: 10px;
-            font-weight: bold;
-            color: #2c3e50;
+        QFrame#studentQuizSelectionGroup {
+            background-color: #ffffff;
+            border: 1px solid #c8d4df;
+            border-radius: 12px;
         }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            left: 10px;
-            padding: 0 3px 0 3px;
+        QLabel#studentQuizSelectionTitle {
+            color: #183b56;
+            font-size: 16px;
+            font-weight: 700;
+            background: transparent;
         }
     """
 
@@ -166,26 +178,85 @@ def student_quiz_list_style():
     return """
         QListWidget {
             border: 1px solid #ddd;
-            border-radius: 6px;
-            background-color: white;
-            padding: 5px;
+            border-radius: 9px;
+            background-color: #f7fafc;
+            padding: 6px;
         }
         QListWidget::item {
-            padding: 10px;
-            margin: 2px 0px;
-            border-radius: 4px;
-            background-color: #ecf0f1;
-            color: #2c3e50;
+            padding: 11px 12px;
+            margin: 3px 0px;
+            border-radius: 7px;
+            background-color: #eef3f6;
+            color: #29465b;
             font-size: 14px;
         }
         QListWidget::item:hover {
-            background-color: #d5dbdb;
-            color: #1a252f;
+            background-color: #dcecf7;
+            color: #183b56;
         }
         QListWidget::item:selected {
-            background-color: #3498db;
+            background-color: #2f9bd3;
             color: white;
             font-weight: bold;
+        }
+        QScrollBar:vertical {
+            border: none;
+            background: transparent;
+            width: 10px;
+            margin: 2px 0;
+        }
+        QScrollBar::handle:vertical {
+            background: #b4c7d6;
+            min-height: 24px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle:vertical:hover {
+            background: #7ea5bf;
+        }
+        QScrollBar::add-line:vertical,
+        QScrollBar::sub-line:vertical {
+            height: 0;
+            background: transparent;
+            border: none;
+        }
+    """
+
+def student_quiz_row_style():
+    """Στυλ για μία γραμμή quiz με action button δεξιά."""
+    return """
+        QFrame#studentQuizRow {
+            background-color: #eef3f6;
+            border: 1px solid #e0e7ed;
+            border-radius: 8px;
+        }
+        QFrame#studentQuizRow:hover {
+            background-color: #e1eff7;
+            border-color: #a8c9df;
+        }
+        QLabel#studentQuizRowTitle {
+            color: #29465b;
+            font-size: 14px;
+            background: transparent;
+        }
+    """
+
+def student_quiz_row_button_style():
+    """Compact style για το κουμπί έναρξης μέσα σε κάθε quiz row."""
+    return """
+        QPushButton#quizRowStartButton {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        QPushButton#quizRowStartButton:hover {
+            background-color: #2fc66d;
+        }
+        QPushButton#quizRowStartButton:pressed {
+            background-color: #218c4e;
         }
     """
 
@@ -206,8 +277,9 @@ def student_quiz_button_style(color):
             background-color: {color};
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 10px 20px;
+            border-radius: 8px;
+            padding: 11px 24px;
+            min-height: 22px;
             font-size: 14px;
             font-weight: bold;
         }}
@@ -216,6 +288,10 @@ def student_quiz_button_style(color):
         }}
         QPushButton:pressed {{
             background-color: {pressed_color};
+        }}
+        QPushButton:disabled {{
+            background-color: #cbd5df;
+            color: #718096;
         }}
     """
 

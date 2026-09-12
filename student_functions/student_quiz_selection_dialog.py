@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QListWidget, QPushButton, QMessageBox, QListWidgetItem, QFrame, QGroupBox)
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QListWidget, QPushButton, QMessageBox, QListWidgetItem, QFrame)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QIcon
 from db import get_enrolled_courses, get_quizzes_by_course
@@ -63,72 +63,62 @@ class StudentQuizSelectionDialog(QWidget):
         inline_alert_layout.setSpacing(8)
 
         self.inline_alert_icon = QLabel("⚠️")
-        self.inline_alert_icon.setStyleSheet("background-color: #fff4e5; ")
+        self.inline_alert_icon.setStyleSheet(styles.student_quiz_inline_alert_icon_style())
         self.inline_alert_icon.setAlignment(Qt.AlignTop)
         self.inline_alert_text = QLabel()
         self.inline_alert_text.setWordWrap(True)
-        self.inline_alert_text.setStyleSheet(
-            "color: #8a5a00; font-size: 13px; font-weight: 500; "
-            "background-color: #fff4e5; border-radius: 6px;"
-        )
+        self.inline_alert_text.setStyleSheet(styles.student_quiz_inline_alert_text_style())
 
         inline_alert_layout.addWidget(self.inline_alert_icon, 0)
         inline_alert_layout.addWidget(self.inline_alert_text, 1)
         self.inline_alert_frame.setVisible(False)
         content_layout.addWidget(self.inline_alert_frame)
 
-        # Two-column layout for courses and quizzes
-        selection_layout = QHBoxLayout()
-        selection_layout.setSpacing(15)
+        # Ενιαίο κατακόρυφο container: πρώτα μαθήματα και αμέσως μετά quiz.
+        selection_layout = QVBoxLayout()
+        selection_layout.setSpacing(12)
 
-        # Left side: Courses
         course_container = self._create_selection_group("Μαθήματα", "icons/education.png")
         self.course_list = QListWidget()
-        self.course_list.setStyleSheet(self._get_list_style())
+        self.course_list.setStyleSheet(styles.student_quiz_list_style())
         self.course_list.itemClicked.connect(self.load_quizzes)
         course_layout = course_container.layout()
         course_layout.addWidget(self.course_list)
-        selection_layout.addWidget(course_container, 1)
+        selection_layout.addWidget(course_container, 2)
 
-        # Right side: Quizzes
-        quiz_container = self._create_selection_group("Available Quizzes", "icons/online-test.png")
+        quiz_container = self._create_selection_group("Διαθέσιμα Quiz", "icons/online-test.png")
         self.quiz_list = QListWidget()
-        self.quiz_list.setStyleSheet(self._get_list_style())
+        self.quiz_list.setStyleSheet(styles.student_quiz_list_style())
         quiz_layout = quiz_container.layout()
         quiz_layout.addWidget(self.quiz_list)
-        selection_layout.addWidget(quiz_container, 1)
+        selection_layout.addWidget(quiz_container, 3)
 
         content_layout.addLayout(selection_layout, 1)
-
-        # Action buttons
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(10)
-
-        self.start_btn = self._create_button("🎯 Έναρξη Quiz", "#27ae60")
-        self.start_btn.clicked.connect(self.start_selected_quiz)
-        buttons_layout.addWidget(self.start_btn)
-
-        self.back_btn = self._create_button("← Πίσω", "#34495e")
-        self.back_btn.clicked.connect(self.go_back)
-        buttons_layout.addWidget(self.back_btn)
-
-        content_layout.addLayout(buttons_layout)
 
         self.layout.addWidget(main_container)
         self.load_courses()
 
     def _create_selection_group(self, title, icon_path):
-        """Δημιουργεί ένα styled group για επιλογή"""
-        group = QGroupBox(title)
+        """Δημιουργεί ένα container με header και λίστα επιλογών."""
+        group = QFrame()
+        group.setObjectName("studentQuizSelectionGroup")
         group.setStyleSheet(styles.student_quiz_group_style())
         layout = QVBoxLayout(group)
-        layout.setContentsMargins(15, 15, 15, 15)
-        layout.setSpacing(10)
-        return group
+        layout.setContentsMargins(16, 14, 16, 16)
+        layout.setSpacing(12)
 
-    def _get_list_style(self):
-        """Επιστρέφει το styling για τις λίστες"""
-        return styles.student_quiz_list_style()
+        # Ο header διαχωρίζει οπτικά τον τύπο των επιλογών από τη λίστα.
+        header = QHBoxLayout()
+        header.setContentsMargins(0, 0, 0, 0)
+        icon_label = QLabel()
+        icon_label.setPixmap(QIcon(icon_path).pixmap(24, 24))
+        title_label = QLabel(title)
+        title_label.setObjectName("studentQuizSelectionTitle")
+        header.addWidget(icon_label)
+        header.addWidget(title_label)
+        header.addStretch()
+        layout.addLayout(header)
+        return group
 
     def _create_button(self, text, color):
         """Δημιουργεί ένα styled button"""
@@ -148,14 +138,22 @@ class StudentQuizSelectionDialog(QWidget):
         self.inline_alert_text.clear()
         self.inline_alert_frame.setVisible(False)
 
+    def _add_empty_message(self, list_widget, message):
+        """Εμφανίζει πληροφοριακό μήνυμα που δεν μπορεί να επιλεγεί σαν quiz."""
+        empty_item = QListWidgetItem(message)
+        empty_item.setData(Qt.UserRole, None)
+        empty_item.setFlags(Qt.NoItemFlags)
+        list_widget.addItem(empty_item)
+
     def load_courses(self):
         """Φορτώνει τα μαθήματα του φοιτητή"""
         self._hide_inline_alert()
         courses = get_enrolled_courses(self.student_id)
         self.course_list.clear()
+        self.quiz_list.clear()
         
         if not courses:
-            self.course_list.addItem("❌ Δεν έχετε εγγραφεί σε κανένα μάθημα")
+            self._add_empty_message(self.course_list, "Δεν έχετε εγγραφεί σε κανένα μάθημα.")
             return
         
         for course in courses:
@@ -166,6 +164,10 @@ class StudentQuizSelectionDialog(QWidget):
             item.setData(Qt.UserRole, course[0])  # Store course_id
             self.course_list.addItem(item)
 
+        # Επιλέγουμε το πρώτο μάθημα για να εμφανιστούν αμέσως τα διαθέσιμα quiz.
+        self.course_list.setCurrentRow(0)
+        self.load_quizzes(self.course_list.currentItem())
+
     def load_quizzes(self, item):
         """Φορτώνει τα quizzes του επιλεγμένου μαθήματος"""
         self._hide_inline_alert()
@@ -174,28 +176,56 @@ class StudentQuizSelectionDialog(QWidget):
         self.quiz_list.clear()
         
         if not quizzes:
-            self.quiz_list.addItem("❌ Δεν υπάρχουν ενεργά quizzes για αυτό το μάθημα")
+            self._add_empty_message(self.quiz_list, "Δεν υπάρχουν διαθέσιμα quiz για αυτό το μάθημα.")
             return
         
         for quiz in quizzes:
-            item_text = f"{quiz['title']}"
-            item = QListWidgetItem(item_text)
-            quiz_icon = QIcon(self.quiz_item_icon_path)
-            item.setIcon(quiz_icon)
-            item.setData(Qt.UserRole, quiz['quiz_id'])  # Store quiz_id
+            item = QListWidgetItem()
+            item.setData(Qt.UserRole, quiz['quiz_id'])
+            quiz_row = self._create_quiz_row(quiz['title'], quiz['quiz_id'])
+            item.setSizeHint(quiz_row.sizeHint())
             self.quiz_list.addItem(item)
+            self.quiz_list.setItemWidget(item, quiz_row)
 
-    def start_selected_quiz(self):
+    def _create_quiz_row(self, title, quiz_id):
+        """Δημιουργεί μία γραμμή quiz με το κουμπί έναρξης δεξιά."""
+        row = QFrame()
+        row.setObjectName("studentQuizRow")
+        row.setStyleSheet(styles.student_quiz_row_style())
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(8, 5, 8, 5)
+        row_layout.setSpacing(8)
+
+        icon_label = QLabel()
+        icon_label.setPixmap(QIcon(self.quiz_item_icon_path).pixmap(20, 20))
+        title_label = QLabel(title)
+        title_label.setWordWrap(True)
+        title_label.setObjectName("studentQuizRowTitle")
+
+        start_button = self._create_button("Έναρξη", "#27ae60")
+        start_button.setObjectName("quizRowStartButton")
+        start_button.setStyleSheet(styles.student_quiz_row_button_style())
+        start_button.setFixedSize(92, 30)
+        start_button.clicked.connect(
+            lambda checked=False, selected_quiz_id=quiz_id:
+            self.start_selected_quiz(selected_quiz_id)
+        )
+
+        row_layout.addWidget(icon_label)
+        row_layout.addWidget(title_label, 1)
+        row_layout.addWidget(start_button)
+        return row
+
+    def start_selected_quiz(self, quiz_id=None):
         """Ξεκινάει το επιλεγμένο quiz"""
         self._hide_inline_alert()
-        selected = self.quiz_list.currentItem()
-        
-        # Έλεγχος αν έχει επιλεγεί κάτι
-        if not selected or "❌" in selected.text():
+        if quiz_id is None:
+            selected = self.quiz_list.currentItem()
+            quiz_id = selected.data(Qt.UserRole) if selected else None
+
+        if quiz_id is None:
             self._show_inline_alert("Παρακαλώ επιλέξτε ένα ενεργό quiz.")
             return
-        
-        quiz_id = selected.data(Qt.UserRole)
         
         # Δημιουργία του Quiz widget με try-except
         try:
@@ -243,9 +273,3 @@ class StudentQuizSelectionDialog(QWidget):
         if self.parent_window and hasattr(self.parent_window, 'content_stack'):
             self.parent_window.content_stack.setCurrentWidget(self)
 
-    def go_back(self):
-        """Κλείνει την ενότητα και επιστρέφει στη λίστα μαθημάτων"""
-        if self.current_quiz_widget:
-            self.show_selection_again()
-        elif self.parent_window and hasattr(self.parent_window, 'content_stack'):
-            self.parent_window.content_stack.setCurrentIndex(1)
