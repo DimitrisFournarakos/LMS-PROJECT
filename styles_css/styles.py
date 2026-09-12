@@ -496,6 +496,69 @@ def students_stats_rounded_container():
             }       
     """
 
+def students_stats_list_style():
+    """Κοινό style για τις λίστες επιλογής και ιστορικού στατιστικών."""
+    return """
+        QListWidget {
+            background-color: #f8fafc;
+            color: #243b53;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+            padding: 3px;
+            font-size: 13px;
+        }
+        QListWidget::item {
+            padding: 7px 9px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        QListWidget::item:selected {
+            color: #12304a;
+            background-color: #dbeafe;
+            border: 1px solid #7db7df;
+            border-radius: 5px;
+        }
+        QListWidget::item:hover:!selected {
+            background-color: #eef6fb;
+        }
+        QScrollBar:vertical {
+            border: none;
+            background: #eef2f7;
+            width: 12px;
+            margin: 14px 0 14px 0;
+            border-radius: 6px;
+        }
+        QScrollBar::handle:vertical {
+            background: #b8c7d9;
+            min-height: 22px;
+            border-radius: 6px;
+        }
+        QScrollBar::handle:vertical:hover {
+            background: #8fa8c2;
+        }
+        /* Τα arrows παραμένουν διαθέσιμα, αλλά χωρίς ξεχωριστό background. */
+        QScrollBar::sub-line:vertical,
+        QScrollBar::add-line:vertical {
+            height: 14px;
+            background: transparent;
+            border: none;
+        }
+        QScrollBar::sub-line:vertical {
+            subcontrol-position: top;
+        }
+        QScrollBar::add-line:vertical {
+            subcontrol-position: bottom;
+        }
+        QScrollBar::up-arrow:vertical,
+        QScrollBar::down-arrow:vertical {
+            background: transparent;
+            border: none;
+        }
+        QScrollBar::sub-page:vertical,
+        QScrollBar::add-page:vertical {
+            background: transparent;
+        }
+    """
+
 def students_stats_rounded_sub_list():
     return """
             QListWidget {

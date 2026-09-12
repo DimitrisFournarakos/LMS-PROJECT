@@ -47,13 +47,15 @@ class AdminTotalQuizStatsWidget(QWidget):
             self.canvas.draw()
             return
 
-        x = list(range(len(labels)))
-        self.ax.bar(x, averages, color="cornflowerblue")
+        x = list(range(1, len(labels) + 1))
+        self.ax.plot(x,averages,color="cornflowerblue",marker="o",linewidth=2.5,)
+        self.ax.fill_between(x, averages, alpha=0.12, color="cornflowerblue")
         self.ax.set_xticks(x)
         self.ax.set_xticklabels(labels, rotation=45, ha='right')
-        self.ax.set_title("Μέσοι Όροι Βαθμολογιών ανά Quiz")
+        self.ax.set_title("Πορεία μέσου όρου ανά Quiz")
         self.ax.set_ylabel("Βαθμός (%)")
         self.ax.set_ylim(0, 100)
+        self.ax.grid(axis="y", alpha=0.25)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()

@@ -536,15 +536,18 @@ def get_student_scores_by_course(actor_user_id, course_id):
         cursor = conn.cursor()
         require_student(cursor, actor_user_id)
         cursor.execute("""
-            SELECT q.title, r.score
+            SELECT q.title, AVG(r.score), MAX(r.date_taken), COUNT(r.result_id)
             FROM quiz_results r
             JOIN quizzes q ON r.quiz_id = q.quiz_id
             WHERE r.student_id = ? AND q.course_id = ?
+            GROUP BY q.quiz_id, q.title
+            ORDER BY MAX(r.date_taken) ASC, q.quiz_id ASC
         """, (actor_user_id, course_id))
-        rows = cursor.fetchall()
+        rows = cursor.fetchall()        
     finally:
         conn.close()
-    return [{'title': row[0], 'score': row[1]} for row in rows]
+
+    return [{'title': row[0], 'score': round(row[1], 2), 'date_taken': row[2], 'attempt_count': row[3],} for row in rows]
 
 def get_courses_with_stats(actor_user_id):
     conn = connect_db()
