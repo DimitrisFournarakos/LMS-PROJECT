@@ -259,13 +259,16 @@ def unenroll_user_from_course(user_id, course_id):
 
 def create_quiz_in_db(title, description, course_id):
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO quizzes (course_id, title, description)
-        VALUES (?, ?, ?)
-    """, (course_id, title, description))
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO quizzes (course_id, title, description)
+            VALUES (?, ?, ?)
+        """, (course_id, title, description))
+        conn.commit()
+        return cursor.lastrowid
+    finally:
+        conn.close()
 
 def get_quizzes_by_course(course_id):
     conn = sqlite3.connect("lms.db")

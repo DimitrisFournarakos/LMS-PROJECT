@@ -3,8 +3,8 @@
 Περιέχει τα QuizDialog και AddMultipleQuestionsDialog.
 """
 
-import sqlite3
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QLabel, QMessageBox
+from db import create_quiz_in_db
 
 
 class QuizDialog(QDialog):
@@ -41,15 +41,7 @@ class QuizDialog(QDialog):
             return
         
         try:
-            conn = sqlite3.connect("lms.db")
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO quizzes (course_id, title, description) VALUES (?, ?, ?)", 
-                (self.course_id, title, desc)
-            )
-            conn.commit()
-            self.created_quiz_id = cursor.lastrowid
-            conn.close()
+            self.created_quiz_id = create_quiz_in_db(title, desc, self.course_id)
             self.accept()
         except Exception as e:
             QMessageBox.critical(self, "Σφάλμα", str(e))
