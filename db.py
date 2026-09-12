@@ -1,5 +1,51 @@
-import sqlite3,os
+import base64
+import hashlib
+import hmac
+import secrets
+import sqlite3
+import os
 from datetime import datetime
+
+PASSWORD_HASH_ALGORITHM = "pbkdf2_sha256"
+PASSWORD_HASH_ITERATIONS = 600_000
+
+def hash_password(password):
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        PASSWORD_HASH_ITERATIONS,
+    )
+    salt_text = base64.b64encode(salt).decode("ascii")
+    digest_text = base64.b64encode(digest).decode("ascii")
+    return f"{PASSWORD_HASH_ALGORITHM}${PASSWORD_HASH_ITERATIONS}${salt_text}${digest_text}"
+
+def verify_password(password, stored_value):
+    if stored_value.startswith(f"{PASSWORD_HASH_ALGORITHM}$"):
+        try:
+            algorithm, iterations_text, salt_text, digest_text = stored_value.split("$")
+            if algorithm != PASSWORD_HASH_ALGORITHM:
+                return False, False
+
+            iterations = int(iterations_text)
+            salt = base64.b64decode(salt_text, validate=True)
+            expected = base64.b64decode(digest_text, validate=True)
+            actual = hashlib.pbkdf2_hmac(
+                "sha256", password.encode("utf-8"), salt, iterations
+            )
+            return hmac.compare_digest(actual, expected), False
+        except (ValueError, TypeError):
+            return False, False
+
+    # Existing users are migrated after a successful legacy plaintext login.
+    try:
+        valid = hmac.compare_digest(
+            password.encode("utf-8"), stored_value.encode("utf-8")
+        )
+    except (AttributeError, UnicodeEncodeError):
+        return False, False
+    return valid, valid
 
 def connect_db():
     return sqlite3.connect("lms.db")
@@ -114,19 +160,38 @@ def create_tables():
 def initialize_database():
     create_tables()
 
-def add_lecture_to_course(course_id, file_name, pdf_data, mime_type="application/pdf"): #mime_type για να ξέρω τι είδους αρχείο είναι,σε αυτή την περίπτωση pdf,αλλά μπορεί να επεκταθεί και σε άλλους τύπους αρχείων στο μέλλον
+def require_admin(cursor, actor_user_id):
+    cursor.execute(
+        "SELECT 1 FROM users WHERE user_id = ? AND role = 'admin'",
+        (actor_user_id,),
+    )
+    if cursor.fetchone() is None:
+        raise PermissionError("Απαιτούνται δικαιώματα διαχειριστή.")
+
+def require_student(cursor, actor_user_id):
+    cursor.execute(
+        "SELECT 1 FROM users WHERE user_id = ? AND role = 'student'",
+        (actor_user_id,),
+    )
+    if cursor.fetchone() is None:
+        raise PermissionError("Απαιτούνται δικαιώματα φοιτητή.")
+
+def add_lecture_to_course(actor_user_id, course_id, file_name, pdf_data, mime_type="application/pdf"): #mime_type για να ξέρω τι είδους αρχείο είναι,σε αυτή την περίπτωση pdf,αλλά μπορεί να επεκταθεί και σε άλλους τύπους αρχείων στο μέλλον
     """Αποθηκεύει PDF διάλεξης ως Binary Large Object-BLOB(σαν raw δυαδικά δεδομένα(raw bytes-PDF) μέσα σε στήλη της βάσης)"""
     #Παίρνω το PDF ως bytes,Τα bytes μπαίνουν στη στήλη pdf_data του πίνακα lectures,
     #Όταν θέλω να το ανοίξω, διαβάζω τη στήλη και παίρνω πάλι bytes.Αυτά τα bytes τα δίνω στον viewer (fitz) για render.
     conn = connect_db()
-    cursor = conn.cursor()
-    title = os.path.splitext(file_name)[0] #χωρίζει το όνομα αρχείου σε δύο μέρη,το όνομα και την καταληξη,εγω παίρνω μόνο το όνομα [0]
-    cursor.execute("""
-        INSERT INTO lectures (course_id, title, file_name, mime_type, pdf_data)
-        VALUES (?, ?, ?, ?, ?)
-    """, (course_id, title, file_name, mime_type, pdf_data))
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_admin(cursor, actor_user_id)
+        title = os.path.splitext(file_name)[0] #χωρίζει το όνομα αρχείου σε δύο μέρη,το όνομα και την καταληξη,εγω παίρνω μόνο το όνομα [0]
+        cursor.execute("""
+            INSERT INTO lectures (course_id, title, file_name, mime_type, pdf_data)
+            VALUES (?, ?, ?, ?, ?)
+        """, (course_id, title, file_name, mime_type, pdf_data))
+        conn.commit()
+    finally:
+        conn.close()
 
 def get_lectures_by_course(course_id):
     """Επιστρέφει lecture_id και όνομα αρχείου για το μάθημα."""
@@ -155,26 +220,32 @@ def get_lecture_pdf_by_id(lecture_id):
     return row[0] if row else None
 
 #  Συναρτήσεις για εγγραφές 
-def create_course(name, description, category, instructor, start_date, end_date):
+def create_course(actor_user_id, name, description, category, instructor, start_date, end_date):
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO courses (name, description, category, instructor, start_date, end_date)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (name, description, category, instructor, start_date, end_date))
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_admin(cursor, actor_user_id)
+        cursor.execute('''
+            INSERT INTO courses (name, description, category, instructor, start_date, end_date, admin_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (name, description, category, instructor, start_date, end_date, actor_user_id))
+        conn.commit()
+    finally:
+        conn.close()
 
-def update_course(course_id, name, description, category, instructor, start_date, end_date):
+def update_course(actor_user_id, course_id, name, description, category, instructor, start_date, end_date):
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        UPDATE courses
-        SET name = ?, description = ?, category = ?, instructor = ?, start_date = ?, end_date = ?
-        WHERE course_id = ?
-    ''', (name, description, category, instructor, start_date, end_date, course_id))
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_admin(cursor, actor_user_id)
+        cursor.execute('''
+            UPDATE courses
+            SET name = ?, description = ?, category = ?, instructor = ?, start_date = ?, end_date = ?
+            WHERE course_id = ?
+        ''', (name, description, category, instructor, start_date, end_date, course_id))
+        conn.commit()
+    finally:
+        conn.close()
 
 def get_enrolled_courses(user_id):
     conn = connect_db()
@@ -226,10 +297,11 @@ def unenroll_user_from_course(user_id, course_id):
     finally:
         conn.close()
 
-def create_quiz_in_db(title, description, course_id):
+def create_quiz_in_db(actor_user_id, title, description, course_id):
     conn = connect_db()
     try:
         cursor = conn.cursor()
+        require_admin(cursor, actor_user_id)
         cursor.execute("""
             INSERT INTO quizzes (course_id, title, description)
             VALUES (?, ?, ?)
@@ -251,11 +323,12 @@ def get_quizzes_by_course(course_id):
     return [{'quiz_id': row[0], 'title': row[1]} for row in rows]
 
 
-def add_question_to_quiz(quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option):
+def add_question_to_quiz(actor_user_id, quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option):
     print(f"DEBUG: Κλήση add_question_to_quiz με quiz_id: {quiz_id}, question_text: '{question_text}', correct_option: {correct_option}")
     conn = connect_db()
     cursor = conn.cursor()
     try:
+        require_admin(cursor, actor_user_id)
         cursor.execute("""
             INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option)
             VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -292,12 +365,15 @@ def get_all_courses():
     conn.close()
     return courses
 
-def delete_course(course_id):
+def delete_course(actor_user_id, course_id):
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM courses WHERE course_id = ?', (course_id,))
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_admin(cursor, actor_user_id)
+        cursor.execute('DELETE FROM courses WHERE course_id = ?', (course_id,))
+        conn.commit()
+    finally:
+        conn.close()
 
 def get_user_by_id(user_id):
     conn = connect_db()
@@ -315,10 +391,25 @@ def get_user_for_login(email, password):
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT user_id, username, role FROM users WHERE email = ? AND password = ?",
-            (email, password),
+            "SELECT user_id, username, password, role FROM users WHERE email = ?",
+            (email,),
         )
-        return cursor.fetchone()
+        user = cursor.fetchone()
+        if user is None:
+            return None
+
+        valid, legacy_password = verify_password(password, user[2])
+        if not valid:
+            return None
+
+        if legacy_password:
+            cursor.execute(
+                "UPDATE users SET password = ? WHERE user_id = ?",
+                (hash_password(password), user[0]),
+            )
+            conn.commit()
+
+        return user[0], user[1], user[3]
     finally:
         conn.close()
 
@@ -340,22 +431,13 @@ def user_exists_by_username(username):
     finally:
         conn.close()
 
-def user_exists_by_password(password):
-    conn = connect_db()
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM users WHERE password = ?", (password,))
-        return cursor.fetchone() is not None
-    finally:
-        conn.close()
-
 def create_user(username, email, password, role):
     conn = connect_db()
     try:
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-            (username, email, password, role),
+            (username, email, hash_password(password), role),
         )
         conn.commit()
     finally:
@@ -363,29 +445,50 @@ def create_user(username, email, password, role):
 
 
 #Συνάρτηση για αποθήκευση βαθμολογίας
-def save_quiz_result(student_id, quiz_id, score):
-    """Αποθηκεύει τη βαθμολογία του φοιτητή για συγκεκριμένο quiz."""
+def save_quiz_result(actor_user_id, quiz_id, score):
+    """Αποθηκεύει αποτέλεσμα μόνο για εγγεγραμμένο student actor."""
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO quiz_results (student_id, quiz_id, score, date_taken)
-        VALUES (?, ?, ?, ?)
-    """, (student_id, quiz_id, score, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        if not 0 <= score <= 100:
+            raise ValueError("Η βαθμολογία πρέπει να είναι μεταξύ 0 και 100.")
+
+        cursor.execute(
+            """
+            SELECT 1
+            FROM users u
+            JOIN enrollments e ON e.user_id = u.user_id
+            JOIN quizzes q ON q.course_id = e.course_id
+            WHERE u.user_id = ? AND u.role = 'student' AND q.quiz_id = ?
+            """,
+            (actor_user_id, quiz_id),
+        )
+        if cursor.fetchone() is None:
+            raise PermissionError("Ο χρήστης δεν έχει δικαίωμα υποβολής σε αυτό το quiz.")
+
+        cursor.execute("""
+            INSERT INTO quiz_results (student_id, quiz_id, score, date_taken)
+            VALUES (?, ?, ?, ?)
+        """, (actor_user_id, quiz_id, score, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        conn.commit()
+    finally:
+        conn.close()
 
 #Συνάρτηση για στατιστικά quiz(admin)
-def get_statistics_for_quiz(quiz_id):
+def get_statistics_for_quiz(actor_user_id, quiz_id):
     """Επιστρέφει στατιστικά για quiz: μέσος όρος, ελάχιστο, μέγιστο και πλήθος προσπαθειών."""
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT AVG(score), MIN(score), MAX(score), COUNT(*)
-        FROM quiz_results
-        WHERE quiz_id = ?
-    """, (quiz_id,))
-    result = cursor.fetchone()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_admin(cursor, actor_user_id)
+        cursor.execute("""
+            SELECT AVG(score), MIN(score), MAX(score), COUNT(*)
+            FROM quiz_results
+            WHERE quiz_id = ?
+        """, (quiz_id,))
+        result = cursor.fetchone()
+    finally:
+        conn.close()
     return {
         "average": result[0] or 0.0,
         "min": result[1] or 0.0,
@@ -393,53 +496,59 @@ def get_statistics_for_quiz(quiz_id):
         "count": result[3]
     }
 
-def get_student_scores_by_course(student_id, course_id):
+def get_student_scores_by_course(actor_user_id, course_id):
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT q.title, r.score
-        FROM quiz_results r
-        JOIN quizzes q ON r.quiz_id = q.quiz_id
-        WHERE r.student_id = ? AND q.course_id = ?
-    """, (student_id, course_id))
-    rows = cursor.fetchall()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_student(cursor, actor_user_id)
+        cursor.execute("""
+            SELECT q.title, r.score
+            FROM quiz_results r
+            JOIN quizzes q ON r.quiz_id = q.quiz_id
+            WHERE r.student_id = ? AND q.course_id = ?
+        """, (actor_user_id, course_id))
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
     return [{'title': row[0], 'score': row[1]} for row in rows]
 
-def get_courses_with_stats(student_id):
+def get_courses_with_stats(actor_user_id):
     conn = connect_db()
-    cursor = conn.cursor()
-    # Φέρνουμε μαθήματα που έχουν τουλάχιστον μία εγγραφή στον πίνακα scores για τον συγκεκριμένο μαθητή
-    #ΕΞΤΡΑ ΠΑΡΑΜΕΤΡΟΣ,ΝΑ ΕΧΕΙ ΚΑΝΕΙ ΤΟΥΛΑΧΙΣΤΟΝ ΕΝΑ QUIZ
-    #Φερνω πίσω τον student που πλήρεί αυτή την προυπόθεση
-    query = """
-            SELECT DISTINCT c.course_id, c.name
-            FROM courses c
-            JOIN quizzes q ON c.course_id = q.course_id
-            JOIN quiz_results r ON q.quiz_id = r.quiz_id 
-            WHERE r.student_id = ?      
-            """
-    cursor.execute(query,(student_id,))
-    courses = cursor.fetchall()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_student(cursor, actor_user_id)
+        query = """
+                SELECT DISTINCT c.course_id, c.name
+                FROM courses c
+                JOIN quizzes q ON c.course_id = q.course_id
+                JOIN quiz_results r ON q.quiz_id = r.quiz_id
+                WHERE r.student_id = ?
+                """
+        cursor.execute(query, (actor_user_id,))
+        courses = cursor.fetchall()
+    finally:
+        conn.close()
     return courses
 
 
-def get_student_quiz_leaderboard(student_id):
+def get_student_quiz_leaderboard(actor_user_id):
     """Επιστρέφει όλες τις προσπάθειες quiz του student με μάθημα, quiz, ημερομηνία και βαθμό."""
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        SELECT c.name, q.title, r.date_taken, r.score
-        FROM quiz_results r
-        JOIN quizzes q ON q.quiz_id = r.quiz_id
-        JOIN courses c ON c.course_id = q.course_id
-        WHERE r.student_id = ?
-        ORDER BY r.score DESC, r.date_taken DESC
-        """,
-        (student_id,),
-    )
-    rows = cursor.fetchall()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        require_student(cursor, actor_user_id)
+        cursor.execute(
+            """
+            SELECT c.name, q.title, r.date_taken, r.score
+            FROM quiz_results r
+            JOIN quizzes q ON q.quiz_id = r.quiz_id
+            JOIN courses c ON c.course_id = q.course_id
+            WHERE r.student_id = ?
+            ORDER BY r.score DESC, r.date_taken DESC
+            """,
+            (actor_user_id,),
+        )
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
     return rows

@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QPushButton, QLabel, QVBoxLayout
 from db import (
     create_user,
     user_exists_by_email,
-    user_exists_by_password,
     user_exists_by_username,
 )
 from styles_css.styles import input_style_register_window,input_style_role_combo_register,back_btn_style,login_register_window,login_register_user_title_style
@@ -313,13 +312,6 @@ class RegisterWindow(QWidget):
                 self.name_input.setStyleSheet(input_style_register_window() + "border: 1px solid #E74C3C;")
                 return
             
-            #Έλεγχος αν το password υπάρχει ήδη στη βάση δεδομένων
-            if user_exists_by_password(password):
-                self.password_already_exists_error.setText("• Αυτό το συνθηματικό χρησιμοποιείται ήδη.")
-                self.password_already_exists_error.show()
-                self.password_input.setStyleSheet(input_style_register_window() + "border: 1px solid #E74C3C;")
-                return
-
             try:
                 create_user(name, email, password, selected_role)
                 self.role = selected_role  # Θέσε τον ρόλο ώστε να γίνει login με τον σωστό ρόλο

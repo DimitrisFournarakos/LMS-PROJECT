@@ -28,7 +28,7 @@ class CourseManagementLogic:
                                 "Παρακαλώ συμπληρώστε όλα τα πεδία.")
             return
 
-        create_course(name, description, category,
+        create_course(self.user_id, name, description, category,
                       instructor, start_date, end_date)
         self.update_course_list()
         self.clear_inputs()
@@ -51,7 +51,7 @@ class CourseManagementLogic:
         )
 
         if reply == QMessageBox.Yes:
-            db_delete_course(course_id)
+            db_delete_course(self.user_id, course_id)
             self.update_course_list()
 
     def update_course(self, course_id):
@@ -68,7 +68,7 @@ class CourseManagementLogic:
                                 "Παρακαλώ συμπληρώστε όλα τα πεδία.")
             return
 
-        db_update_course(course_id, name, description, category,
+        db_update_course(self.user_id, course_id, name, description, category,
                          instructor, start_date, end_date)
         self.update_course_list()
         self.clear_inputs()
@@ -110,10 +110,11 @@ class CourseManagementLogic:
 
     def open_create_quiz_dialog(self, course_id):
         """Ανοίγει τη φόρμα δημιουργίας Quiz"""
-        dialog = QuizDialog(course_id=course_id, parent=self)
+        dialog = QuizDialog(
+            course_id=course_id, actor_user_id=self.user_id, parent=self)
         if dialog.exec_() == QDialog.Accepted:
             new_quiz_id = dialog.created_quiz_id
             question_dialog = AddMultipleQuestionsDialog(
-                new_quiz_id, parent=self)
+                new_quiz_id, actor_user_id=self.user_id, parent=self)
             question_dialog.exec_()
         self.update_course_list()

@@ -10,9 +10,10 @@ from db import create_quiz_in_db
 class QuizDialog(QDialog):
     """Διάλογος για δημιουργία νέου Quiz"""
     
-    def __init__(self, course_id, parent=None):
+    def __init__(self, course_id, actor_user_id, parent=None):
         super().__init__(parent)
         self.course_id = course_id
+        self.actor_user_id = actor_user_id
         self.created_quiz_id = None
         self.setWindowTitle("Δημιουργία Quiz")
         self.setGeometry(100, 100, 400, 300)
@@ -41,7 +42,8 @@ class QuizDialog(QDialog):
             return
         
         try:
-            self.created_quiz_id = create_quiz_in_db(title, desc, self.course_id)
+            self.created_quiz_id = create_quiz_in_db(
+                self.actor_user_id, title, desc, self.course_id)
             self.accept()
         except Exception as e:
             QMessageBox.critical(self, "Σφάλμα", str(e))
@@ -50,9 +52,10 @@ class QuizDialog(QDialog):
 class AddMultipleQuestionsDialog(QDialog):
     """Διάλογος για προσθήκη ερωτήσεων σε Quiz"""
     
-    def __init__(self, quiz_id, total_questions=5, parent=None):
+    def __init__(self, quiz_id, actor_user_id, total_questions=5, parent=None):
         super().__init__(parent)
         self.quiz_id = quiz_id
+        self.actor_user_id = actor_user_id
         self.total_questions = total_questions
         self.current_question = 1
 
@@ -100,7 +103,8 @@ class AddMultipleQuestionsDialog(QDialog):
             QMessageBox.warning(self, "Σφάλμα", "Συμπληρώστε σωστά τα πεδία.")
             return
 
-        success = add_question_to_quiz(self.quiz_id, q, *ans, correct)
+        success = add_question_to_quiz(
+            self.actor_user_id, self.quiz_id, q, *ans, correct)
         if success:
             if self.current_question < self.total_questions:
                 self.current_question += 1

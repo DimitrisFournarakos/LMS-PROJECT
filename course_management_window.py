@@ -122,7 +122,7 @@ class CourseManagementWindow(QWidget, CourseManagementLogic, CourseManagementPag
 
         # Σελίδα 4: Στατιστικά
         if self.admin:
-            self.stats_page = AdminTotalQuizStatsWidget()
+            self.stats_page = AdminTotalQuizStatsWidget(self.user_id)
         else:
             self.stats_page = StudentQuizStatsPage(self.user_id, self)
         self.content_stack.addWidget(self.stats_page)

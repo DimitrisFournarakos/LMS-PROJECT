@@ -148,7 +148,7 @@ class LecturesPage(QWidget):
                     QMessageBox.warning(self, "Σφάλμα", "Το επιλεγμένο PDF είναι κενό.")
                     return
 
-                add_lecture_to_course(self.course_id, os.path.basename(file_path), pdf_data) #Insert στην βάση, os.path.basename(file_path) για να πάρω μόνο το όνομα αρχείου χωρίς το path, pdf_data τα δυαδικά δεδομένα του PDF για αποθήκευση στη βάση.
+                add_lecture_to_course(self.parent_window.user_id, self.course_id, os.path.basename(file_path), pdf_data) #Insert στην βάση, os.path.basename(file_path) για να πάρω μόνο το όνομα αρχείου χωρίς το path, pdf_data τα δυαδικά δεδομένα του PDF για αποθήκευση στη βάση.
                 QMessageBox.information(
                     self, "Επιτυχία", "Η διάλεξη προστέθηκε.")
                 self.load_lectures()

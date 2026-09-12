@@ -5,8 +5,9 @@ from db import get_all_courses, get_quizzes_by_course, get_statistics_for_quiz
 from styles_css.styles import window_title_frame_style
 
 class AdminTotalQuizStatsWidget(QWidget):
-    def __init__(self):
+    def __init__(self, admin_user_id):
         super().__init__()
+        self.admin_user_id = admin_user_id
         layout = QVBoxLayout()
         self.setLayout(layout)
 
@@ -35,7 +36,7 @@ class AdminTotalQuizStatsWidget(QWidget):
         averages = []
 
         for quiz in quizzes:
-            stats = get_statistics_for_quiz(quiz['quiz_id'])
+            stats = get_statistics_for_quiz(self.admin_user_id, quiz['quiz_id'])
             if stats["count"] > 0:
                 labels.append(quiz['title'])
                 averages.append(stats['average'])
