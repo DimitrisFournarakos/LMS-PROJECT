@@ -174,7 +174,7 @@ def student_quiz_group_style():
     """
 
 def student_quiz_list_style():
-    """Στυλ για τις λίστες μαθημάτων και quizzes"""
+    """Στυλ για τις λίστες μαθημάτων"""
     return """
         QListWidget {
             border: 1px solid #ddd;
@@ -222,22 +222,23 @@ def student_quiz_list_style():
     """
 
 def student_quiz_row_style():
-    """Στυλ Λίστας για κάθε row της λίστας διαθέσιμων quiz"""
+    """Στυλ για κάθε row της λίστας διαθέσιμων quiz."""
     return """
         QFrame#studentQuizRow {
-            background-color: transparent;
+            background-color: #ffffff;
             border: none;
-            margin: 3px;
-            padding: 0px;
+            border-radius: 7px;
+        }
+
+        QFrame#studentQuizRow:hover {
+            background-color: #f4f9fc;
         }
 
         QLabel#studentQuizRowTitle {
             color: #29465b;
             font-size: 14px;
-            background-color: transparent;
-            border: none;
-            padding: 0px;
-            margin: 0px;
+            font-weight: 500;
+            background: transparent;
         }
     """
 
@@ -248,16 +249,23 @@ def student_quiz_row_button_style():
             background-color: #27ae60;
             color: white;
             border: none;
-            border-radius: 6px;           
-            font-size: 13px;
+            border-radius: 6px;
             padding: 0px;
-            margin: 3px;
+            font-size: 13px;
+            font-weight: 600;
         }
+
         QPushButton#quizRowStartButton:hover {
             background-color: #2fc66d;
         }
+
         QPushButton#quizRowStartButton:pressed {
             background-color: #218c4e;
+        }
+
+        QPushButton#quizRowStartButton:focus {
+            outline: none;
+            border: none;
         }
     """
 
@@ -294,6 +302,60 @@ def student_quiz_button_style(color):
             background-color: #cbd5df;
             color: #718096;
         }}
+    """
+
+def student_quiz_available_list_style():
+    """Στυλ για τη λίστα των διαθέσιμων quizzes."""
+    return """
+        QListWidget#studentQuizAvailableList {
+            border: 1px solid #cfd8e1;
+            border-radius: 9px;
+            background-color: #f7fafc;
+            padding: 4px;
+            outline: none;
+        }
+
+        QListWidget#studentQuizAvailableList::item {
+            background: transparent;
+            border: none;
+            padding: 0px;
+            margin: 1px 0px;
+        }
+
+        QListWidget#studentQuizAvailableList::item:selected {
+            background-color: #2f9bd3;
+            color: white;
+            font-weight: bold;
+        }
+
+        QListWidget#studentQuizAvailableList::item:hover {
+            background-color: #dcecf7;
+            color: #183b56;
+        }
+
+        QScrollBar:vertical {
+            border: none;
+            background: transparent;
+            width: 8px;
+            margin: 2px 0px;
+        }
+
+        QScrollBar::handle:vertical {
+            background: #b4c7d6;
+            min-height: 24px;
+            border-radius: 5px;
+        }
+
+        QScrollBar::handle:vertical:hover {
+            background: #7ea5bf;
+        }
+
+        QScrollBar::add-line:vertical,
+        QScrollBar::sub-line:vertical {
+            height: 0px;
+            border: none;
+            background: transparent;
+        }
     """
 
 def apply_shadow(widget,blur=8,x=2,y=2,alpha=50):

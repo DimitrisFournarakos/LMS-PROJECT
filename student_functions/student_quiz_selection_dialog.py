@@ -36,7 +36,7 @@ class StudentQuizSelectionDialog(QWidget):
         # Instruction label with icon
         instruction_row = QHBoxLayout()
         instruction_row.setSpacing(8)
-        instruction_row.setContentsMargins(0, 0, 0, 0)
+        instruction_row.setContentsMargins(10, 10, 10, 10)
 
         # Icon
         instruction_icon = QLabel()
@@ -54,7 +54,7 @@ class StudentQuizSelectionDialog(QWidget):
         instruction_row.addWidget(instruction, 1)
         content_layout.addLayout(instruction_row)
 
-        # Inline ενημερωτικό πλαίσιο (αντί για popup)
+        # Inline ενημερωτικό πλαίσιο 
         self.inline_alert_frame = QFrame()
         self.inline_alert_frame.setObjectName("inlineAlertFrame")
         self.inline_alert_frame.setStyleSheet(styles.student_quiz_inline_alert_style())
@@ -88,7 +88,10 @@ class StudentQuizSelectionDialog(QWidget):
 
         quiz_container = self._create_selection_group("Διαθέσιμα Quiz", "icons/online-test.png")
         self.quiz_list = QListWidget()
-        self.quiz_list.setStyleSheet(styles.student_quiz_list_style())
+        self.quiz_list.setObjectName("studentQuizAvailableList")
+        self.quiz_list.setSpacing(3)
+        self.quiz_list.setStyleSheet(styles.student_quiz_available_list_style())
+
         quiz_layout = quiz_container.layout()
         quiz_layout.addWidget(self.quiz_list)
         selection_layout.addWidget(quiz_container, 3)
@@ -186,9 +189,9 @@ class StudentQuizSelectionDialog(QWidget):
         row.setObjectName("studentQuizRow")
         row.setStyleSheet(styles.student_quiz_row_style())
 
-        row.setMinimumHeight(48) #Ορίζουμε ελάχιστο ύψος για να μην συμπιέζεται το row μέσα στο scroll area
+        row.setMinimumHeight(52) #Ορίζουμε ελάχιστο ύψος για να μην συμπιέζεται το row μέσα στο scroll area
         row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(8, 0, 8, 0) #Ρυθμίζουμε τα margins ώστε να αφήνουν αέρα γύρω από τα στοιχεία
+        row_layout.setContentsMargins(10, 4, 10, 4) #Ρυθμίζουμε τα margins ώστε να αφήνουν αέρα γύρω από τα στοιχεία
         row_layout.setSpacing(8)#Ρυθμίζουμε το spacing ώστε να υπάρχει απόσταση μεταξύ των στοιχείων
         row_layout.setAlignment(Qt.AlignVCenter) #Κεντράρουμε κάθετα τα στοιχεία μέσα στο row
 
@@ -205,11 +208,8 @@ class StudentQuizSelectionDialog(QWidget):
         start_button = QPushButton("Έναρξη")
         start_button.setObjectName("quizRowStartButton")
         start_button.setStyleSheet(styles.student_quiz_row_button_style())
-        start_button.setFixedSize(74, 30)
-        start_button.clicked.connect(
-            lambda checked=False, selected_quiz_id=quiz_id:
-            self.start_selected_quiz(selected_quiz_id)
-        )
+        start_button.setFixedSize(78, 32)
+        start_button.clicked.connect(lambda checked=False, selected_quiz_id=quiz_id:self.start_selected_quiz(selected_quiz_id))
         start_button.setCursor(Qt.PointingHandCursor)
         
 
