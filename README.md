@@ -306,11 +306,11 @@ The application uses **SQLite** with the following tables:
 ## 📲 Screenshots
 
 > ```markdown
-> ![Login Screen](assets/login.png)
-> ![Student Dashboard](assets/student-dashboard.png)
-> ![Admin Dashboard](assets/admin-dashboard.png)
-> ![PDF Lecture Viewer](assets/pdf-viewer.png)
-> ![Quiz Interface](assets/quiz.png)
+> ![Login Screen](screenshots/login.png)
+> ![Student Dashboard](screenshots/student-dashboard.png)
+> ![Admin Dashboard](screenshots/admin-dashboard.png)
+> ![PDF Lecture Viewer](screenshots/pdf-viewer.png)
+> ![Quiz Interface](screenshots/quiz.png)
 > ```
 
 ---
