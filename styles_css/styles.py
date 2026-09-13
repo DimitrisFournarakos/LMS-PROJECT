@@ -222,18 +222,22 @@ def student_quiz_list_style():
     """
 
 def student_quiz_row_style():
-    """Στυλ για μία γραμμή quiz με action button δεξιά."""
+    """Στυλ Λίστας για κάθε row της λίστας διαθέσιμων quiz"""
     return """
         QFrame#studentQuizRow {
-            background-color: #eef3f6;
-            border-radius: 8px;
+            background-color: transparent;
             border: none;
-            margin: 2px;
+            margin: 3px;
+            padding: 0px;
         }
+
         QLabel#studentQuizRowTitle {
             color: #29465b;
             font-size: 14px;
-            background: transparent;
+            background-color: transparent;
+            border: none;
+            padding: 0px;
+            margin: 0px;
         }
     """
 
@@ -244,11 +248,10 @@ def student_quiz_row_button_style():
             background-color: #27ae60;
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 5px 10px;
+            border-radius: 6px;           
             font-size: 13px;
             padding: 0px;
-            margin: 0px;
+            margin: 3px;
         }
         QPushButton#quizRowStartButton:hover {
             background-color: #2fc66d;
