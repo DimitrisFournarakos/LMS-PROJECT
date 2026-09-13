@@ -121,15 +121,6 @@ class StudentQuizSelectionDialog(QWidget):
 
         return group
 
-    def _create_button(self, text, color):
-        """Δημιουργεί ένα styled button"""
-        btn = QPushButton(text)
-        btn.setMinimumHeight(45)
-        btn.setStyleSheet(styles.student_quiz_button_style(color))
-
-        return btn
- 
-
     def _show_inline_alert(self, message):
         """Εμφανίζει inline μήνυμα ενημέρωσης μέσα στο ίδιο interface ότι δεν υπάρχουν διαθέσιμα quizzes.(Online Εξέταση - Επιλογή Quiz)"""
         self.inline_alert_text.setText(message)
@@ -195,32 +186,36 @@ class StudentQuizSelectionDialog(QWidget):
         row.setObjectName("studentQuizRow")
         row.setStyleSheet(styles.student_quiz_row_style())
 
-        row.setMinimumHeight(52) #Ορίζουμε ελάχιστο ύψος για να μην συμπιέζεται το row μέσα στο scroll area
+        row.setMinimumHeight(48) #Ορίζουμε ελάχιστο ύψος για να μην συμπιέζεται το row μέσα στο scroll area
         row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(12, 8, 12, 8) #Ρυθμίζουμε τα margins ώστε να αφήνουν αέρα γύρω από τα στοιχεία
+        row_layout.setContentsMargins(10, 6, 10, 6) #Ρυθμίζουμε τα margins ώστε να αφήνουν αέρα γύρω από τα στοιχεία
         row_layout.setSpacing(12)#Ρυθμίζουμε το spacing ώστε να υπάρχει απόσταση μεταξύ των στοιχείων
         row_layout.setAlignment(Qt.AlignVCenter) #Κεντράρουμε κάθετα τα στοιχεία μέσα στο row
 
         icon_label = QLabel()
         icon_label.setPixmap(QIcon(self.quiz_item_icon_path).pixmap(20, 20))
         icon_label.setFixedWidth(22)
+        icon_label.setAlignment(Qt.AlignVCenter)
 
         title_label = QLabel(title)
         title_label.setWordWrap(True)
         title_label.setObjectName("studentQuizRowTitle")
+        title_label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
-        start_button = self._create_button("Έναρξη", "#27ae60")
+        start_button = QPushButton("Έναρξη")
         start_button.setObjectName("quizRowStartButton")
         start_button.setStyleSheet(styles.student_quiz_row_button_style())
-        start_button.setFixedSize(92, 30)
+        start_button.setFixedSize(74, 30)
         start_button.clicked.connect(
             lambda checked=False, selected_quiz_id=quiz_id:
             self.start_selected_quiz(selected_quiz_id)
         )
+        start_button.setCursor(Qt.PointingHandCursor)
+        
 
-        row_layout.addWidget(icon_label)
-        row_layout.addWidget(title_label, 1) # Stretch factor 1 για να πιάνει τον διαθέσιμο χώρο
-        row_layout.addWidget(start_button)
+        row_layout.addWidget(icon_label, 0, alignment=Qt.AlignVCenter)
+        row_layout.addWidget(title_label, 1, alignment=Qt.AlignVCenter)
+        row_layout.addWidget(start_button, 0, alignment=Qt.AlignVCenter)
 
         return row
 

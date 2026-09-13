@@ -180,13 +180,13 @@ def student_quiz_list_style():
             border: 1px solid #ddd;
             border-radius: 9px;
             background-color: #f7fafc;
-            padding: 6px;
+            padding: 4px;
         }
         QListWidget::item {
-            padding: 11px 12px;
-            margin: 3px 0px;
+            padding: 0px;           
+            margin: 1px 0px;
             border-radius: 7px;
-            background-color: #eef3f6;
+            background-color: transparent;
             color: #29465b;
             font-size: 14px;
         }
@@ -202,10 +202,10 @@ def student_quiz_list_style():
         QScrollBar:vertical {
             border: none;
             background: transparent;
-            width: 10px;
+            width: 8px;
             margin: 2px 0;
         }
-        QScrollBar::handle:vertical {
+        QScrollBar::handle {
             background: #b4c7d6;
             min-height: 24px;
             border-radius: 5px;
@@ -226,16 +226,13 @@ def student_quiz_row_style():
     return """
         QFrame#studentQuizRow {
             background-color: #eef3f6;
-            border: 1px solid #e0e7ed;
             border-radius: 8px;
-        }
-        QFrame#studentQuizRow:hover {
-            background-color: #e1eff7;
-            border-color: #a8c9df;
+            border: none;
+            margin: 2px;
         }
         QLabel#studentQuizRowTitle {
             color: #29465b;
-            font-size: 12px;
+            font-size: 14px;
             background: transparent;
         }
     """
@@ -249,8 +246,9 @@ def student_quiz_row_button_style():
             border: none;
             border-radius: 6px;
             padding: 5px 10px;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 13px;
+            padding: 0px;
+            margin: 0px;
         }
         QPushButton#quizRowStartButton:hover {
             background-color: #2fc66d;
