@@ -118,6 +118,7 @@ class StudentQuizSelectionDialog(QWidget):
         header.addWidget(title_label)
         header.addStretch()
         layout.addLayout(header)
+
         return group
 
     def _create_button(self, text, color):
@@ -125,6 +126,7 @@ class StudentQuizSelectionDialog(QWidget):
         btn = QPushButton(text)
         btn.setMinimumHeight(45)
         btn.setStyleSheet(styles.student_quiz_button_style(color))
+
         return btn
  
 
@@ -192,12 +194,17 @@ class StudentQuizSelectionDialog(QWidget):
         row = QFrame()
         row.setObjectName("studentQuizRow")
         row.setStyleSheet(styles.student_quiz_row_style())
+
+        row.setMinimumHeight(52) #Ορίζουμε ελάχιστο ύψος για να μην συμπιέζεται το row μέσα στο scroll area
         row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(8, 5, 8, 5)
-        row_layout.setSpacing(8)
+        row_layout.setContentsMargins(12, 8, 12, 8) #Ρυθμίζουμε τα margins ώστε να αφήνουν αέρα γύρω από τα στοιχεία
+        row_layout.setSpacing(12)#Ρυθμίζουμε το spacing ώστε να υπάρχει απόσταση μεταξύ των στοιχείων
+        row_layout.setAlignment(Qt.AlignVCenter) #Κεντράρουμε κάθετα τα στοιχεία μέσα στο row
 
         icon_label = QLabel()
         icon_label.setPixmap(QIcon(self.quiz_item_icon_path).pixmap(20, 20))
+        icon_label.setFixedWidth(22)
+
         title_label = QLabel(title)
         title_label.setWordWrap(True)
         title_label.setObjectName("studentQuizRowTitle")
@@ -212,8 +219,9 @@ class StudentQuizSelectionDialog(QWidget):
         )
 
         row_layout.addWidget(icon_label)
-        row_layout.addWidget(title_label, 1)
+        row_layout.addWidget(title_label, 1) # Stretch factor 1 για να πιάνει τον διαθέσιμο χώρο
         row_layout.addWidget(start_button)
+
         return row
 
     def start_selected_quiz(self, quiz_id=None):
@@ -253,11 +261,7 @@ class StudentQuizSelectionDialog(QWidget):
                 self.setVisible(False)
         
         except Exception as e:
-            QMessageBox.critical(
-                self,
-                "❌ Σφάλμα",
-                f"Δεν ήταν δυνατό να ξεκινήσει το quiz.\n\nΛεπτομέρεια: {str(e)}"
-            )
+            QMessageBox.critical(self," Σφάλμα",f"Δεν ήταν δυνατό να ξεκινήσει το quiz.\n\nΛεπτομέρεια: {str(e)}")
 
     def show_selection_again(self):
         """Επιστροφή στην επιλογή μετά το τέλος του quiz"""
