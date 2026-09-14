@@ -44,45 +44,42 @@ class CourseManagementPages:
 
         layout.addWidget(styles.window_title_frame_style(f" Καλώς Ήρθες, {username}!", icon_path="icons/welcome_icon.png"))
 
+        # Χρησιμοποιούω QFormLayout για στοίχιση label-value σε στήλες
+        form_layout = QFormLayout()
+        form_layout.setLabelAlignment(Qt.AlignLeft)
+        form_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        form_layout.setHorizontalSpacing(12)  # Απόσταση μεταξύ label και value
+        form_layout.setVerticalSpacing(8)     # Απόσταση μεταξύ σειρών
+
         # Σειρά 1: Όνομα χρήστη
-        username_row = QHBoxLayout()
         username_label_text = QLabel("Όνομα χρήστη:")
         username_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
         username_label_value = QLabel(username)
         username_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
-        username_row.addWidget(username_label_text)
-        username_row.addWidget(username_label_value)
-        card_layout.addLayout(username_row)
+        form_layout.addRow(username_label_text, username_label_value)
 
         # Σειρά 2: Email
-        email_row = QHBoxLayout()
         email_label_text = QLabel("Email:")
         email_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
         email_label_value = QLabel(email)
         email_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
-        email_row.addWidget(email_label_text)
-        email_row.addWidget(email_label_value)
-        card_layout.addLayout(email_row)
+        form_layout.addRow(email_label_text, email_label_value)
 
         # Σειρά 3: Ρόλος
-        role_row = QHBoxLayout()
         role_label_text = QLabel("Ρόλος:")
         role_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
         role_label_value = QLabel(role)
         role_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
-        role_row.addWidget(role_label_text)
-        role_row.addWidget(role_label_value)
-        card_layout.addLayout(role_row)
+        form_layout.addRow(role_label_text, role_label_value)
 
         # Σειρά 4: ID χρήστη
-        id_row = QHBoxLayout()
         id_label_text = QLabel("ID χρήστη:")
         id_label_text.setStyleSheet("font-size: 16px; color: #2c3e50; font-weight: bold;")
         id_label_value = QLabel(str(self.user_id))
         id_label_value.setStyleSheet("font-size: 16px; color: #2c3e50;")
-        id_row.addWidget(id_label_text)
-        id_row.addWidget(id_label_value)
-        card_layout.addLayout(id_row)
+        form_layout.addRow(id_label_text, id_label_value)
+
+        card_layout.addLayout(form_layout)
 
         layout.addWidget(card)
 
