@@ -90,7 +90,7 @@ class StudentQuizSelectionDialog(QWidget):
         self.quiz_list = QListWidget()
         self.quiz_list.setObjectName("studentQuizAvailableList")
         self.quiz_list.setSpacing(3)
-        self.quiz_list.setStyleSheet(styles.student_quiz_available_list_style())
+        self.quiz_list.setStyleSheet(styles.student_quiz_list_style())
 
         quiz_layout = quiz_container.layout()
         quiz_layout.addWidget(self.quiz_list)

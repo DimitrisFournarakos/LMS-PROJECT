@@ -235,9 +235,8 @@ def student_quiz_row_style():
         }
 
         QLabel#studentQuizRowTitle {
-            color: #29465b;
+            color: black;
             font-size: 14px;
-            font-weight: 500;
             background: transparent;
         }
     """
