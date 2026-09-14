@@ -228,7 +228,7 @@ def student_quiz_row_style():
             background-color: #ffffff;
             border: none;
             border-radius: 7px;
-            margin: 4px 0px;
+            margin: 3px 0px;
         }
 
         QFrame#studentQuizRow:hover {
