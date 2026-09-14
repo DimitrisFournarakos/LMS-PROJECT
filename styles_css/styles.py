@@ -228,16 +228,28 @@ def student_quiz_row_style():
             background-color: #ffffff;
             border: none;
             border-radius: 7px;
+            margin: 4px 0px;
         }
 
         QFrame#studentQuizRow:hover {
             background-color: #f4f9fc;
         }
 
+        QFrame#studentQuizRow:selected {
+            background-color: #2f9bd3;
+            border: none;
+            border-radius: 7px;
+        }
+
         QLabel#studentQuizRowTitle {
-            color: black;
+            color: #29465b;
             font-size: 14px;
+            font-weight: 500;
             background: transparent;
+        }
+
+        QFrame#studentQuizRow:selected QLabel#studentQuizRowTitle{
+            color: black;
         }
     """
 
