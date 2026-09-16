@@ -117,6 +117,7 @@ def quiz_execution_inline_alert_style(kind="warning"):
             color: {text};
             font-size: 12px;
             font-weight: 600;
+            border: none;
         }}
     """
 
