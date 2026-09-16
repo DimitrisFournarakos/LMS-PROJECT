@@ -78,7 +78,7 @@ class StudentQuizSelectionDialog(QWidget):
         selection_layout = QVBoxLayout()
         selection_layout.setSpacing(12)
 
-        course_container = self._create_selection_group("Μαθήματα", "icons/education.png")
+        course_container = self._create_selection_group("Μαθήματα", "icons/quiz-subjects.png")
         self.course_list = QListWidget()
         self.course_list.setStyleSheet(styles.student_quiz_list_style())
         self.course_list.itemClicked.connect(self.load_quizzes)
@@ -86,7 +86,7 @@ class StudentQuizSelectionDialog(QWidget):
         course_layout.addWidget(self.course_list)
         selection_layout.addWidget(course_container, 2)
 
-        quiz_container = self._create_selection_group("Διαθέσιμα Quiz", "icons/online-test.png")
+        quiz_container = self._create_selection_group("Διαθέσιμα Quiz", "icons/available-quizzes.png")
         self.quiz_list = QListWidget()
         self.quiz_list.setSpacing(3)
         self.quiz_list.setStyleSheet(styles.student_quiz_list_style())

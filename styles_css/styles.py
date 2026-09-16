@@ -165,7 +165,7 @@ def student_quiz_group_style():
     """Στυλ για τα containers μαθημάτων και διαθέσιμων quiz."""
     return """
         QFrame#studentQuizSelectionGroup {
-            background-color: #ffffff;
+            background-color: transparent;
             border: 1px solid #c8d4df;
             border-radius: 12px;
         }
