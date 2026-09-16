@@ -186,7 +186,6 @@ def student_quiz_list_style():
             padding: 0px;           
             margin: 1px 0px;
             border-radius: 7px;
-            background-color: transparent;
             color: #29465b;
             font-size: 14px;
         }
