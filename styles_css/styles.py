@@ -184,7 +184,7 @@ def student_quiz_list_style():
         }
         QListWidget::item {
             padding: 0px;           
-            margin: 1px 0px;
+            margin: 0px;
             border-radius: 7px;
             color: #29465b;
             font-size: 14px;
@@ -224,22 +224,16 @@ def student_quiz_row_style():
     """Στυλ για κάθε row της λίστας διαθέσιμων quiz."""
     return """
         QFrame#studentQuizRow {
+            background-color: transparent;
+            border: none;
             border-radius: 7px;
-            margin: 3px 0px;
+            margin: 1px 0px;
         }
-
-        QFrame#studentQuizRow:selected {
-            background-color: #2f9bd3;
-        }
-
         QLabel#studentQuizRowTitle {
             color: #29465b;
             font-size: 14px;
-            font-weight: 500;           
-        }
-
-        QFrame#studentQuizRow:selected QLabel#studentQuizRowTitle{
-            color: black;
+            font-weight: 500;
+            background-color: transparent;
         }
     """
 

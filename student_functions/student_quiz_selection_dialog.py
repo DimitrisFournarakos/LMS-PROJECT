@@ -188,10 +188,10 @@ class StudentQuizSelectionDialog(QWidget):
         row.setObjectName("studentQuizRow")
         row.setStyleSheet(styles.student_quiz_row_style())
 
-        row.setMinimumHeight(52) #Ορίζουμε ελάχιστο ύψος για να μην συμπιέζεται το row μέσα στο scroll area
+        row.setMinimumHeight(50) #Ορίζουμε ελάχιστο ύψος για να μην συμπιέζεται το row μέσα στο scroll area
         row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(10, 4, 10, 4) #Ρυθμίζουμε τα margins ώστε να αφήνουν αέρα γύρω από τα στοιχεία
-        row_layout.setSpacing(8)#Ρυθμίζουμε το spacing ώστε να υπάρχει απόσταση μεταξύ των στοιχείων
+        row_layout.setContentsMargins(10, 6, 10, 6) #Ρυθμίζουμε τα margins ώστε να αφήνουν αέρα γύρω από τα στοιχεία
+        row_layout.setSpacing(10)#Ρυθμίζουμε το spacing ώστε να υπάρχει απόσταση μεταξύ των στοιχείων
         row_layout.setAlignment(Qt.AlignVCenter) #Κεντράρουμε κάθετα τα στοιχεία μέσα στο row
 
         icon_label = QLabel()
