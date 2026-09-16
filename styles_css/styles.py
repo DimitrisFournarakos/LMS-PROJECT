@@ -274,45 +274,6 @@ def student_quiz_row_button_style():
             background-color: #218c4e;
         }
 
-        QPushButton#quizRowStartButton:focus {
-            outline: none;
-            border: none;
-        }
-    """
-
-def student_quiz_button_style(color):
-    """Στυλ για τα action buttons της επιλογής quiz"""
-    def _adjust_color(hex_color, factor):
-        hex_color = hex_color.lstrip('#')
-        r, g, b = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
-        r = max(0, min(255, int(r * factor)))
-        g = max(0, min(255, int(g * factor)))
-        b = max(0, min(255, int(b * factor)))
-        return f'#{r:02x}{g:02x}{b:02x}'
-
-    hover_color = _adjust_color(color, 1.2)
-    pressed_color = _adjust_color(color, 0.85)
-    return f"""
-        QPushButton {{
-            background-color: {color};
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 11px 24px;
-            min-height: 22px;
-            font-size: 14px;
-            font-weight: bold;
-        }}
-        QPushButton:hover {{
-            background-color: {hover_color};
-        }}
-        QPushButton:pressed {{
-            background-color: {pressed_color};
-        }}
-        QPushButton:disabled {{
-            background-color: #cbd5df;
-            color: #718096;
-        }}
     """
 
 def apply_shadow(widget,blur=8,x=2,y=2,alpha=50):
