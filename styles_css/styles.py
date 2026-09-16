@@ -225,27 +225,18 @@ def student_quiz_row_style():
     """Στυλ για κάθε row της λίστας διαθέσιμων quiz."""
     return """
         QFrame#studentQuizRow {
-            background-color: #ffffff;
-            border: none;
             border-radius: 7px;
             margin: 3px 0px;
         }
 
-        QFrame#studentQuizRow:hover {
-            background-color: #f4f9fc;
-        }
-
         QFrame#studentQuizRow:selected {
             background-color: #2f9bd3;
-            border: none;
-            border-radius: 7px;
         }
 
         QLabel#studentQuizRowTitle {
             color: #29465b;
             font-size: 14px;
-            font-weight: 500;
-            background: transparent;
+            font-weight: 500;           
         }
 
         QFrame#studentQuizRow:selected QLabel#studentQuizRowTitle{
