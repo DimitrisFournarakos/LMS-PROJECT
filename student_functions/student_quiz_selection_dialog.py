@@ -90,6 +90,7 @@ class StudentQuizSelectionDialog(QWidget):
         self.quiz_list = QListWidget()
         self.quiz_list.setSpacing(3)
         self.quiz_list.setStyleSheet(styles.student_quiz_list_style())
+        self.quiz_list.itemSelectionChanged.connect(self.update_quiz_selection_style) # Βοηθητική μέθοδος για να αλλάζει το style του επιλεγμένου quiz και να κάνει άσπρη την γραμματοσειρά
 
         quiz_layout = quiz_container.layout()
         quiz_layout.addWidget(self.quiz_list)
@@ -216,7 +217,23 @@ class StudentQuizSelectionDialog(QWidget):
         row_layout.addWidget(title_label, 1, alignment=Qt.AlignVCenter)
         row_layout.addWidget(start_button, 0, alignment=Qt.AlignVCenter)
 
+        row.title_label = title_label # Αποθηκεύουμε την αναφορά στο title_label για μελλοντική χρήση (π.χ. αλλαγή style όταν επιλέγεται μέσω της μεθόδου update_quiz_selection_style για να γίνει λευκό το κείμενο του επιλεγμένου quiz)
         return row
+
+    def update_quiz_selection_style(self):
+        """Κάνει λευκά τα γράμματα του επιλεγμένου quiz."""
+
+        for i in range(self.quiz_list.count()):
+            item = self.quiz_list.item(i)
+            row = self.quiz_list.itemWidget(item)
+
+            if row is None or not hasattr(row, "title_label"):
+                continue
+
+            if item.isSelected():
+                row.title_label.setStyleSheet(""" color: white; background-color: transparent;""")
+            else:
+                row.title_label.setStyleSheet(""" color: #29465b; background-color: transparent; """)
 
     def start_selected_quiz(self, quiz_id=None):
         """Ξεκινάει το επιλεγμένο quiz"""
