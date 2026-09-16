@@ -217,15 +217,20 @@ class QuizExecutionDialog(QWidget):
         
         if kind == "success":
             self.inline_alert_icon.setText("✅")
+            self.inline_alert_icon.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
             self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
         elif kind == "info":
             self.inline_alert_icon.setText("ℹ️")
+            self.inline_alert_icon.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
             self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
         elif kind == "confirm":
             self.inline_alert_icon.setText("❓")
+            self.inline_alert_icon.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
+            self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
             
         else:
             self.inline_alert_icon.setText("⚠️")
+            self.inline_alert_icon.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
             self.inline_alert_text.setStyleSheet("padding: 2px 0px; background-color: #fff4e5;")
 
     def _show_inline_alert(self, message, kind="warning", mode="message", callback=None):
