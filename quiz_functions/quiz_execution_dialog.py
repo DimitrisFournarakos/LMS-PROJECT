@@ -210,6 +210,7 @@ class QuizExecutionDialog(QWidget):
         btn.setMinimumHeight(44)
         btn.setMinimumWidth(140)
         btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        btn.setCursor(Qt.PointingHandCursor)
         return btn
 
     def _set_inline_alert_state(self, kind):
