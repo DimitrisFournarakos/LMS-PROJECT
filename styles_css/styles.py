@@ -315,60 +315,6 @@ def student_quiz_button_style(color):
         }}
     """
 
-def student_quiz_available_list_style():
-    """Στυλ για τη λίστα των διαθέσιμων quizzes."""
-    return """
-        QListWidget#studentQuizAvailableList {
-            border: 1px solid #cfd8e1;
-            border-radius: 9px;
-            background-color: #f7fafc;
-            padding: 4px;
-            outline: none;
-        }
-
-        QListWidget#studentQuizAvailableList::item {
-            background: transparent;
-            border: none;
-            padding: 0px;
-            margin: 1px 0px;
-        }
-
-        QListWidget#studentQuizAvailableList::item:selected {
-            background-color: #2f9bd3;
-            color: white;
-            font-weight: bold;
-        }
-
-        QListWidget#studentQuizAvailableList::item:hover {
-            background-color: #dcecf7;
-            color: #183b56;
-        }
-
-        QScrollBar:vertical {
-            border: none;
-            background: transparent;
-            width: 8px;
-            margin: 2px 0px;
-        }
-
-        QScrollBar::handle:vertical {
-            background: #b4c7d6;
-            min-height: 24px;
-            border-radius: 5px;
-        }
-
-        QScrollBar::handle:vertical:hover {
-            background: #7ea5bf;
-        }
-
-        QScrollBar::add-line:vertical,
-        QScrollBar::sub-line:vertical {
-            height: 0px;
-            border: none;
-            background: transparent;
-        }
-    """
-
 def apply_shadow(widget,blur=8,x=2,y=2,alpha=50):
     """Εφαρμόζει σκιά σε ένα widget"""
     shadow = QGraphicsDropShadowEffect()

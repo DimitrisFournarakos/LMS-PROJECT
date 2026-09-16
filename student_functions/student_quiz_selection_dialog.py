@@ -88,7 +88,6 @@ class StudentQuizSelectionDialog(QWidget):
 
         quiz_container = self._create_selection_group("Διαθέσιμα Quiz", "icons/online-test.png")
         self.quiz_list = QListWidget()
-        self.quiz_list.setObjectName("studentQuizAvailableList")
         self.quiz_list.setSpacing(3)
         self.quiz_list.setStyleSheet(styles.student_quiz_list_style())
 
