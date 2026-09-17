@@ -28,6 +28,7 @@ class EnrollPage(QWidget):
         # Δημιουργία και στυλ της λίστας
         self.course_list = QListWidget()
         self.course_list.setStyleSheet(subjects_available_course_list_style())#Χρησιμοποιώ το ίδιο QFrame στυλ όπως έκανα και στα στατιστικα του student
+        self.course_list.setSpacing(3)
         self.load_courses()
 
         #Προσθήκη της λίστας μέσα στο layout του container
