@@ -196,6 +196,7 @@ class StudentQuizSelectionDialog(QWidget):
         row_layout.setAlignment(Qt.AlignVCenter) #Κεντράρουμε κάθετα τα στοιχεία μέσα στο row
 
         icon_label = QLabel()
+        icon_label.setStyleSheet("background-color: transparent;") #Αφαιρούμε το background για να μην φαίνεται το default γκρι
         icon_label.setPixmap(QIcon(self.quiz_item_icon_path).pixmap(20, 20))
         icon_label.setFixedWidth(22)
         icon_label.setAlignment(Qt.AlignVCenter)
