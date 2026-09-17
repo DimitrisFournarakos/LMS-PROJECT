@@ -264,6 +264,46 @@ def student_quiz_row_button_style():
 
     """
 
+
+def student_quiz_button_style(color):
+    """
+    Επιστρέφει στυλ για τα κουμπιά του quiz execution dialog (Προηγούμενη, Επόμενη, Τελική Υποβολή).
+    Δέχεται χρώμα και δημιουργεί αυτόματα hover/pressed variants.
+    """
+    def _adjust_color(hex_color, factor):
+        hex_color = hex_color.lstrip('#')
+        r, g, b = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
+        r = max(0, min(255, int(r * factor)))
+        g = max(0, min(255, int(g * factor)))
+        b = max(0, min(255, int(b * factor)))
+        return f'#{r:02x}{g:02x}{b:02x}'
+
+    hover_color = _adjust_color(color, 1.32)
+    pressed_color = _adjust_color(color, 0.88)
+
+    return f"""
+        QPushButton {{
+            background-color: {color};
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }}
+        QPushButton:hover {{
+            background-color: {hover_color};
+        }}
+        QPushButton:pressed {{
+            background-color: {pressed_color};
+        }}
+        QPushButton:disabled {{
+            background-color: #bdc3c7;
+            color: #ecf0f1;
+        }}
+    """
+
+
 def apply_shadow(widget,blur=8,x=2,y=2,alpha=50):
     """Εφαρμόζει σκιά σε ένα widget"""
     shadow = QGraphicsDropShadowEffect()

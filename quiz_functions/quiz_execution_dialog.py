@@ -136,15 +136,13 @@ class QuizExecutionDialog(QWidget):
 
         question_layout.addStretch()
         content_layout.addWidget(self.question_card)
-
-        # Action buttons layout: left controls, spacer, right primary actions
+        
         # Action buttons layout: left controls, spacer, right primary actions
         self.button_layout = QHBoxLayout()
         self.button_layout.setSpacing(12)
 
         self.prev_btn = self._create_button("← Προηγούμενη", "#34495e")
         self.prev_btn.clicked.connect(self.previous_question)
-        self.prev_btn.setToolTip("Προηγούμενη ερώτηση")
         self.prev_btn.setMinimumWidth(150)
         self.button_layout.addWidget(self.prev_btn)
 
@@ -152,7 +150,6 @@ class QuizExecutionDialog(QWidget):
 
         self.next_btn = self._create_button("Επόμενη →", "#3498db")
         self.next_btn.clicked.connect(self.next_question)
-        self.next_btn.setToolTip("Επόμενη ερώτηση")
         self.next_btn.setMinimumWidth(160)
         self.button_layout.addWidget(self.next_btn)
 
@@ -262,26 +259,7 @@ class QuizExecutionDialog(QWidget):
         if callback:
             callback()
 
-    @staticmethod
-    def _lighten_color(hex_color):
-        """Ανοιχτοποιεί ένα χρώμα"""
-        hex_color = hex_color.lstrip('#')
-        r, g, b = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
-        r = min(255, int(r * 1.2))
-        g = min(255, int(g * 1.2))
-        b = min(255, int(b * 1.2))
-        return f'#{r:02x}{g:02x}{b:02x}'
-
-    @staticmethod
-    def _darken_color(hex_color):
-        """Σκοτεινοποιεί ένα χρώμα"""
-        hex_color = hex_color.lstrip('#')
-        r, g, b = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
-        r = int(r * 0.85)
-        g = int(g * 0.85)
-        b = int(b * 0.85)
-        return f'#{r:02x}{g:02x}{b:02x}'
-
+    
     def show_question(self):
         """Εμφανίζει την τρέχουσα ερώτηση"""
         q = self.questions[self.current_index]
