@@ -577,7 +577,8 @@ def students_stats_rounded_container():
     return """   
             QFrame {
                 background-color: white;
-                border-radius: 20px;               
+                border-radius: 20px; 
+                outline: none; /* Αφαιρεί τις τελείες εστίασης */              
             }       
     """
 
