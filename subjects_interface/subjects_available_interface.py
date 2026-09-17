@@ -23,7 +23,7 @@ class EnrollPage(QWidget):
       
         #Layout για το εσωτερικό του container
         container_layout = QVBoxLayout(self.list_container)
-        container_layout.setContentsMargins(10,10,10,10)
+        container_layout.setContentsMargins(15 ,15 ,15 ,15)
 
         # Δημιουργία και στυλ της λίστας
         self.course_list = QListWidget()
