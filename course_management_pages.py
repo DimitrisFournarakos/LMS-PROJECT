@@ -5,7 +5,7 @@
 που αφορά ανάλογα είτε τον admin είτε τον student.
 """
 
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QFrame, QLabel, QLineEdit, QPushButton, QScrollArea, QGroupBox, QListWidget, QSizePolicy)
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QFrame, QLabel, QLineEdit, QPushButton, QScrollArea, QGroupBox, QListWidget, QSizePolicy, QTableWidget)
 from PyQt5.QtCore import Qt
 from db import ( get_user_by_id,get_student_quiz_leaderboard)
 from styles_css import styles
@@ -310,7 +310,7 @@ class CourseManagementPages:
         self.table.setColumnCount(7)
         self.table_title_color = "#FFFFFF" if not self.admin else "#2c3e50"
         self.table.setStyleSheet(
-            f"QTableWidget {{ color: {self.table_title_color}; font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif; font-size: 17px; font-weight: 600; }}")
+            f"QTableWidget {{ color: {self.table_title_color}; font-family: 'Noto Sans', 'Segoe UI', Arial, sans-serif; font-size: 17px; font-weight: 600; outline: none; }}")
         self.table.setHorizontalHeaderLabels(
             ["Όνομα", "Περιγραφή", "Κατηγορία", "Εκπαιδευτής", "Έναρξη", "Λήξη", "Ενέργειες"])
 
@@ -320,7 +320,10 @@ class CourseManagementPages:
         for i in range(6):
             self.table.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)
 
-        self.table.cellClicked.connect(self.on_table_item_clicked)
+        # Αφαίρεση του clickable effect από τα κελιά - μόνο η στήλη ενεργειών (6) είναι clickable
+        self.table.setSelectionMode(QTableWidget.NoSelection)
+        self.table.setFocusPolicy(Qt.NoFocus)
+        
         layout.addWidget(self.table)
 
         self.content_stack.addWidget(page)

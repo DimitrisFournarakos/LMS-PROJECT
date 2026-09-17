@@ -387,7 +387,7 @@ class CourseManagementWindow(QWidget, CourseManagementLogic, CourseManagementPag
                 if col_idx == 0:
                     item.setData(Qt.UserRole, course[0])
 
-                item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+                item.setFlags(Qt.ItemIsEnabled) # Μόνο enabled, όχι selectable - αφαιρεί το clickable effect από τα κελιά
                 self.table.setItem(row_index, col_idx, item)
 
             view_icon = qta.icon('fa5s.folder-open',
