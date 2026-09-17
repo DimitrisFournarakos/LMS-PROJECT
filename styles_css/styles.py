@@ -207,11 +207,12 @@ def student_quiz_list_style():
             background: transparent;
             width: 8px;
             margin: 2px 0;
+            border-radius: 4px; /* Στρογγυλεμένες γωνίες στο track */
         }
         QScrollBar::handle {
             background: #b4c7d6;
             min-height: 24px;
-            border-radius: 5px;
+            border-radius: 4px; /* Στρογγυλεμένες γωνίες στο handle */
         }
         QScrollBar::handle:vertical:hover {
             background: #7ea5bf;
@@ -221,7 +222,9 @@ def student_quiz_list_style():
             height: 0;
             background: transparent;
             border: none;
+            border-radius: 4px;
         }
+        
     """
 
 def student_quiz_row_style():
