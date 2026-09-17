@@ -717,12 +717,10 @@ def subjects_available_course_list_style():
         border: 2px solid #dcdde1;
         border-radius: 12px;
         outline: none; /* Βγάζει τις τελείες/κύκλους εστίασης */
-        padding: 5px;
     }
     
     QListWidget::item {
         background-color: transparent;
-        margin-bottom: 2px;
         border-radius: 8px; /* Για να φαίνεται ωραία το hover */
     }
 
