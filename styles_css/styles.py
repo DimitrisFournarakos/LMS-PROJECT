@@ -708,30 +708,7 @@ def quiz_student_mistakes_list_style():
                 }
             """
 
-def available_courses_list_style():
-    return """          
-    QListWidget {
-        background-color: #ffffff;
-        border: 2px solid #dcdde1;
-        border-radius: 10px;
-        padding: 10px;
-        font-family: 'Segoe UI', sans-serif;
-        font-size: 16px;
-        color: #2f3640;
-    }
-    
-    QListWidget::item {
-        padding: 12px;
-        border-bottom: 1px solid #f1f2f6;
-        font-weight: 500;
-    }
 
-    QListWidget::item:selected {
-        background-color: #E0E0E0;
-        color: black;
-        border-radius: 5px;
-    }
-        """
 
 def subjects_available_course_list_style():
     """
