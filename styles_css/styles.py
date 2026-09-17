@@ -185,6 +185,7 @@ def student_quiz_list_style():
             border-radius: 9px;
             background-color: #f7fafc;
             padding: 4px;
+            outline: none; /* Αφαιρεί το default focus rectangle */
         }
         QListWidget::item {
             padding: 0px;           
