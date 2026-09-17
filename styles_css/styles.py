@@ -745,7 +745,6 @@ def subjects_available_course_list_style():
     
     QListWidget::item {
         background-color: transparent;
-        border-bottom: 1px solid #f1f2f6;
         margin-bottom: 2px;
         border-radius: 8px; /* Για να φαίνεται ωραία το hover */
     }
@@ -753,7 +752,6 @@ def subjects_available_course_list_style():
     /* Hover effect σε όλη τη σειρά */
     QListWidget::item:hover {
         background-color: #f8f9fa; /* Πολύ απαλό γκρι */
-        border-bottom: 1px solid #dcdde1;
     }
 
     /* Απενεργοποίηση του κλασικού μπλε/γκρι selection */
