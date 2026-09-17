@@ -708,8 +708,6 @@ def quiz_student_mistakes_list_style():
                 }
             """
 
-
-
 def subjects_available_course_list_style():
     """
     QListWidget {
@@ -737,6 +735,53 @@ def subjects_available_course_list_style():
         outline: none;
     }
 """
+
+def subjects_available_ScrollArea_style():
+    return"""
+            QScrollArea {
+                background-color: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #f1f2f6;
+                width: 8px;
+                border-radius: 4px;
+            }
+            QScrollBar::handle:vertical {
+                background: #cbd5e1;
+                min-height: 30px;
+                border-radius: 4px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #94a3b8;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """
+
+def students_courseItemFrame_style():
+    return """  
+                QFrame#courseItemFrame {
+                    background-color: #ffffff;
+                    
+                    border-radius: 10px;
+                }
+                QFrame#courseItemFrame:hover {
+                    background-color: #e8f4fd;
+                    
+                }
+                QFrame#courseItemFrame[selected="true"] {
+                    background-color: #d6eaf8;
+                    border: 1px solid #3498db;
+                    
+                }
+                QFrame#courseItemFrame[selected="true"]:hover {
+                    background-color: #d6eaf8;
+                    
+                }
+            """
 
 def subjects_available_back_btn_style():
     return """

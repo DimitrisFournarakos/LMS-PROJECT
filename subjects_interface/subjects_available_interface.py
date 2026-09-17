@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QListWidget,QWidget,QPushButton,QHBoxLayout,QFrame,QListWidgetItem,QGraphicsOpacityEffect
+from PyQt5.QtWidgets import QVBoxLayout, QLabel,QWidget,QPushButton,QHBoxLayout,QFrame,QGraphicsOpacityEffect,QScrollArea
 from PyQt5.QtCore import Qt,QSize,QTimer,QPropertyAnimation
 from PyQt5.QtGui import QIcon,QPixmap
 from db import get_available_courses_for_user,enroll_user_in_course
-from styles_css.styles import students_stats_rounded_container,subjects_available_course_list_style,subjects_available_back_btn_style,window_title_frame_style
+from styles_css.styles import students_stats_rounded_container, subjects_available_ScrollArea_style,subjects_available_course_list_style,subjects_available_back_btn_style,window_title_frame_style,students_courseItemFrame_style
 
 class EnrollPage(QWidget):
     def __init__(self, user_id, parent_window = 'CourseManagementWindow' ):
@@ -10,49 +10,82 @@ class EnrollPage(QWidget):
         self.user_id = user_id
         self.parent_window = parent_window #Κρατάμε αναφορά για να γυρνάμε πίσω
 
-        #Κύριο layout
+        # Κύριο layout
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(30,20,30,30)
+        self.main_layout.setContentsMargins(30, 20, 30, 30)
         self.main_layout.setSpacing(20)
 
         self.main_layout.addWidget(window_title_frame_style(" Εγγραφή σε Νέο Μάθημα", icon_path="icons/register-subject-title.png"))
 
-        #Δημιουργώ ένα container για να βαλω μεσα την λίστα με τα διαθεσιμα μαθηματα για εγγραφή
+        # Δημιουργία Container για να βάλω μέσα τα items για τη λίστα με τα διαθέσιμα μαθήματα (με scroll)
         self.list_container = QFrame()
-        self.list_container.setStyleSheet(students_stats_rounded_container())#Χρησιμοποιώ το ίδιο QFrame στυλ όπως έκανα και στα στατιστικα του student
-      
-        #Layout για το εσωτερικό του container
+        self.list_container.setStyleSheet(students_stats_rounded_container()) #Χρησιμοποιώ το ίδιο style με τα στατιστικά για να είναι ομοιόμορφο
+
         container_layout = QVBoxLayout(self.list_container)
-        container_layout.setContentsMargins(15 ,15 ,15 ,15)
+        container_layout.setContentsMargins(15, 15, 15, 15)
 
-        # Δημιουργία και στυλ της λίστας
-        self.course_list = QListWidget()
-        self.course_list.setStyleSheet(subjects_available_course_list_style())#Χρησιμοποιώ το ίδιο QFrame στυλ όπως έκανα και στα στατιστικα του student
-        self.course_list.setSpacing(3)
-        self.load_courses()
 
-        #Προσθήκη της λίστας μέσα στο layout του container
-        container_layout.addWidget(self.course_list)
+        # Δημιουργία και στυλ της λίστας με τα διαθέσιμα μαθήματα 
+        #Δημιουργούμε ένα QScrollArea για να περιέχει τα μαθήματα, ώστε αν υπάρχουν πολλά, να μπορεί ο χρήστης να κάνει scroll.
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
+        self.scroll_area.setStyleSheet(subjects_available_ScrollArea_style())
 
-        #Προσθήκη του container στο κύριο layout της Σελίδας
+        # Widget που θα κρατάει τα items (αντικαθιστά το QListWidget)
+        self.courses_widget = QWidget()
+        self.courses_widget.setStyleSheet("background-color: transparent;")
+        self.courses_layout = QVBoxLayout(self.courses_widget)
+        self.courses_layout.setContentsMargins(0, 0, 0, 0)
+        self.courses_layout.setSpacing(8)  # Κενό μεταξύ items
+        self.courses_layout.addStretch()  # ΠUSH τα items πάνω
+
+        self.scroll_area.setWidget(self.courses_widget)
+        container_layout.addWidget(self.scroll_area)
+
         self.main_layout.addWidget(self.list_container)
 
+        self.load_courses()
+
     def load_courses(self):
-        self.course_list.clear()
+        # Καθαρισμός υπαρχόντων items
+        while self.courses_layout.count() > 1:  # Κρατάμε το stretch στο τέλος
+            child = self.courses_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
         available = get_available_courses_for_user(self.user_id)
-        
+
         for c in available:
             course_id = c[0]
             course_name = c[1]
 
-            #Δημιουργούμε το item της λίστας
-            item = QListWidgetItem(self.course_list)
-            item.setSizeHint(QSize(0, 60)) #Ύψος κάθε σειράς
+            # Δημιουργία item ως QFrame (για να δουλεύει το border-radius),και στην κατάσταση hover και  στην selected.
+            item_frame = QFrame()
+            item_frame.setObjectName("courseItemFrame")
+            item_frame.setFixedHeight(60) #Υψος κάθε σειράς της λίστας
+            item_frame.setProperty("selected", False)  # Για το selected state
+            item_frame.setStyleSheet(students_courseItemFrame_style())
 
-            #Δημιουργούμε ένα απλό QWidget που θα κρατάει το όνομα και το κουμπί
-            row_widget = QWidget()
-            row_layout = QHBoxLayout(row_widget)
-            row_layout.setContentsMargins(15, 0 ,15, 0)
+            # Mouse click handling για selected state
+            def on_frame_clicked(event, frame=item_frame):
+                # Αποεπιλογή όλων των άλλων items
+                for i in range(self.courses_layout.count()):
+                    widget = self.courses_layout.itemAt(i).widget()
+                    if widget and widget != frame and widget.property("selected"):
+                        widget.setProperty("selected", False)
+                        widget.style().unpolish(widget)
+                        widget.style().polish(widget)
+                # Toggle το τρέχον item
+                current_selected = frame.property("selected")
+                frame.setProperty("selected", not current_selected)
+                frame.style().unpolish(frame)
+                frame.style().polish(frame)
+
+            item_frame.mousePressEvent = on_frame_clicked
+
+            row_layout = QHBoxLayout(item_frame)
+            row_layout.setContentsMargins(15, 0, 15, 0)
 
             label = QLabel(course_name)
             label.setStyleSheet("font-size: 16px; color: #2f3640; font-weight: 500; background: transparent; border: none;")
@@ -60,30 +93,35 @@ class EnrollPage(QWidget):
             # Κουμπί με Icon
             btn_enroll = QPushButton()
             btn_enroll.setIcon(QIcon("icons/register-subject.png"))
-            btn_enroll.setIconSize(QSize(30,30))#Μέγεθος icon κουμπιού
-            btn_enroll.setFixedSize(35, 35)#Μέγεθος background κουμπιού
+            btn_enroll.setIconSize(QSize(30, 30))
+            btn_enroll.setFixedSize(35, 35)
             btn_enroll.setCursor(Qt.PointingHandCursor)
             btn_enroll.setStyleSheet(subjects_available_back_btn_style())
-            
-            btn_enroll.clicked.connect(lambda _, course_id = course_id, item = item : self.enroll(course_id,item))
+
+            btn_enroll.clicked.connect(lambda _, cid=course_id, frame=item_frame: self.enroll(cid, frame))
 
             row_layout.addWidget(label)
             row_layout.addStretch()
             row_layout.addWidget(btn_enroll)
 
-            #Προσθέτουμε το widget στο item
-            self.course_list.addItem(item)
-            self.course_list.setItemWidget(item,row_widget)
+            # Προσθήκη στο layout (πριν το stretch)
+            self.courses_layout.insertWidget(self.courses_layout.count() - 1, item_frame)
 
-
-    def enroll(self,course_id,item):      
-        enroll_user_in_course(self.user_id, course_id)#Εγγραφή στη βάση δεδομένων
-
-        # Παίρνω το row_widget που περιέχει το label και το button
-        row_widget = self.course_list.itemWidget(item)
-        row_layout = row_widget.layout()
+    def enroll(self, course_id, item_frame):
+        enroll_user_in_course(self.user_id, course_id) #Εγγραφή του χρήστη στο μάθημα (στη βάση δεδομένων)
         
-        #Δημιουργία του checkmark
+        # Το item_frame είναι το QFrame που περιέχει το layout(label + button) για το συγκεκριμένο μάθημα.
+        row_layout = item_frame.layout()
+        
+        # Απενεργοποίηση του κουμπιού εγγραφής,όταν πατηθεί και εμφανιστεί το checkmark, ώστε να μην μπορεί να ξαναπατηθεί.
+        for i in range(row_layout.count()):
+            widget = row_layout.itemAt(i).widget()
+            if isinstance(widget, QPushButton):
+                widget.setEnabled(False)
+                widget.setStyleSheet("background-color: #bdc3c7; color: #ecf0f1; border-radius: 12px; border: none;")
+                break
+        
+        # Δημιουργία του checkmark
         checkmark_label = QLabel()
         pixmap = QPixmap("icons/checkmark.png")
         scaled_pixmap = pixmap.scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -92,27 +130,27 @@ class EnrollPage(QWidget):
         checkmark_label.setStyleSheet("background: transparent; border: none;")
         checkmark_label.setFixedWidth(40)
 
-        #Προσθήκη Εφέ Διαφάνειας για το animation
+        # Προσθήκη Εφέ Διαφάνειας για το animation
         opacity_effect = QGraphicsOpacityEffect(checkmark_label)
         checkmark_label.setGraphicsEffect(opacity_effect)
-        row_layout.insertWidget(1,checkmark_label)# Τοποθέτηση δίπλα στο κείμενο (position 1)
+        row_layout.insertWidget(1, checkmark_label)  # Τοποθέτηση δίπλα στο κείμενο (position 1)
 
         # Animation εμφάνισης (Fade In)
         self.anim = QPropertyAnimation(opacity_effect, b"opacity")
-        self.anim.setDuration(900) # 0.9 Δευτερόλεπτα
+        self.anim.setDuration(900)  # 0.9 Δευτερόλεπτα
         self.anim.setStartValue(0)
         self.anim.setEndValue(1)
         self.anim.start()
 
-        #Μικρό "πήδημα": θα κουνηθεί λίγο προς τα δεξιά
-        checkmark_label.setContentsMargins(10,0,0,0) # Ξεκινάει με margin
+        # Μικρό "πήδημα": θα κουνηθεί λίγο προς τα δεξιά
+        checkmark_label.setContentsMargins(10, 0, 0, 0)  # Ξεκινάει με margin
 
-        self.parent_window.update_course_list()# Ενημέρωση του κεντρικού πίνακα (Index 0)
+        self.parent_window.update_course_list()  # Ενημέρωση του κεντρικού πίνακα (Index 0)
 
         # Περίμενε 1.5 δευτερόλεπτα και μετά ανανέωσε τη λίστα
-        QTimer.singleShot(1400, lambda:(
-            self.load_courses(), #Ανανέωση της ίδιας της λίστας εγγραφής ώστε να εξαφανιστεί το μάθημα που μόλις γράφτηκες
-            self.parent_window.content_stack.setCurrentIndex(0)#Επιστροφή στην αρχική σελίδα
+        QTimer.singleShot(1400, lambda: (
+            self.load_courses(),  # Ανανέωση της ίδιας της λίστας εγγραφής ώστε να εξαφανιστεί το μάθημα που μόλις γράφτηκες
+            self.parent_window.content_stack.setCurrentIndex(0)  # Επιστροφή στην αρχική σελίδα
         ))
        
         
