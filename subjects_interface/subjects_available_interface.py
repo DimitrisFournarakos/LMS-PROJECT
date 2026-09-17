@@ -48,6 +48,14 @@ class EnrollPage(QWidget):
         self.load_courses()
 
     def load_courses(self):
+        """
+        Φορτώνει τα διαθέσιμα μαθήματα από τη βάση δεδομένων και τα εμφανίζει στη λίστα.
+        
+        1. Καθαρίζει τα υπάρχοντα items από το layout (εκτός από το stretch στο τέλος)
+        2. Ανακτά τα διαθέσιμα μαθήματα για τον χρήστη από τη βάση
+        3. Δημιουργεί ένα QFrame για κάθε μάθημα με label και κουμπί εγγραφής
+        4. Προσθέτει τα items στο layout με σωστή σειρά
+        """
         # Καθαρισμός υπαρχόντων items
         while self.courses_layout.count() > 1:  # Κρατάμε το stretch στο τέλος
             child = self.courses_layout.takeAt(0)
@@ -69,6 +77,16 @@ class EnrollPage(QWidget):
 
             # Mouse click handling για selected state
             def on_frame_clicked(event, frame=item_frame):
+                """
+                Χειρίζεται το κλικ στο frame του μαθήματος για επιλογή/αποεπιλογή.
+                
+                1. Αποεπιλέγει όλα τα άλλα items που είναι επιλεγμένα (single selection)
+                2. Toggle την επιλογή του τρέχοντος item
+                3. Ενημερώνει το στυλ μέσω unpolish/polish για να εφαρμοστούν οι αλλαγές
+                
+                event: Το QMouseEvent που προκάλεσε την κλήση
+                frame: Το QFrame που έγινε κλικ επάνω του για να το επιλέξουμε (προεπιλογή: το τρέχον item_frame)
+                """
                 # Αποεπιλογή όλων των άλλων items
                 for i in range(self.courses_layout.count()):
                     widget = self.courses_layout.itemAt(i).widget()
@@ -98,7 +116,7 @@ class EnrollPage(QWidget):
             btn_enroll.setCursor(Qt.PointingHandCursor)
             btn_enroll.setStyleSheet(subjects_available_back_btn_style())
 
-            btn_enroll.clicked.connect(lambda _, cid=course_id, frame=item_frame: self.enroll(cid, frame))
+            btn_enroll.clicked.connect(lambda _, course=course_id, frame=item_frame: self.enroll(course, frame))
 
             row_layout.addWidget(label)
             row_layout.addStretch()
@@ -108,6 +126,18 @@ class EnrollPage(QWidget):
             self.courses_layout.insertWidget(self.courses_layout.count() - 1, item_frame)
 
     def enroll(self, course_id, item_frame):
+        """
+        Εγγράφει τον χρήστη στο επιλεγμένο μάθημα και εμφανίζει οπτική επιβεβαίωση.
+        
+        1. Κάνει την εγγραφή στη βάση δεδομένων
+        2. Απενεργοποιεί το κουμπί εγγραφής και το κάνει γκρι
+        3. Εμφανίζει ένα checkmark με fade-in animation δίπλα στο όνομα του μαθήματος
+        4. Ενημερώνει τον κεντρικό πίνακα μαθημάτων του χρήστη
+        5. Μετά από 1.5 δευτερόλεπτα ανανεώνει τη λίστα και επιστρέφει στην αρχική σελίδα
+        
+        course_id: Το ID του μαθήματος στο οποίο γίνεται η εγγραφή
+        item_frame: Το QFrame που αντιπροσωπεύει τη σειρά του μαθήματος στη λίστα
+        """
         enroll_user_in_course(self.user_id, course_id) #Εγγραφή του χρήστη στο μάθημα (στη βάση δεδομένων)
         
         # Το item_frame είναι το QFrame που περιέχει το layout(label + button) για το συγκεκριμένο μάθημα.
