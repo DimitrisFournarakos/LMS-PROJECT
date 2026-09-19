@@ -1035,9 +1035,9 @@ def leaderboard_scroll_style():
         QScrollBar:vertical {
             border: none;
             background: #f1f2f6;
-            width: 16px; /* Κάνω το scrollbar λίγο πιο φαρδύ για καλύτερη αίσθηση και χρήση */
+            width: 20px; /* Κάνω το scrollbar λίγο πιο φαρδύ για καλύτερη αίσθηση και χρήση */
             margin: 6px 2px 6px 6px; /*βάζω περιθώριο για να μην κολλάει το scrollbar στο περιθώριο του groupbox*/
-            border-radius: 6px;
+            border-radius: 8px;
         }
 
         QScrollBar::handle:vertical {
