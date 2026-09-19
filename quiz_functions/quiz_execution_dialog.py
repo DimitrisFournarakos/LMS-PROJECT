@@ -141,14 +141,15 @@ class QuizExecutionDialog(QWidget):
         self.button_layout = QHBoxLayout()
         self.button_layout.setSpacing(12)
 
-        self.prev_btn = self._create_button("← Προηγούμενη", "#34495e")
+        self.prev_btn = self._create_button(" Προηγούμενη", "#34495e", "icons/arrow-left.png")
         self.prev_btn.clicked.connect(self.previous_question)
         self.prev_btn.setMinimumWidth(150)
         self.button_layout.addWidget(self.prev_btn)
 
         self.button_layout.addStretch()
 
-        self.next_btn = self._create_button("Επόμενη →", "#3498db")
+        self.next_btn = self._create_button("Επόμενη ", "#3498db", "icons/arrow-right.png")
+        self.next_btn.setLayoutDirection(Qt.RightToLeft)
         self.next_btn.clicked.connect(self.next_question)
         self.next_btn.setMinimumWidth(160)
         self.button_layout.addWidget(self.next_btn)
@@ -194,7 +195,7 @@ class QuizExecutionDialog(QWidget):
         btn.setStyleSheet(styles.option_button_quiz_style())
         return btn
 
-    def _create_button(self, text, color):
+    def _create_button(self, text, color, icon_path=None):
         """Δημιουργεί ένα styled button"""
         btn = QPushButton(text)
         # Prefer shared style from styles module for consistent look
@@ -204,6 +205,10 @@ class QuizExecutionDialog(QWidget):
             # fallback simple styling
             btn.setStyleSheet(f"background-color: {color}; color: white; border: none; border-radius: 6px; padding: 10px 15px; font-size:14px; font-weight:bold;")
 
+        if icon_path:
+            btn.setIcon(QIcon(icon_path))
+            btn.setIconSize(QSize(20, 20))
+        
         btn.setMinimumHeight(44)
         btn.setMinimumWidth(140)
         btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
