@@ -1058,17 +1058,6 @@ def leaderboard_scroll_style():
             background: transparent;
         }
 
-        QScrollBar::up-arrow:vertical,
-        QScrollBar::down-arrow:vertical {
-            width: 0px;
-            height: 0px;
-            background: transparent;
-        }
-
-        QScrollBar::add-page:vertical,
-        QScrollBar::sub-page:vertical {
-            background: transparent;
-        }
     """
 
 
