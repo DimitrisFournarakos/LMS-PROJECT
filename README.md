@@ -18,6 +18,15 @@ A comprehensive **Learning Management System** built with **Python** and **PyQt5
 - [Support](#-support)
 
 ---
+## 🎥 Demo Video & Walkthrough
+
+[![Watch on YouTube](https://img.shields.io/badge/YouTube-Watch%20Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/2iUmZSNP0LI)
+
+Watch a complete demonstration of the **Student View** in action:
+
+[![E-Learning Platform Demo](https://img.youtube.com/vi/2iUmZSNP0LI/hqdefault.jpg)](https://youtu.be/2iUmZSNP0LI "E-Learning Platform Demo - Watch on YouTube")
+
+> 📌 **Click the banner or image above to watch the video on YouTube.**
 
 ## ✨ Features
 
