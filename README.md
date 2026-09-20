@@ -6,6 +6,7 @@ A comprehensive **Learning Management System** built with **Python** and **PyQt5
 
 ## ☰ Table of Contents
 
+- [Demo Video](#-demo-video--walkthrough)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
