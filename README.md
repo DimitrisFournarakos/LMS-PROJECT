@@ -336,3 +336,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 For questions or issues, please open a GitHub Issue or contact me at dfournarakos567@gmail.com 
 
 ---
+
+
+> **⭐ If you liked this project, give it a star on GitHub!**  
+> It's a small gesture that helps a lot with visibility.
